@@ -1,0 +1,39 @@
+# EWC-DR da co .git rieng (clone tu upstream scarlet0703/EWC-DR).
+# Khong track o day de tranh nested repo; sua doi trong do commit bang git cua no.
+EWC-DR/
+
+# Du lieu - khong bao gio commit
+data/
+*/data/
+*/*/data/
+*.tar.gz
+*.zip
+
+# Feature cache & ket qua chay
+cache/
+*/cache/
+runs/
+*/runs/
+logs/
+*/logs/
+*.pt
+*.pth
+*.npy
+*.npz
+*.ckpt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Claude Code - cai dat cuc bo cua tung may
+.claude/settings.local.json

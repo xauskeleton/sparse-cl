@@ -1,0 +1,253 @@
+"""Vong lap continual learning.
+
+    python train.py                       # cau hinh mac dinh
+    python train.py --help                # toan bo flag
+    python config.py <flags>              # chi kiem tra tinh hop le, khong chay
+
+Chi so bao cao khop dinh nghia cua Fly-CL de so sanh truc tiep voi
+Fly-CL-main/log_cifar_seed1993.txt:
+    A_t  = trung binh accuracy tren cac task 0..t sau khi hoc xong task t
+    A_T  = A_t o task cuoi          ("last stage accuracy")
+    A~   = trung binh cua A_t       ("accumulated / overall accuracy")
+"""
+
+import copy
+import json
+import os
+import time
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+
+from config import get_parser, validate
+from data import TaskData, batches, set_seed
+from model import build_model
+
+
+# --------------------------------------------------------------------------- #
+
+def load_backbone(model_name, device):
+    """Chi goi khi CHUA co cache. Co cache roi thi khong can ViT -> chay duoc
+    ca tren session CPU."""
+    import timm
+    if model_name == 'vit_base_patch16_224':
+        m = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=0)
+    elif model_name in ('resnet-50', 'resnet50'):
+        m = timm.create_model('resnet50', pretrained=True, num_classes=0)
+    else:
+        raise ValueError(f"backbone khong ho tro: {model_name}")
+    print(f"[model] backbone {model_name} | tag={m.default_cfg.get('tag', '?')}")
+    return m.eval().to(device)
+
+
+def cache_exists(args):
+    tag = f"{args.dataset}_{args.model_name}_{args.data_augmentation}"
+    return os.path.exists(os.path.join(args.cache_dir, f"{tag}.pt"))
+
+
+def build_optimizer(model, args):
+    groups = model.param_groups()
+    if args.optimizer == 'adamw':
+        return torch.optim.AdamW(groups, weight_decay=args.weight_decay)
+    return torch.optim.SGD(groups, momentum=0.9, weight_decay=args.weight_decay)
+
+
+# --------------------------------------------------------------------------- #
+
+@torch.no_grad()
+def evaluate(model, X, Y, batch_size=1024):
+    model.eval()
+    correct = 0
+    for i in range(0, X.shape[0], batch_size):
+        logits = model(X[i:i + batch_size], is_feature=True)
+        correct += (logits.argmax(1) == Y[i:i + batch_size]).sum().item()
+    return 100.0 * correct / max(X.shape[0], 1)
+
+
+def train_task(model, reg, tr, va, args, task, known_classes):
+    """Huan luyen mot task. Tra ve dict chan doan."""
+    Xtr, Ytr = tr
+    Xva, Yva = va
+    opt = build_optimizer(model, args)
+    sched = (torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
+             if args.lr_schedule == 'cosine' else None)
+    gen = torch.Generator(device=Xtr.device).manual_seed(args.seed + task)
+
+    best_acc, best_state, patience = -1.0, None, 0
+    clf_sum = pen_sum = n_steps = 0.0
+    val_curve, best_epoch = [], 0
+
+    for epoch in range(args.epochs):
+        model.train()
+        ep_clf = ep_pen = 0.0
+        bs = batches(Xtr, Ytr, args.batch_size, shuffle=True, generator=gen)
+        for xb, yb in bs:
+            logits = model(xb, is_feature=True)
+
+            if args.ce_scope == 'new' and known_classes > 0:
+                loss_clf = F.cross_entropy(logits[:, known_classes:], yb - known_classes)
+            else:
+                loss_clf = F.cross_entropy(logits, yb)
+
+            pen = reg.penalty(model)
+            loss = loss_clf + pen + model.aux_loss
+
+            opt.zero_grad(set_to_none=True)
+            loss.backward()
+            opt.step()
+
+            ep_clf += loss_clf.item()
+            ep_pen += float(pen)
+        if sched is not None:
+            sched.step()
+
+        clf_sum += ep_clf; pen_sum += ep_pen; n_steps += len(bs)
+
+        if Xva.shape[0] > 0:
+            acc = evaluate(model, Xva, Yva)
+            val_curve.append(round(acc, 2))
+            if acc > best_acc + 1e-6:
+                best_acc, best_epoch, patience = acc, epoch + 1, 0
+                best_state = copy.deepcopy(model.state_dict())
+            else:
+                patience += 1
+                if patience >= args.early_stop_patience:
+                    print(f"  early stop @ epoch {epoch + 1} (val {best_acc:.2f} @ {best_epoch})")
+                    break
+
+    if best_state is not None:
+        model.load_state_dict(best_state)
+
+    clf_avg = clf_sum / max(n_steps, 1)
+    pen_avg = pen_sum / max(n_steps, 1)
+    return {
+        'loss_clf': round(clf_avg, 4),
+        'penalty': round(pen_avg, 4),
+        # muc tieu 0.1-1: nho hon -> regularizer vo hinh; lon hon -> mang bi dong bang
+        'pen_over_clf': round(pen_avg / max(clf_avg, 1e-8), 4),
+        'val_acc': round(best_acc, 2),
+        'best_epoch': best_epoch,        # de hieu chinh --epochs cho cac lan sau
+        'epochs_run': len(val_curve),
+        'val_curve': val_curve,          # ve ra de xem thuc su hoi tu o dau
+    }
+
+
+def diagnostics(model, reg, args):
+    d = {}
+    # ~0 nghia la phep chieu dung yen -> cau hinh "hoc chieu" dong nhat voi
+    # "chieu dong bang", moi so sanh giua chung deu vo nghia. Kiem TRUOC TIEN.
+    d['proj_drift'] = round(model.proj.drift(), 4)
+    u = model.usage_stats()
+    d['dead_frac'] = round(u['proj']['dead_frac'], 4)
+    d['usage_cv'] = round(u['proj']['usage_cv'], 4)
+    if 'mlp' in u:
+        d['mlp_dead_frac'] = round(u['mlp']['dead_frac'], 4)
+    if reg.omega:
+        # >0.5 nghia la moi omega bang nhau -> EWC-DR thoai hoa thanh L2 thuan
+        sat = [(v >= args.omegamax * 0.999).float().mean().item() for v in reg.omega.values()]
+        d['omega_saturated'] = round(float(np.mean(sat)), 4)
+    return d
+
+
+# --------------------------------------------------------------------------- #
+
+def compute_metrics(acc, T):
+    """acc[i][j] = accuracy tren task i sau khi hoc xong task j (chi j >= i)."""
+    A_t = [float(np.mean([acc[i][t] for i in range(t + 1)])) for t in range(T)]
+    last = T - 1
+    forgetting = [max(acc[i][j] for j in range(i, last)) - acc[i][last]
+                  for i in range(last)] if T > 1 else []
+    bwt = [acc[i][last] - acc[i][i] for i in range(last)] if T > 1 else []
+    return {
+        'A_t': [round(a, 2) for a in A_t],
+        'A_T': round(A_t[-1], 2),
+        'A_bar': round(float(np.mean(A_t)), 2),
+        'forgetting': round(float(np.mean(forgetting)), 2) if forgetting else 0.0,
+        'BWT': round(float(np.mean(bwt)), 2) if bwt else 0.0,
+    }
+
+
+def main():
+    args = validate(get_parser().parse_args())
+    device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
+    set_seed(args.seed)
+
+    if not args.cache_features:
+        raise NotImplementedError(
+            "train.py hien chi ho tro duong cache (backbone dong bang). "
+            "De fine-tune backbone can dataloader anh - chua cai."
+        )
+
+    backbone = None if cache_exists(args) else load_backbone(args.model_name, device)
+    data = TaskData(args, backbone, device)
+    print(data.summary())
+    del backbone
+    torch.cuda.empty_cache() if torch.cuda.is_available() else None
+
+    args.embedding_dim = data.Xtr.shape[1]      # lay tu feature that, tranh lech config
+    model, reg = build_model(args)
+    model.to(device)
+    print(f"[model] {args.exp_name}")
+
+    T = args.num_tasks
+    acc = [[0.0] * T for _ in range(T)]
+    per_task, known = [], 0
+    t_start = time.time()
+
+    for task in range(T):
+        total = data.total_classes(task)
+        model.expand_head(total)
+        model.to(device)
+        tr, va = data.train_split(task)
+        print(f"\n=== task {task}  lop [{known}, {total})  "
+              f"{tr[0].shape[0]} train / {va[0].shape[0]} val ===")
+
+        tic = time.time()
+        info = train_task(model, reg, tr, va, args, task, known)
+        info['train_time'] = round(time.time() - tic, 1)
+
+        # dong bang phep chieu sau task dau (nhanh A)
+        if args.projection_schedule in ('task0', 'offline') and task == 0:
+            model.freeze_projection()
+            print("  [proj] da dong bang phep chieu sau task 0")
+
+        if reg.enabled:
+            reg.set_alpha(known, total)
+            reg.estimate(model, batches(*tr, args.batch_size, shuffle=False), device)
+
+        for i in range(task + 1):
+            Xi, Yi = data.test_split(i)
+            acc[i][task] = evaluate(model, Xi, Yi)
+
+        info.update(diagnostics(model, reg, args))
+        info['A_t'] = round(float(np.mean([acc[i][task] for i in range(task + 1)])), 2)
+        per_task.append(info)
+        print(f"  A_t={info['A_t']:.2f} | " +
+              " ".join(f"{k}={v}" for k, v in info.items() if k != 'A_t'))
+        known = total
+
+    m = compute_metrics(acc, T)
+    m['total_time'] = round(time.time() - t_start, 1)
+
+    print("\n" + "=" * 60)
+    print("Accuracy matrix (hang = task, cot = sau khi hoc xong task j)")
+    for i in range(T):
+        print("  " + " ".join(f"{acc[i][j]:6.2f}" if j >= i else "     ." for j in range(T)))
+    print(f"\nA_t         : {m['A_t']}")
+    print(f"A_T         : {m['A_T']}   (accuracy sau task cuoi)")
+    print(f"A_bar       : {m['A_bar']}   (accumulated - so voi Fly-CL 92.99)")
+    print(f"Forgetting  : {m['forgetting']}")
+    print(f"BWT         : {m['BWT']}")
+    print(f"Tong thoi gian: {m['total_time']}s")
+
+    os.makedirs(args.out_dir, exist_ok=True)
+    out = os.path.join(args.out_dir, f"{args.exp_name}.json")
+    with open(out, 'w') as f:
+        json.dump({'args': {k: str(v) for k, v in vars(args).items()},
+                   'acc_matrix': acc, 'metrics': m, 'per_task': per_task}, f, indent=2)
+    print(f"Da luu: {out}")
+
+
+if __name__ == '__main__':
+    main()
