@@ -180,12 +180,16 @@ def main():
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
     set_seed(args.seed)
 
-    # bf16 can Ampere tro len. P100/T4 (Kaggle, Colab free) khong co -> fp16.
+    # Tensor core bf16 chi co tu Ampere (SM 8.0). KHONG dung
+    # torch.cuda.is_bf16_supported(): mac dinh no tinh ca truong hop emulation nen
+    # tra ve True tren T4 (Turing, SM 7.5) - bf16 chay duoc nhung bang duong phan
+    # mem, trong khi fp16 tren cung con card co tensor core that (65 vs 8.1 TFLOPS).
     args.amp_dtype = None
     if args.amp and torch.cuda.is_available():
-        args.amp_dtype = (torch.bfloat16 if torch.cuda.is_bf16_supported()
-                          else torch.float16)
-        print(f"[model] autocast backbone: {str(args.amp_dtype).split('.')[-1]}")
+        major = torch.cuda.get_device_capability(device)[0]
+        args.amp_dtype = torch.bfloat16 if major >= 8 else torch.float16
+        print(f"[model] autocast backbone: {str(args.amp_dtype).split('.')[-1]} "
+              f"(SM {major}.x)")
 
     if args.cache_features:
         # backbone dong bang -> trich feature mot lan roi bo backbone di
