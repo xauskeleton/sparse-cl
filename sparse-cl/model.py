@@ -29,9 +29,10 @@ class SparseProjection(nn.Module):
     """
 
     def __init__(self, in_dim, out_dim, synaptic_degree=300,
-                 sparse_mask=True, trainable=True):
+                 sparse_mask=True, trainable=True, bias='none'):
         super().__init__()
         self.in_dim, self.out_dim = in_dim, out_dim
+        self.bias_mode = bias
 
         if sparse_mask:
             degree = min(synaptic_degree, in_dim)
@@ -54,8 +55,19 @@ class SparseProjection(nn.Module):
         else:
             self.w_init = None
 
+        # bias = nguong kich hoat cua tung neuron (tuong ung uc che APL o ruoi).
+        # 'learn' khoi tao BANG 0 -> luc bat dau y het 'none', so sanh sach.
+        if bias == 'learn':
+            self.bias = nn.Parameter(torch.zeros(out_dim))
+        elif bias == 'fixed':
+            self.register_buffer('bias', torch.randn(out_dim) / math.sqrt(degree))
+        elif bias == 'none':
+            self.bias = None
+        else:
+            raise ValueError(f"proj_bias khong hop le: {bias}")
+
     def forward(self, x):
-        return F.linear(x, self.weight * self.mask)
+        return F.linear(x, self.weight * self.mask, self.bias)
 
     @torch.no_grad()
     def drift(self):
@@ -198,19 +210,28 @@ class SparseExpandCL(nn.Module):
                 p.requires_grad = False
             backbone.eval()
 
-        self.proj = SparseProjection(
-            args.embedding_dim, args.expand_dim,
-            synaptic_degree=args.synaptic_degree,
-            sparse_mask=args.sparse_mask,
-            trainable=args.train_projection,
-        )
-        self.act = TopK(
-            args.expand_dim, args.coding_level,
-            adaptive=args.adaptive_threshold,
-        )
+        # expand_dim = 0 -> BO HAN projection va top-k, dua feature thang vao head.
+        # Day la baseline "khong mo rong" (linear/MLP probe tren feature goc).
+        self.no_expand = args.expand_dim == 0
+        if self.no_expand:
+            self.proj, self.act = None, None
+            feat_dim = args.embedding_dim
+        else:
+            self.proj = SparseProjection(
+                args.embedding_dim, args.expand_dim,
+                synaptic_degree=args.synaptic_degree,
+                sparse_mask=args.sparse_mask,
+                trainable=args.train_projection,
+                bias=args.proj_bias,
+            )
+            self.act = TopK(
+                args.expand_dim, args.coding_level,
+                adaptive=args.adaptive_threshold,
+            )
+            feat_dim = args.expand_dim
 
         if args.use_mlp:
-            self.mlp = nn.Linear(args.expand_dim, args.mlp_hidden)
+            self.mlp = nn.Linear(feat_dim, args.mlp_hidden)
             self.mlp_act = (nn.ReLU() if args.mlp_act == 'relu'
                             else TopK(args.mlp_hidden, args.mlp_coding_level,
                                       adaptive=args.adaptive_threshold))
@@ -218,10 +239,13 @@ class SparseExpandCL(nn.Module):
             head_in = args.mlp_hidden
         else:
             self.mlp = self.mlp_act = self.drop = None
-            head_in = args.expand_dim
+            head_in = feat_dim
 
         self.head = IncrementalLinear(head_in)
         self.aux_loss = torch.zeros(())
+        # dat boi train.py o duong anh: uint8 32x32 -> float 224 chuan hoa.
+        # De o day de MOI cho goi model() deu duoc xu ly, ke ca Regularizer.
+        self.prep = None
 
     # ---------------- forward ----------------
 
@@ -237,11 +261,23 @@ class SparseExpandCL(nn.Module):
         else:
             if self.backbone is None:
                 raise RuntimeError("Khong co backbone; truyen feature va dat is_feature=True.")
-            if self.args.freeze_backbone:
-                with torch.no_grad():
+            if self.prep is not None:
+                x = self.prep(x)
+            # autocast CHI bao quanh backbone: phan chieu/top-k/head giu nguyen fp32
+            # de so sanh duoc voi cac run dung feature cache.
+            dt = getattr(self.args, 'amp_dtype', None)
+            with torch.autocast('cuda', dtype=dt or torch.float16,
+                                enabled=dt is not None and x.is_cuda):
+                if self.args.freeze_backbone:
+                    with torch.no_grad():
+                        f = self.backbone(x)
+                else:
                     f = self.backbone(x)
-            else:
-                f = self.backbone(x)
+            f = f.float()
+
+        if self.no_expand:
+            self.aux_loss = torch.zeros((), device=f.device)
+            return f
 
         z = self.proj(f)
 
@@ -258,6 +294,15 @@ class SparseExpandCL(nn.Module):
             h = self.drop(self.mlp_act(self.mlp(h)))
         return self.head(h)
 
+    def train(self, mode=True):
+        super().train(mode)
+        # Backbone dong bang phai o eval ke ca trong model.train(): neu khong,
+        # BatchNorm cua ResNet van cap nhat running stats -> feature troi am tham
+        # du moi tham so deu requires_grad=False.
+        if self.backbone is not None and self.args.freeze_backbone:
+            self.backbone.eval()
+        return self
+
     # ---------------- vong doi task ----------------
 
     def expand_head(self, total_classes):
@@ -265,14 +310,19 @@ class SparseExpandCL(nn.Module):
 
     def freeze_projection(self):
         """Dung cho projection_schedule = task0 / offline."""
-        self.proj.weight.requires_grad = False
+        if self.no_expand:
+            return
+        for p in self.proj.parameters():
+            p.requires_grad = False
         self.act.track = False
 
     def param_groups(self):
         args = self.args
         groups = [{'params': self.head.parameters(), 'lr': args.lr}]
-        if self.proj.weight.requires_grad:
-            groups.append({'params': [self.proj.weight], 'lr': args.projection_lr})
+        # gom ca weight lan bias: co truong hop W dong bang ma bias van hoc
+        proj_p = [] if self.no_expand else [p for p in self.proj.parameters() if p.requires_grad]
+        if proj_p:
+            groups.append({'params': proj_p, 'lr': args.projection_lr})
         if self.mlp is not None:
             groups.append({'params': self.mlp.parameters(), 'lr': args.lr})
         if self.backbone is not None and not args.freeze_backbone:
@@ -282,7 +332,7 @@ class SparseExpandCL(nn.Module):
         return groups
 
     def usage_stats(self):
-        out = {'proj': self.act.usage_stats()}
+        out = {} if self.no_expand else {'proj': self.act.usage_stats()}
         if isinstance(self.mlp_act, TopK):
             out['mlp'] = self.mlp_act.usage_stats()
         return out
@@ -313,8 +363,10 @@ class Regularizer:
     def _targets(self, model):
         args, out = self.args, {}
         # chieu: chi bao ve khi no THUC SU hoc tiep qua cac task
-        if model.proj.weight.requires_grad and args.projection_schedule == 'continual':
-            out['proj.weight'] = model.proj.weight
+        if args.projection_schedule == 'continual' and model.proj is not None:
+            for n, p in model.proj.named_parameters():
+                if p.requires_grad:
+                    out[f'proj.{n}'] = p
         # MLP: luon hoc lien tuc neu ton tai -> luon can bao ve
         if model.mlp is not None:
             for n, p in model.mlp.named_parameters():
@@ -342,6 +394,12 @@ class Regularizer:
         omega = {n: torch.zeros_like(p) for n, p in targets.items()}
         model.train()
         steps = 0
+
+        # Uoc luong omega chay fp32. Voi fp16 thi grad^2 cua phan lon tham so
+        # roi xuong duoi 6e-8 -> underflow ve 0, va omega=0 nghia la "khong quan
+        # trong" nen ca hinh phat bien mat. Chi 1 luot/task nen khong dang tiec.
+        amp_dtype = getattr(args, 'amp_dtype', None)
+        args.amp_dtype = None
 
         for _ in range(args.importance_epochs):
             for xb, yb in loader:
@@ -377,6 +435,7 @@ class Regularizer:
 
         self.mean = {n: p.detach().clone() for n, p in targets.items()}
         model.zero_grad(set_to_none=True)
+        args.amp_dtype = amp_dtype
 
     def set_alpha(self, known_classes, total_classes):
         self._alpha = known_classes / max(total_classes, 1)

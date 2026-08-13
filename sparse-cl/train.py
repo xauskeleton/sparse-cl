@@ -21,7 +21,7 @@ import torch
 import torch.nn.functional as F
 
 from config import get_parser, validate
-from data import TaskData, batches, set_seed
+from data import ImageTaskData, TaskData, batches, make_preprocess, set_seed
 from model import build_model
 
 
@@ -56,12 +56,14 @@ def build_optimizer(model, args):
 # --------------------------------------------------------------------------- #
 
 @torch.no_grad()
-def evaluate(model, X, Y, batch_size=1024):
+def evaluate(model, X, Y, args):
     model.eval()
+    # 1024 chi an toan cho feature; o duong anh moi mau la 3x224x224 nen phai nho lai
+    bs = 1024 if args.cache_features else args.batch_size
     correct = 0
-    for i in range(0, X.shape[0], batch_size):
-        logits = model(X[i:i + batch_size], is_feature=True)
-        correct += (logits.argmax(1) == Y[i:i + batch_size]).sum().item()
+    for i in range(0, X.shape[0], bs):
+        logits = model(X[i:i + bs], is_feature=args.cache_features)
+        correct += (logits.argmax(1) == Y[i:i + bs]).sum().item()
     return 100.0 * correct / max(X.shape[0], 1)
 
 
@@ -72,6 +74,9 @@ def train_task(model, reg, tr, va, args, task, known_classes):
     opt = build_optimizer(model, args)
     sched = (torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
              if args.lr_schedule == 'cosine' else None)
+    # fp16 can GradScaler (dai dong cua no hep, gradient de underflow);
+    # bf16 co cung so mu voi fp32 nen khong can.
+    scaler = torch.amp.GradScaler('cuda', enabled=args.amp_dtype is torch.float16)
     gen = torch.Generator(device=Xtr.device).manual_seed(args.seed + task)
 
     best_acc, best_state, patience = -1.0, None, 0
@@ -83,7 +88,7 @@ def train_task(model, reg, tr, va, args, task, known_classes):
         ep_clf = ep_pen = 0.0
         bs = batches(Xtr, Ytr, args.batch_size, shuffle=True, generator=gen)
         for xb, yb in bs:
-            logits = model(xb, is_feature=True)
+            logits = model(xb, is_feature=args.cache_features)
 
             if args.ce_scope == 'new' and known_classes > 0:
                 loss_clf = F.cross_entropy(logits[:, known_classes:], yb - known_classes)
@@ -94,8 +99,9 @@ def train_task(model, reg, tr, va, args, task, known_classes):
             loss = loss_clf + pen + model.aux_loss
 
             opt.zero_grad(set_to_none=True)
-            loss.backward()
-            opt.step()
+            scaler.scale(loss).backward()
+            scaler.step(opt)
+            scaler.update()
 
             ep_clf += loss_clf.item()
             ep_pen += float(pen)
@@ -105,7 +111,7 @@ def train_task(model, reg, tr, va, args, task, known_classes):
         clf_sum += ep_clf; pen_sum += ep_pen; n_steps += len(bs)
 
         if Xva.shape[0] > 0:
-            acc = evaluate(model, Xva, Yva)
+            acc = evaluate(model, Xva, Yva, args)
             val_curve.append(round(acc, 2))
             if acc > best_acc + 1e-6:
                 best_acc, best_epoch, patience = acc, epoch + 1, 0
@@ -137,10 +143,11 @@ def diagnostics(model, reg, args):
     d = {}
     # ~0 nghia la phep chieu dung yen -> cau hinh "hoc chieu" dong nhat voi
     # "chieu dong bang", moi so sanh giua chung deu vo nghia. Kiem TRUOC TIEN.
-    d['proj_drift'] = round(model.proj.drift(), 4)
     u = model.usage_stats()
-    d['dead_frac'] = round(u['proj']['dead_frac'], 4)
-    d['usage_cv'] = round(u['proj']['usage_cv'], 4)
+    if not model.no_expand:
+        d['proj_drift'] = round(model.proj.drift(), 4)
+        d['dead_frac'] = round(u['proj']['dead_frac'], 4)
+        d['usage_cv'] = round(u['proj']['usage_cv'], 4)
     if 'mlp' in u:
         d['mlp_dead_frac'] = round(u['mlp']['dead_frac'], 4)
     if reg.omega:
@@ -173,20 +180,33 @@ def main():
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
     set_seed(args.seed)
 
-    if not args.cache_features:
-        raise NotImplementedError(
-            "train.py hien chi ho tro duong cache (backbone dong bang). "
-            "De fine-tune backbone can dataloader anh - chua cai."
-        )
+    # bf16 can Ampere tro len. P100/T4 (Kaggle, Colab free) khong co -> fp16.
+    args.amp_dtype = None
+    if args.amp and torch.cuda.is_available():
+        args.amp_dtype = (torch.bfloat16 if torch.cuda.is_bf16_supported()
+                          else torch.float16)
+        print(f"[model] autocast backbone: {str(args.amp_dtype).split('.')[-1]}")
 
-    backbone = None if cache_exists(args) else load_backbone(args.model_name, device)
-    data = TaskData(args, backbone, device)
+    if args.cache_features:
+        # backbone dong bang -> trich feature mot lan roi bo backbone di
+        backbone = None if cache_exists(args) else load_backbone(args.model_name, device)
+        data = TaskData(args, backbone, device)
+        del backbone
+        torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        args.embedding_dim = data.Xtr.shape[1]   # lay tu feature that, tranh lech config
+        model, reg = build_model(args)
+    else:
+        # backbone nam trong do thi tinh toan -> phai giu anh goc
+        backbone = load_backbone(args.model_name, device)
+        n = sum(p.numel() for p in backbone.parameters())
+        print(f"[model] backbone {'dong bang' if args.freeze_backbone else 'fine-tune'}: "
+              f"{n/1e6:.2f}M tham so")
+        data = ImageTaskData(args, device)
+        args.embedding_dim = backbone.num_features
+        model, reg = build_model(args, backbone=backbone)
+        model.prep = make_preprocess(args, device)
+
     print(data.summary())
-    del backbone
-    torch.cuda.empty_cache() if torch.cuda.is_available() else None
-
-    args.embedding_dim = data.Xtr.shape[1]      # lay tu feature that, tranh lech config
-    model, reg = build_model(args)
     model.to(device)
     print(f"[model] {args.exp_name}")
 
@@ -218,13 +238,14 @@ def main():
 
         for i in range(task + 1):
             Xi, Yi = data.test_split(i)
-            acc[i][task] = evaluate(model, Xi, Yi)
+            acc[i][task] = evaluate(model, Xi, Yi, args)
 
         info.update(diagnostics(model, reg, args))
         info['A_t'] = round(float(np.mean([acc[i][task] for i in range(task + 1)])), 2)
         per_task.append(info)
         print(f"  A_t={info['A_t']:.2f} | " +
-              " ".join(f"{k}={v}" for k, v in info.items() if k != 'A_t'))
+              " ".join(f"{k}={v}" for k, v in info.items()
+                       if k not in ('A_t', 'val_curve')))       # val_curve chi luu vao JSON
         known = total
 
     m = compute_metrics(acc, T)

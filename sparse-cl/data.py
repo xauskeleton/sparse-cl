@@ -17,6 +17,7 @@ import urllib.request
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # torchvision/timm chi can khi CHUA co cache -> import lazy trong ham,
@@ -164,21 +165,21 @@ def _remap(labels, class_order):
     return out
 
 
-class TaskData:
-    """Giu toan bo feature tren GPU va cat theo task bang indexing.
+class _TaskSplit:
+    """Phan dung chung cho ca duong feature lan duong anh: doi nhan theo
+    class_order, tach validation mot lan, cat theo task bang indexing.
 
-    Khong dung DataLoader: o quy mo nay (153 MB fp32) phep tinh qua re nen
-    overhead worker/copy chiem phan lon thoi gian.
+    Khong dung DataLoader: o quy mo nay (153 MB) phep tinh qua re nen overhead
+    worker/copy chiem phan lon thoi gian.
     """
 
-    def __init__(self, args, backbone, device):
+    def _setup(self, args, device, Xtr, Ytr, Xte, Yte):
         self.args, self.device = args, device
-        Xtr, Ytr, Xte, Yte = cached_features(args, backbone, device)
+        self.Xtr, self.Xte = Xtr, Xte
 
         self.class_order = make_class_order(args.num_classes, args.seed)
         self.ytr = _remap(Ytr, self.class_order)
         self.yte = _remap(Yte, self.class_order)
-        self.Xtr, self.Xte = Xtr, Xte
 
         self.cpt = args.num_classes // args.num_tasks
         assert self.cpt * args.num_tasks == args.num_classes, \
@@ -214,7 +215,108 @@ class TaskData:
     def summary(self):
         return (f"[data] {self.args.dataset}: {len(self.ytr)} train / {len(self.yte)} test, "
                 f"{self.args.num_tasks} task x {self.cpt} lop, "
-                f"dim={self.Xtr.shape[1]}, val_ratio={self.args.val_ratio}")
+                f"x={tuple(self.Xtr.shape[1:])} {self.Xtr.dtype}, "
+                f"val_ratio={self.args.val_ratio}")
+
+
+class TaskData(_TaskSplit):
+    """Feature da trich san, giu tren GPU. Dung khi backbone dong bang."""
+
+    def __init__(self, args, backbone, device):
+        Xtr, Ytr, Xte, Yte = cached_features(args, backbone, device)
+        self._setup(args, device, Xtr, Ytr, Xte, Yte)
+
+
+# --------------------------------------------------------------------------- #
+# Duong anh: dung khi backbone train duoc -> feature doi moi epoch, het cache
+# --------------------------------------------------------------------------- #
+
+_NORM = {
+    'vit':    ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    'resnet': ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+}
+
+
+def _pil_bicubic_matrix(in_size, out_size, device):
+    """Ma tran resize [out, in] tai lap DUNG bicubic cua PIL.
+
+    Khong dung F.interpolate(mode='bicubic') duoc: PyTorch dung kernel Keys voi
+    a=-0.75, PIL dung a=-0.5. Voi phong to 32->224 chenh lech nay lam cosine
+    similarity cua feature ViT tut xuong 0.98 - du de moi so sanh voi ket qua
+    dung cache (va voi log goc cua Fly-CL) thanh vo nghia.
+
+    Thuat toan theo PIL Resample.c::precompute_coeffs.
+    """
+    a = -0.5
+
+    def cubic(x):
+        x = abs(x)
+        if x < 1.0:
+            return ((a + 2.0) * x - (a + 3.0)) * x * x + 1.0
+        if x < 2.0:
+            return (((x - 5.0) * x + 8.0) * x - 4.0) * a
+        return 0.0
+
+    scale = in_size / out_size
+    fscale = max(scale, 1.0)          # phong to -> 1.0, thu nho -> co giai antialias
+    support = 2.0 * fscale
+    m = np.zeros((out_size, in_size), dtype=np.float64)
+    for j in range(out_size):
+        center = (j + 0.5) * scale
+        lo = max(int(center - support + 0.5), 0)
+        hi = min(int(center + support + 0.5), in_size)
+        w = np.array([cubic((k + 0.5 - center) / fscale) for k in range(lo, hi)])
+        m[j, lo:hi] = w / w.sum()
+    return torch.tensor(m, dtype=torch.float32, device=device)
+
+
+def make_preprocess(args, device, in_size=32, out_size=224):
+    """uint8 [B,3,32,32] -> float [B,3,224,224] da chuan hoa, lam het tren GPU.
+
+    Tuong duong build_transform() nhung khong qua PIL/CPU: DataLoader worker tren
+    Windows dat hon ca forward cua backbone o quy mo nay, de nguyen thi data
+    pipeline moi la nut that chu khong phai GPU.
+
+    Resize tach chieu bang hai phep nhan ma tran, dung thu tu cua PIL: NGANG
+    truoc roi DOC, va lam tron ve uint8 sau MOI luot (PIL luu anh trung gian o
+    dang 8-bit). Lam tron cua PIL la half-up ((int)(v+0.5)) chu khong phai
+    half-even nhu torch.round, nen dung floor(v+0.5).
+    """
+    if args.data_augmentation not in _NORM:
+        raise ValueError(f"data_augmentation khong ho tro duong anh: {args.data_augmentation}")
+    mean, std = (torch.tensor(v, device=device).view(1, 3, 1, 1)
+                 for v in _NORM[args.data_augmentation])
+    M = _pil_bicubic_matrix(in_size, out_size, device)
+    u8 = lambda t: t.add_(0.5).floor_().clamp_(0, 255)
+
+    def prep(x):
+        x = u8(x.float() @ M.t())               # luot ngang: [B,3,in,out]
+        x = u8(M @ x).div_(255.0)               # luot doc:   [B,3,out,out]
+        return (x - mean) / std
+
+    return prep
+
+
+class ImageTaskData(_TaskSplit):
+    """Giu anh goc uint8 32x32 tren GPU (153 MB cho CIFAR-100), resize/chuan hoa
+    theo tung lo. Nhan va cach chia task giong het TaskData nen so sanh truc tiep
+    duoc voi cac ket qua backbone dong bang."""
+
+    def __init__(self, args, device):
+        if args.dataset != 'CIFAR-100':
+            raise NotImplementedError(
+                f"duong anh moi cai cho CIFAR-100, chua ho tro {args.dataset}")
+        from torchvision import datasets
+        _ensure_cifar100(args.root)
+        tr = datasets.CIFAR100(args.root, train=True, download=True)
+        te = datasets.CIFAR100(args.root, train=False, download=True)
+
+        def to_u8(a):   # HWC uint8 -> CHW uint8 tren GPU
+            return torch.from_numpy(a).permute(0, 3, 1, 2).contiguous().to(device)
+
+        self._setup(args, device,
+                    to_u8(tr.data), torch.tensor(tr.targets, device=device),
+                    to_u8(te.data), torch.tensor(te.targets, device=device))
 
 
 def batches(X, Y, batch_size, shuffle=True, generator=None):

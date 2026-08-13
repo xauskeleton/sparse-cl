@@ -38,21 +38,26 @@ def get_parser() -> argparse.ArgumentParser:
     g.add_argument('--model_name', type=str, default='vit_base_patch16_224')
     g.add_argument('--embedding_dim', type=int, default=768)
     g.add_argument('--freeze_backbone', type=_bool, default=True,
-                   help='True  = backbone dong bang, feature cache duoc, train nhanh (vai phut).\n'
-                        'False = fine-tune. Cham ~20x, mat cache, va backbone tro thanh '
-                        'nguon quen chinh. Chi bat khi linear probe cho thay feature khong du.')
-    g.add_argument('--backbone_tune_mode', type=str, default='last_block',
-                   choices=['full', 'last_block', 'lora'],
-                   help='Chi dung khi freeze_backbone=False. full = rui ro quen cao nhat.')
+                   help='True  = backbone dong bang, feature cache duoc, mot run het ~25s.\n'
+                        'False = fine-tune toan bo. Mat cache nen phai forward lai ca backbone '
+                        'moi epoch: mot run het vai gio (cham hon 2 bac do lon), va backbone '
+                        'tro thanh nguon quen chinh. Chi bat khi linear probe cho thay '
+                        'feature khong du.')
     g.add_argument('--backbone_lr', type=float, default=1e-5,
                    help='Nen nho hon --lr khoang 100 lan.')
-    g.add_argument('--lora_rank', type=int, default=8)
+    g.add_argument('--amp', type=_bool, default=True,
+                   help='Autocast CHI cho backbone (chieu/top-k/head van fp32). Nhanh ~2x o '
+                        'duong anh; khong anh huong khi dung feature cache. Kieu du lieu tu '
+                        'chon theo GPU: bf16 neu co (Ampere tro len), khong thi fp16 + '
+                        'GradScaler (P100/T4 cua Kaggle roi vao nhanh nay).')
 
     # -------------------------------------------------- projection (nua trai)
     g = p.add_argument_group('Sparse expansion')
     g.add_argument('--expand_dim', type=int, default=10000,
                    help='Chi phi tuyen tinh theo tham so nay (khong phai binh phuong), '
-                        'nen noi rong la nut van re. Thu 20000/40000 truoc khi lam sau.')
+                        'nen noi rong la nut van re.\n'
+                        '0 = BO HAN projection va top-k, dua feature backbone thang vao head '
+                        '(baseline "khong mo rong": linear probe / MLP probe).')
     g.add_argument('--train_projection', type=_bool, default=True,
                    help='True = hoc phep chieu (diem chinh cua model). '
                         'False = chieu ngau nhien co dinh, dung lam baseline doi chung.')
@@ -65,6 +70,13 @@ def get_parser() -> argparse.ArgumentParser:
     g.add_argument('--coding_level', type=float, default=0.1,
                    help='Ti le unit thang top-k. Day la nut chinh: thap -> chong quen tot hon '
                         'nhung de chet unit va underfit. Quet 0.02-0.30.')
+    g.add_argument('--proj_bias', type=str, default='none',
+                   choices=['none', 'fixed', 'learn'],
+                   help="Bias cua lop chieu = nguong kich hoat tung neuron (tuong ung uc che APL).\n"
+                        "none  = h = top-k(Wv)          - dung cong thuc Fly-CL\n"
+                        "fixed = bias ngau nhien, dong bang\n"
+                        "learn = bias hoc duoc, khoi tao 0. Chi expand_dim tham so (vs 3M cua W) "
+                        "nen thich nghi duoc ma it rui ro troi. Dung duoc ca khi train_projection=False.")
     g.add_argument('--projection_lr', type=float, default=1e-3)
     g.add_argument('--projection_schedule', type=str, default='continual',
                    choices=['continual', 'task0', 'offline'],
@@ -109,7 +121,7 @@ def get_parser() -> argparse.ArgumentParser:
     g.add_argument('--omegamax', type=float, default=1e-4,
                    help='Chan tren do quan trong.')
     g.add_argument('--importance_dense', type=_bool, default=True,
-                   help='TAT top-k khi uoc luong do quan trong. Neu de nguyen, ~90% unit '
+                   help='TAT top-k khi uoc luong do quan trong. Neu de nguyen, ~90%% unit '
                         'khong nhan gradient nen omega=0 vi ly do CAU TRUC chu khong phai '
                         'vi khong quan trong. Logits Reversal khong chua duoc chuyen do.')
     g.add_argument('--importance_epochs', type=int, default=1,
@@ -162,11 +174,13 @@ def get_parser() -> argparse.ArgumentParser:
 def validate(args):
 
     # --- cache chi hop le khi feature khong doi ---
+    # cache_features mac dinh True, nen day la HE QUA cua freeze_backbone chu khong
+    # phai loi nguoi dung -> tu tat, khong bao loi tren mot gia tri mac dinh.
     if args.cache_features and not args.freeze_backbone:
-        raise ValueError(
-            "cache_features=True vo nghia khi backbone train duoc (feature doi moi epoch). "
-            "Dat --cache_features False va chuan bi cham hon ~20x."
-        )
+        _warn("freeze_backbone=False -> tu dat cache_features=False "
+              "(feature doi moi epoch nen khong cache duoc). Mot run se het vai gio "
+              "thay vi ~25s.")
+        args.cache_features = False
 
     # --- regularizer can co gi do troi de bao ve ---
     proj_continual = args.train_projection and args.projection_schedule == 'continual'
@@ -187,6 +201,23 @@ def validate(args):
 
     if args.mlp_act == 'topk' and not args.use_mlp:
         _warn("mlp_act=topk bi bo qua vi use_mlp=False.")
+
+    # --- expand_dim = 0: khong co projection nen moi flag lien quan deu vo nghia ---
+    if args.expand_dim == 0:
+        if args.proj_bias != 'none':
+            _warn(f"expand_dim=0: khong co projection layer nen --proj_bias {args.proj_bias} bi bo qua.")
+        if (args.cl_reg != 'none' and not args.use_mlp and not args.protect_head
+                and args.freeze_backbone):
+            raise ValueError(
+                f"expand_dim=0 + cl_reg={args.cl_reg} + khong MLP + protect_head=False "
+                "+ backbone dong bang: chi con classifier thay doi -> regularizer luon "
+                "bang 0. (Mo backbone thi hop le, vi luc do backbone la thu can bao ve.)"
+            )
+        # cac flag ve projection deu vo nghia -> tat, khong bao loi vi day la gia tri mac dinh
+        args.train_projection, args.proj_bias = False, 'none'
+        args.projection_schedule = 'task0'
+        args.exp_name = args.exp_name or _auto_name(args)
+        return args
 
     # --- coding_level >= 1 lam tang mo rong VO NGHIA (du co MLP hay khong) ---
     if args.coding_level >= 1.0:
@@ -262,18 +293,27 @@ def _warn(msg):
 
 
 def _auto_name(args):
-    parts = [
-        args.dataset,
-        args.model_name.split('_')[0],
-        f"d{args.expand_dim}",
-        f"k{args.coding_level}",
-        'proj-learn' if args.train_projection else 'proj-fixed',
-        args.projection_schedule,
-        f"mlp-{args.mlp_act}" if args.use_mlp else 'linear',
-    ]
+    parts = [args.dataset, args.model_name.split('_')[0]]
+    if args.expand_dim == 0:
+        parts.append('no-expand')
+    else:
+        parts += [
+            f"d{args.expand_dim}",
+            f"k{args.coding_level}",
+            'proj-learn' if args.train_projection else 'proj-fixed',
+            args.projection_schedule,
+        ]
+    parts.append(f"mlp-{args.mlp_act}" if args.use_mlp else 'linear')
+    # lr phai co trong ten: khong thi quet projection_lr se GHI DE cung mot file
+    # va chi ban chay cuoi song sot, khong bao loi gi.
+    parts.append(f"lr{args.lr:g}")
+    if args.proj_bias != 'none':
+        parts.append(f"pb-{args.proj_bias}")
+    if args.train_projection or args.proj_bias == 'learn':
+        parts.append(f"plr{args.projection_lr:g}")
     if args.cl_reg != 'none':
-        parts.append(f"{args.cl_reg}-l{args.lamda:g}")
-    parts.append('bb-frozen' if args.freeze_backbone else f"bb-{args.backbone_tune_mode}")
+        parts.append(f"{args.cl_reg}-l{args.lamda:g}-om{args.omegamax:g}")
+    parts.append('bb-frozen' if args.freeze_backbone else 'bb-tuned')
     parts.append(f"s{args.seed}")
     return '_'.join(str(p) for p in parts)
 
