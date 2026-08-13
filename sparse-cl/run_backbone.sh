@@ -4,7 +4,8 @@
 #   ./run_backbone.sh <backbone> <gpu> <cau_hinh> <regularizer>
 #     backbone     : vit | resnet      (mac dinh vit)
 #     gpu          : chi so GPU        (mac dinh 0)
-#     cau_hinh     : a | b | all       (a = cau hinh 1,2,3; b = 4,5,6)
+#     cau_hinh     : a | b | all | danh sach so, vi du "1,2" hay "5"
+#                    (a = cau hinh 1,2,3; b = 4,5,6)
 #     regularizer  : none | ewc | both (mac dinh both)
 #
 # Vi du tren Kaggle T4x2, chay song song hai luong trong cung mot notebook:
@@ -32,7 +33,7 @@ esac
 COMMON="--model_name $MODEL --data_augmentation $AUG --gpu $GPU
         --freeze_backbone False --backbone_lr 1e-5
         --epochs 20 --early_stop_patience 6 --batch_size 64
-        --seed 1993 --out_dir ./runs_bb_$BB"
+        --seed 1993 --out_dir ./runs"
 
 MLP="--use_mlp True --mlp_act relu --mlp_hidden 512"
 FROZEN="--train_projection False --projection_schedule task0"
@@ -53,7 +54,13 @@ case "$PART" in
   a)   KEYS="1_none_linear 2_none_mlp 3_frozen_linear" ;;
   b)   KEYS="4_frozen_mlp 5_learn_linear 6_learn_mlp"  ;;
   all) KEYS="1_none_linear 2_none_mlp 3_frozen_linear 4_frozen_mlp 5_learn_linear 6_learn_mlp" ;;
-  *) echo "cau hinh khong hop le: $PART (dung all, a hoac b)"; exit 1 ;;
+  *)   # danh sach so, vi du "1,2" -> chay dung cau hinh 1 va 2
+       KEYS=""
+       for n in ${PART//,/ }; do
+         k=$(printf '%s\n' "${!CFG[@]}" | grep "^${n}_" || true)
+         [ -z "$k" ] && { echo "cau hinh khong hop le: '$n' (chon 1..6, a, b hoac all)"; exit 1; }
+         KEYS="$KEYS $k"
+       done ;;
 esac
 
 # lamda=100 lay tu sweep {1,10,100,1000,10000} tren ViT backbone dong bang.
