@@ -74,7 +74,9 @@ esac
 for k in $KEYS; do
   for reg in "${REG_LIST[@]}"; do
     echo "===== $BB | $k | $reg | gpu $GPU ====="
-    python train.py $COMMON ${CFG[$k]} $reg
+    # -u: khong dem stdout. Khi ghi ra file thay vi terminal, Python gom 8 KB moi
+    # ghi mot lan -> log trong hang chuc phut du dang chay binh thuong.
+    python -u train.py $COMMON ${CFG[$k]} $reg
   done
 done
 echo "XONG: $BB | cau hinh $PART | reg $REGS | gpu $GPU"
