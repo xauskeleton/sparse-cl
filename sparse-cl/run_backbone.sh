@@ -36,15 +36,18 @@ GPU=${2:-0}
 PART=${3:-all}
 REGS=${4:-both}
 
+# Batch theo backbone, chon theo VRAM do duoc khi fine-tune toan bo:
+# ResNet-50 het 5.79 GiB o 128, ViT-B/16 het 5.56 GiB o 64 (gap doi la ~11 GiB,
+# sat tran 16 GiB nen khong nen).
 case "$BB" in
-  vit)    MODEL=vit_base_patch16_224; AUG=vit    ;;
-  resnet) MODEL=resnet50;             AUG=resnet ;;
+  vit)    MODEL=vit_base_patch16_224; AUG=vit;    BS=64  ;;
+  resnet) MODEL=resnet50;             AUG=resnet; BS=128 ;;
   *) echo "backbone khong hop le: $BB (dung vit hoac resnet)"; exit 1 ;;
 esac
 
 COMMON="--model_name $MODEL --data_augmentation $AUG --gpu $GPU
         --freeze_backbone False --backbone_lr 1e-5
-        --epochs 100 --early_stop_patience 10 --batch_size 64
+        --epochs 100 --early_stop_patience 10 --batch_size $BS
         --seed 1993 --out_dir ./runs"
 
 MLP="--use_mlp True --mlp_act relu --mlp_hidden 512"
