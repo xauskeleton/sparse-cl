@@ -159,6 +159,27 @@ def diagnostics(model, reg, args):
 
 # --------------------------------------------------------------------------- #
 
+def save(args, acc, per_task, metrics, t_start):
+    """Ghi ket qua ra JSON. Goi sau MOI task, khong doi het 10 task: mot run
+    backbone fine-tune co the mat hang chuc gio, va phien Kaggle bi cat o gio
+    thu 12 - ghi mot lan o cuoi thi mat sach. 'tasks_done' cho biet ket qua da
+    day du hay moi mot phan."""
+    os.makedirs(args.out_dir, exist_ok=True)
+    out = os.path.join(args.out_dir, f"{args.exp_name}.json")
+    tmp = out + '.tmp'
+    payload = {
+        'args': {k: str(v) for k, v in vars(args).items()},
+        'tasks_done': len(per_task),
+        'complete': len(per_task) == args.num_tasks,
+        'elapsed': round(time.time() - t_start, 1),
+        'acc_matrix': acc, 'metrics': metrics, 'per_task': per_task,
+    }
+    with open(tmp, 'w') as f:                 # ghi tam roi doi ten: bi giet giua
+        json.dump(payload, f, indent=2)       # chung thi khong de lai file hong
+    os.replace(tmp, out)
+    return out
+
+
 def compute_metrics(acc, T):
     """acc[i][j] = accuracy tren task i sau khi hoc xong task j (chi j >= i)."""
     A_t = [float(np.mean([acc[i][t] for i in range(t + 1)])) for t in range(T)]
@@ -253,6 +274,7 @@ def main():
               " ".join(f"{k}={v}" for k, v in info.items()
                        if k not in ('A_t', 'val_curve')))       # val_curve chi luu vao JSON
         known = total
+        save(args, acc, per_task, compute_metrics(acc, task + 1), t_start)
 
     m = compute_metrics(acc, T)
     m['total_time'] = round(time.time() - t_start, 1)
@@ -268,12 +290,7 @@ def main():
     print(f"BWT         : {m['BWT']}")
     print(f"Tong thoi gian: {m['total_time']}s")
 
-    os.makedirs(args.out_dir, exist_ok=True)
-    out = os.path.join(args.out_dir, f"{args.exp_name}.json")
-    with open(out, 'w') as f:
-        json.dump({'args': {k: str(v) for k, v in vars(args).items()},
-                   'acc_matrix': acc, 'metrics': m, 'per_task': per_task}, f, indent=2)
-    print(f"Da luu: {out}")
+    print(f"Da luu: {save(args, acc, per_task, m, t_start)}")
 
 
 if __name__ == '__main__':
