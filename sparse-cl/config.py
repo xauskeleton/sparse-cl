@@ -307,6 +307,10 @@ def _auto_name(args):
     # lr phai co trong ten: khong thi quet projection_lr se GHI DE cung mot file
     # va chi ban chay cuoi song sot, khong bao loi gi.
     parts.append(f"lr{args.lr:g}")
+    # epochs cung vay: quet ngan sach epoch ma khong co no trong ten thi moi muc
+    # ghi de len muc truoc. Chi them khi khac mac dinh, de ten cu khong doi.
+    if args.epochs != 100:
+        parts.append(f"ep{args.epochs}")
     if args.proj_bias != 'none':
         parts.append(f"pb-{args.proj_bias}")
     if args.train_projection or args.proj_bias == 'learn':

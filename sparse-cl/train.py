@@ -104,7 +104,7 @@ def train_task(model, reg, tr, va, args, task, known_classes):
             scaler.update()
 
             ep_clf += loss_clf.item()
-            ep_pen += float(pen)
+            ep_pen += pen.detach().item()      # float(pen) tren tensor con grad -> UserWarning
         if sched is not None:
             sched.step()
 
@@ -231,8 +231,10 @@ def main():
         info = train_task(model, reg, tr, va, args, task, known)
         info['train_time'] = round(time.time() - tic, 1)
 
-        # dong bang phep chieu sau task dau (nhanh A)
-        if args.projection_schedule in ('task0', 'offline') and task == 0:
+        # dong bang phep chieu sau task dau (nhanh A). Voi expand_dim=0 thi khong co
+        # phep chieu nao -> khong bao, neu khong log noi da lam mot viec khong xay ra.
+        if args.projection_schedule in ('task0', 'offline') and task == 0 \
+                and not model.no_expand:
             model.freeze_projection()
             print("  [proj] da dong bang phep chieu sau task 0")
 
