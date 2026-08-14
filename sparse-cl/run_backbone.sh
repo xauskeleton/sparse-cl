@@ -13,10 +13,16 @@
 #   ./run_backbone.sh vit 1 a ewc  &
 #   wait
 #
-# Ngan sach 20 epoch/task, khong phai cat bot tuy tien: fine-tune tu trong so
-# pretrained hoi tu rat nhanh (1 epoch da dat val 97.6 o task 0), khac han train
-# head tu dau tren feature dong bang (can ~65 epoch). Voi 100 epoch thi mot run
-# ViT het ~14h tren T4 - vuot tran 12h cua mot phien Kaggle.
+# Ngan sach 30 epoch/task, patience 15.
+#
+# Lan chay dau dung 20/6 va lo ra hai van de. Mot: task 8 cham tran 20 epoch
+# (best_epoch=18, epochs_run=20) - ngan sach dang cat ngang truoc khi hoi tu.
+# Hai: patience 6 dung qua som, ma validation chi chua lop cua task hien tai nen
+# dung som la vo tinh chon dung checkpoint khop task moi nhat - voi 86M tham so
+# tu do thi do cung la checkpoint da dich chuyen xa nhat khoi task cu.
+#
+# Voi 100 epoch thi mot run ViT het ~14h tren T4, vuot tran 12h cua mot phien
+# Kaggle. 30 epoch la muc cao nhat con vua.
 set -eu
 
 BB=${1:-vit}
@@ -32,7 +38,7 @@ esac
 
 COMMON="--model_name $MODEL --data_augmentation $AUG --gpu $GPU
         --freeze_backbone False --backbone_lr 1e-5
-        --epochs 20 --early_stop_patience 6 --batch_size 64
+        --epochs 30 --early_stop_patience 15 --batch_size 64
         --seed 1993 --out_dir ./runs"
 
 MLP="--use_mlp True --mlp_act relu --mlp_hidden 512"
