@@ -82,6 +82,7 @@ def train_task(model, reg, tr, va, args, task, known_classes):
     best_acc, best_state, patience = -1.0, None, 0
     clf_sum = pen_sum = n_steps = 0.0
     val_curve, best_epoch = [], 0
+    t_ep0 = time.time()
 
     for epoch in range(args.epochs):
         model.train()
@@ -121,6 +122,14 @@ def train_task(model, reg, tr, va, args, task, known_classes):
                 if patience >= args.early_stop_patience:
                     print(f"  early stop @ epoch {epoch + 1} (val {best_acc:.2f} @ {best_epoch})")
                     break
+
+            # Khi fine-tune backbone mot task mat hang chuc phut ma khong in dong
+            # nao - nhin khong phan biet duoc dang chay voi treo.
+            if args.log_every and (epoch + 1) % args.log_every == 0:
+                el = time.time() - t_ep0
+                print(f"  ep {epoch + 1:3d}/{args.epochs}  val {acc:5.2f}  "
+                      f"best {best_acc:5.2f} @{best_epoch}  {el:.0f}s  "
+                      f"({el / (epoch + 1):.1f}s/ep)")
 
     if best_state is not None:
         model.load_state_dict(best_state)

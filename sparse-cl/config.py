@@ -154,6 +154,10 @@ def get_parser() -> argparse.ArgumentParser:
                         "all = cross-entropy tren toan bo lop da thay; khong co exemplar thi "
                         "lop cu chi xuat hien lam negative -> logit cua chung bi day xuong.")
     g.add_argument('--lr_schedule', type=str, default='cosine', choices=['cosine', 'none'])
+    g.add_argument('--log_every', type=int, default=5,
+                   help='In tien do sau moi N epoch. 0 = tat. Voi backbone dong bang mot '
+                        'task chi mat vai giay nen khong can, nhung khi fine-tune thi mot '
+                        'task mat hang chuc phut va khong co dong nao - nhin nhu treo.')
 
     # ----------------------------------------------------------------- cache
     g = p.add_argument_group('Feature cache')
