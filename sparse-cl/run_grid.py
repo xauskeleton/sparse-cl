@@ -68,10 +68,12 @@ def parse():
                    help="'all', 'a' (cau hinh 1,2,3), 'b' (4,5,6), hoac danh "
                         "sach so nhu '3,5'")
     p.add_argument('--regs', default='both', choices=['none', 'ewc', 'both'])
-    p.add_argument('--batch_size', type=int, default=0, help='0 = tu chon theo backbone')
+    p.add_argument('--batch_size', type=int, default=0,
+                   help='0 = tu chon: backbone dong bang 256 (nhu bang ket qua chinh), '
+                        'fine-tune thi theo VRAM (ResNet 128, ViT 64)')
     p.add_argument('--epochs', type=int, default=100)
-    p.add_argument('--patience', type=int, default=10)
-    p.add_argument('--seed', type=int, default=1993)
+    p.add_argument('--patience', type=int, default=20)
+    p.add_argument('--seeds', default='1993', help="mot hoac nhieu, vi du '1993,2023,2025'")
     p.add_argument('--gpu', type=int, default=0)
     p.add_argument('--freeze_backbone', default='False', choices=['True', 'False'])
     p.add_argument('--out_dir', default='./runs')
@@ -94,16 +96,20 @@ def pick_configs(spec):
 def main():
     a = parse()
     bb = BACKBONE[a.backbone]
-    batch = a.batch_size or bb['batch']
+    frozen = a.freeze_backbone == 'True'
+    # Backbone dong bang thi feature da cache, batch khong bi VRAM chan -> dung 256
+    # nhu bang ket qua chinh. Fine-tune thi batch phai theo VRAM.
+    batch = a.batch_size or (256 if frozen else bb['batch'])
     keys = pick_configs(a.configs)
     regs = ['none', 'ewc'] if a.regs == 'both' else [a.regs]
+    seeds = [s.strip() for s in a.seeds.split(',')]
 
     common = [
         '--model_name', bb['model_name'], '--data_augmentation', bb['aug'],
         '--gpu', str(a.gpu), '--freeze_backbone', a.freeze_backbone,
         '--backbone_lr', '1e-5', '--epochs', str(a.epochs),
         '--early_stop_patience', str(a.patience), '--batch_size', str(batch),
-        '--seed', str(a.seed), '--out_dir', a.out_dir,
+        '--out_dir', a.out_dir,
     ]
 
     log = open(a.log, 'w', encoding='utf-8') if a.log else None
@@ -113,30 +119,51 @@ def main():
         if log:
             log.write(line + '\n'); log.flush()
 
-    emit(f"python   : {sys.executable}")
-    emit(f"backbone : {bb['model_name']} | batch {batch} | epochs {a.epochs} "
-         f"| patience {a.patience} | gpu {a.gpu}")
-    emit(f"cau hinh : {', '.join(keys)}")
-    emit(f"so run   : {len(keys) * len(regs)}\n")
+    # Voi backbone dong bang, cau hinh 1 va 3 khong co tham so nao hoc lien tuc:
+    # chieu dong bang, khong MLP, classifier chi THEM hang moi (hang cu duoc giu
+    # nguyen va --ce_scope new khong cho chung nhan gradient). Hinh phat luon bang
+    # 0 va validate() chan thang. Bo qua thay vi de bao loi giua luoi.
+    def skip(k, r):
+        if r == 'none' or not frozen:
+            return None
+        flags = CFG[k]
+        has_mlp = '--use_mlp' in flags and flags[flags.index('--use_mlp') + 1] == 'True'
+        proj_continual = 'continual' in flags
+        if not has_mlp and not proj_continual:
+            return 'backbone dong bang + khong MLP + chieu khong hoc tiep -> EWC luon = 0'
+        return None
 
-    failed, t0 = [], time.time()
+    jobs = [(k, r, s) for k in keys for r in regs for s in seeds if not skip(k, r)]
+    emit(f"python   : {sys.executable}")
+    emit(f"backbone : {bb['model_name']} | {'dong bang' if frozen else 'fine-tune'} "
+         f"| batch {batch} | epochs {a.epochs} | patience {a.patience} | gpu {a.gpu}")
+    emit(f"cau hinh : {', '.join(keys)}")
+    emit(f"seeds    : {', '.join(seeds)}")
     for k in keys:
         for r in regs:
-            # -u: khong dem stdout, neu khong log trong hang chuc phut du dang chay
-            cmd = [sys.executable, '-u', 'train.py'] + common + CFG[k] + REG[r]
-            emit(f"===== {a.backbone} | {k} | {' '.join(REG[r])} | gpu {a.gpu} =====")
-            if a.dry_run:
-                emit('  ' + ' '.join(cmd[1:]))
-                continue
-            # Doc tung dong de log day ngay, thay vi doi tien trinh ket thuc.
-            p = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, text=True,
-                                 encoding='utf-8', errors='replace', bufsize=1)
-            for line in p.stdout:
-                emit(line.rstrip())
-            if p.wait() != 0:
-                emit(f"LOI: {k} {r} -> ma thoat {p.returncode}")
-                failed.append(f"{k} {r}")
+            why = skip(k, r)
+            if why:
+                emit(f"BO QUA   : {k} + {r} ({why})")
+    emit(f"so run   : {len(jobs)}\n")
+
+    failed, t0 = [], time.time()
+    for k, r, s in jobs:
+        # -u: khong dem stdout, neu khong log trong hang chuc phut du dang chay
+        cmd = ([sys.executable, '-u', 'train.py'] + common + ['--seed', s]
+               + CFG[k] + REG[r])
+        emit(f"===== {a.backbone} | {k} | {' '.join(REG[r])} | seed {s} =====")
+        if a.dry_run:
+            emit('  ' + ' '.join(cmd[1:]))
+            continue
+        # Doc tung dong de log day ngay, thay vi doi tien trinh ket thuc.
+        p = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, text=True,
+                             encoding='utf-8', errors='replace', bufsize=1)
+        for line in p.stdout:
+            emit(line.rstrip())
+        if p.wait() != 0:
+            emit(f"LOI: {k} {r} seed {s} -> ma thoat {p.returncode}")
+            failed.append(f"{k} {r} s{s}")
 
     emit(f"\nXONG: {a.backbone} | cau hinh {a.configs} | reg {a.regs} "
          f"| {(time.time() - t0) / 3600:.2f} gio")

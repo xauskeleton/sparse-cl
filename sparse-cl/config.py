@@ -1,3 +1,5 @@
+
+
 """
 Cau hinh model.
 
@@ -141,13 +143,13 @@ def get_parser() -> argparse.ArgumentParser:
     g.add_argument('--optimizer', type=str, default='adamw', choices=['adamw', 'sgd'])
     g.add_argument('--val_ratio', type=float, default=0.1,
                    help='Tach tu task hien tai de early stopping. 0 = tat.')
-    g.add_argument('--early_stop_patience', type=int, default=10,
-                   help='So epoch khong cai thien truoc khi dung. Luu y: validation chi '
-                        'chua lop cua TASK HIEN TAI, nen tieu chi nay do muc khop task moi '
-                        'chu khong do quen task cu - dat thap la vo tinh chon som dung '
-                        'checkpoint khop task moi nhat.\n'
-                        'Bang ket qua chinh (92 run, ca hai backbone) chay o 20; muon so '
-                        'truc tiep voi no thi phai dat 20.')
+    g.add_argument('--early_stop_patience', type=int, default=20,
+                   help='So epoch khong cai thien truoc khi dung. Bang ket qua chinh chay o '
+                        '20, nen giu 20 de moi thu so truc tiep duoc voi nhau.\n'
+                        'Luu y: validation chi chua lop cua TASK HIEN TAI, nen tieu chi nay '
+                        'do muc khop task moi chu khong do quen task cu - dat thap la vo '
+                        'tinh chon som dung checkpoint khop task moi nhat. Quet lamda tren '
+                        'ResNet tung chay o 10 va vi the che mat mot hieu ung that.')
     g.add_argument('--ce_scope', type=str, default='new', choices=['new', 'all'],
                    help="new = cross-entropy CHI tren logit cua lop moi (quy uoc PyCIL/EWC-DR); "
                         "lop cu khong nhan gradient nen khong bi day xuong.\n"
@@ -302,8 +304,17 @@ def _warn(msg):
     print(f"[config] CANH BAO: {msg}")
 
 
+# Normalization "dung" cho tung backbone. Chay lech gia tri nay khong bao loi -
+# no chi lam feature khac di, va vi tag cache chua data_augmentation nen no con
+# sinh ra mot cache RIENG. 15 run EWC tren ResNet da tung chay nham 'vit' va vi
+# the khong so duoc voi baseline nao. Ghi vao ten file de lan sau nhin la thay.
+_AUG_OF = {'vit_base_patch16_224': 'vit', 'resnet50': 'resnet'}
+
+
 def _auto_name(args):
     parts = [args.dataset, args.model_name.split('_')[0]]
+    if args.data_augmentation != _AUG_OF.get(args.model_name, args.data_augmentation):
+        parts.append(f"aug-{args.data_augmentation}")
     if args.expand_dim == 0:
         parts.append('no-expand')
     else:
@@ -317,10 +328,13 @@ def _auto_name(args):
     # lr phai co trong ten: khong thi quet projection_lr se GHI DE cung mot file
     # va chi ban chay cuoi song sot, khong bao loi gi.
     parts.append(f"lr{args.lr:g}")
-    # epochs cung vay: quet ngan sach epoch ma khong co no trong ten thi moi muc
-    # ghi de len muc truoc. Chi them khi khac mac dinh, de ten cu khong doi.
+    # Ngan sach epoch va patience cung vay: khong co trong ten thi hai giao thuc
+    # khac nhau ghi de len nhau im lang. Chi them khi khac mac dinh, de ten cu
+    # khong doi.
     if args.epochs != 100:
         parts.append(f"ep{args.epochs}")
+    if args.early_stop_patience != 20:
+        parts.append(f"pat{args.early_stop_patience}")
     if args.proj_bias != 'none':
         parts.append(f"pb-{args.proj_bias}")
     if args.train_projection or args.proj_bias == 'learn':
