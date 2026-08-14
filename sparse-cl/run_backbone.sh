@@ -13,8 +13,11 @@
 #   ./run_backbone.sh vit 1 a ewc  &
 #   wait
 #
-# Ngan sach 100 epoch/task, patience 15 - dung giao thick cua bang backbone
-# dong bang, de hai cot so sanh duoc truc tiep.
+# Ngan sach 100 epoch/task, patience 10.
+#
+# LUU Y: bang ket qua chinh (92 run, ca ViT lan ResNet) chay o 100/20. Dat 10 o
+# day thi hai cot khong con so sanh duoc tuyet doi - phai so noi bo voi dong
+# frozen+Linear cua chinh luoi nay.
 #
 # Lan chay dau dung 20/6 va lo ra hai van de. Mot: task 8 cham tran 20 epoch
 # (best_epoch=18, epochs_run=20) - ngan sach cat ngang truoc khi hoi tu. Hai:
@@ -41,7 +44,7 @@ esac
 
 COMMON="--model_name $MODEL --data_augmentation $AUG --gpu $GPU
         --freeze_backbone False --backbone_lr 1e-5
-        --epochs 100 --early_stop_patience 15 --batch_size 64
+        --epochs 100 --early_stop_patience 10 --batch_size 64
         --seed 1993 --out_dir ./runs"
 
 MLP="--use_mlp True --mlp_act relu --mlp_hidden 512"

@@ -141,11 +141,13 @@ def get_parser() -> argparse.ArgumentParser:
     g.add_argument('--optimizer', type=str, default='adamw', choices=['adamw', 'sgd'])
     g.add_argument('--val_ratio', type=float, default=0.1,
                    help='Tach tu task hien tai de early stopping. 0 = tat.')
-    g.add_argument('--early_stop_patience', type=int, default=15,
+    g.add_argument('--early_stop_patience', type=int, default=10,
                    help='So epoch khong cai thien truoc khi dung. Luu y: validation chi '
                         'chua lop cua TASK HIEN TAI, nen tieu chi nay do muc khop task moi '
                         'chu khong do quen task cu - dat thap la vo tinh chon som dung '
-                        'checkpoint khop task moi nhat.')
+                        'checkpoint khop task moi nhat.\n'
+                        'Bang ket qua chinh (92 run, ca hai backbone) chay o 20; muon so '
+                        'truc tiep voi no thi phai dat 20.')
     g.add_argument('--ce_scope', type=str, default='new', choices=['new', 'all'],
                    help="new = cross-entropy CHI tren logit cua lop moi (quy uoc PyCIL/EWC-DR); "
                         "lop cu khong nhan gradient nen khong bi day xuong.\n"
