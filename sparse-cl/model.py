@@ -417,9 +417,33 @@ class Regularizer:
                         omega[n] += p.grad.detach().pow(2)
                 steps += 1
 
+        for n in omega:
+            omega[n] /= max(steps, 1)
+
+        # Phan vi cua omega TRUOC KHI cat. omegamax chi la tran, nen phan bo tho
+        # nay cho biet mot tran bat ky se cat mat bao nhieu - doc mot lan la biet
+        # nen dat omegamax o dau, khong phai quet mu tung gia tri (moi run
+        # backbone mat hang gio).
+        # Lay mau vi tong so tham so co the toi 86M, torch.quantile co gioi han.
+        g = torch.Generator(device=device).manual_seed(0)
+        sample = torch.cat([
+            v.flatten()[torch.randint(v.numel(), (min(v.numel(), 200_000),),
+                                      device=device, generator=g)]
+            for v in omega.values()
+        ]).float()
+        # Bo cac o bang 0 truoc khi tinh phan vi. Voi sparse_mask thi ~85% o cua
+        # ma tran chieu bi mask nen gradient bang 0 THEO CAU TRUC, khong phai vi
+        # khong quan trong - de nguyen thi p50 luon ra 0 va chi so vo dung.
+        nz = sample[sample > 0]
+        self.omega_q = {'zero': round((1 - nz.numel() / max(sample.numel(), 1)), 4)}
+        if nz.numel():
+            q = torch.tensor([0.5, 0.9, 0.99, 1.0], device=device)
+            self.omega_q.update(zip(('p50', 'p90', 'p99', 'max'),
+                                    torch.quantile(nz, q).tolist()))
+
         cap = torch.tensor(args.omegamax, device=device)
         for n in omega:
-            omega[n] = torch.min(omega[n] / max(steps, 1), cap)
+            omega[n] = torch.min(omega[n], cap)
 
         # tron voi omega cu; [:len(cu)] xu ly truong hop head no ra
         if self.omega is None:

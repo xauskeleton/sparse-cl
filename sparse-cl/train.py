@@ -154,6 +154,10 @@ def diagnostics(model, reg, args):
         # >0.5 nghia la moi omega bang nhau -> EWC-DR thoai hoa thanh L2 thuan
         sat = [(v >= args.omegamax * 0.999).float().mean().item() for v in reg.omega.values()]
         d['omega_saturated'] = round(float(np.mean(sat)), 4)
+        # phan vi TRUOC khi cat: doc mot lan la biet nen dat omegamax o dau,
+        # khong phai quet mu tung gia tri (moi run backbone mat hang gio)
+        for k, v in getattr(reg, 'omega_q', {}).items():
+            d[f'omega_{k}'] = float(f'{v:.3g}')
     return d
 
 
