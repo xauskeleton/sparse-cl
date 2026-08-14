@@ -37,3 +37,7 @@ Thumbs.db
 
 # Claude Code - cai dat cuc bo cua tung may
 .claude/settings.local.json
+
+# Log chay - sinh lai duoc, khong track
+log_*.txt
+*/log_*.txt
