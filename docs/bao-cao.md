@@ -60,6 +60,39 @@ after task    1      2      3      4      5      6      7      8      9     10
 | `Ā` | trung bình cả dãy — model tốt tới đâu xuyên suốt quá trình | cao hơn tốt hơn |
 | `Forgetting` | trung bình mức sụt từ đỉnh của mỗi task cũ | thấp hơn tốt hơn |
 
+## Bảng tổng hợp — ResNet-50, hai chế độ backbone
+
+Bỏ các cấu hình có MLP head (thua ở cả sáu cặp so sánh, xem mục Ablation).
+
+| Backbone | # | Projection | A_T | Ā | Forgetting | A_T | Ā | Forgetting |
+|---|:-:|---|---:|---:|---:|---:|---:|---:|
+| | | | **no regularizer** | | | **+ EWC-DR (λ=100)** | | |
+| **đóng băng** | 1 | none | 58.61 ± 1.23 | 71.97 ± 1.16 | 14.86 ± 2.04 | n/a | n/a | n/a |
+| | 3 | frozen | **62.46 ± 1.80** | **74.39 ± 1.65** | 15.00 ± 3.33 | n/a | n/a | n/a |
+| | 5 | learnable | 44.86 ± 2.86 | 63.79 ± 2.97 | 43.07 ± 10.55 | 45.13 ± 2.12 | 64.09 ± 0.44 | 37.84 ± 5.85 |
+| **fine-tune** | 1 | none | 48.26 | 64.89 | 4.56 | 49.11 | 64.89 | 4.20 |
+| | 3 | frozen | 50.87 | 67.38 | 4.96 | 54.84 | 68.80 | 3.51 |
+| | 5 | learnable | 24.92 | 46.55 | 27.57 | 33.91 | 50.06 | 31.33 |
+
+Hàng `đóng băng`: 3 seeds, batch 256, một run 47 giây.
+Hàng `fine-tune`: 1 seed, batch 128, một run ~2.3 giờ. Batch khác nhau vì VRAM.
+
+**Kết luận về projection giữ nguyên qua cả hai chế độ**, và giữ gần như y hệt về độ lớn:
+
+| | Δ Ā khi thêm frozen projection | Δ Ā khi cho projection học |
+|---|---:|---:|
+| backbone đóng băng | **+2.42** | −10.60 |
+| backbone fine-tune | **+2.49** | **−20.83** |
+
+Thứ tự `frozen > none > learnable` không đổi. Đây là xác nhận mạnh nhất cho kết quả dương duy
+nhất của nghiên cứu — nó độc lập với việc backbone có học hay không.
+
+Ngược lại, tác hại của việc cho phép chiếu học được **nặng gấp đôi** khi backbone cũng học.
+Hai nguồn trôi cộng dồn chứ không bù trừ.
+
+**Mở backbone thua đóng băng ở mọi cấu hình**, kể cả khi có EWC-DR: config 3 mất 5.59 điểm Ā
+(68.80 so với 74.39) và tốn 8000 giây thay vì 47.
+
 ## Bảng kết quả chính — ViT-B/16
 
 | # | Projection | Head | A_T | Ā | Forgetting | A_T | Ā | Forgetting |
@@ -249,9 +282,11 @@ Câu hỏi: mở backbone có đáng không. Chạy trên ResNet-50, 100 epochs,
 | 1 none + Linear | fine-tune | 48.26 | **64.89** | 4.56 | 9392 s |
 | 3 frozen + Linear | đóng băng | 62.46 | 74.39 | 15.00 | 47 s |
 | 3 frozen + Linear | fine-tune | 50.87 | **67.38** | 4.96 | 8049 s |
+| 5 learnable + Linear | đóng băng | 44.86 | 63.79 | 43.07 | 47 s |
+| 5 learnable + Linear | fine-tune | 24.92 | **46.55** | 27.57 | 7434 s |
 
-Cả hai cấu hình mất đúng **7 điểm Ā**, với chi phí gấp **170–200 lần**. Kết luận đứng trên
-cấu hình tốt nhất chứ không chỉ trên cấu hình yếu.
+Config 1 và 3 mất đúng **7 điểm Ā**, config 5 mất **17.24**, với chi phí gấp **160–200 lần**.
+Kết luận đứng trên cấu hình tốt nhất chứ không chỉ trên cấu hình yếu.
 
 ### Forgetting thấp không phải thành tích
 
@@ -278,28 +313,43 @@ chỉ chứa mẫu của task hiện tại.
 
 ### EWC-DR ở chế độ fine-tune
 
-Trên config 1, EWC-DR λ=100 cho Ā **64.89** — giống hệt baseline tới hai chữ số thập phân.
-`pen/clf = 0.03`, tức hình phạt gần như không tồn tại.
+Ở đây EWC-DR **có tác dụng**, và tác dụng tăng theo lượng tham số trôi:
 
-Quét λ trên config 3 (chạy ở 64×64 cho rẻ, chỉ để xếp hạng):
+| Config | Tham số trôi | Δ A_T | Δ Ā |
+|---|---|---:|---:|
+| 1 none | backbone 23.5 M | +0.85 | +0.00 |
+| 3 frozen | backbone 23.5 M | +3.97 | +1.42 |
+| 5 learnable | backbone 23.5 M + projection 20.5 M | **+8.99** | **+3.51** |
+
+Đây là quan hệ đơn điệu sạch nhất tìm được cho EWC-DR trong toàn bộ nghiên cứu, và nó khớp
+đúng cơ chế: hình phạt chống trôi thì càng có nhiều thứ trôi càng có ích.
+
+Nhưng nó vẫn không đủ để bù cho việc mở backbone. Config 3 với EWC-DR đạt Ā 68.80, vẫn kém
+**5.59 điểm** so với 74.39 của chính cấu hình đó khi backbone đóng băng.
+
+### Một quét λ cho kết quả sai, và vì sao
+
+Trước khi có số liệu trên, một sweep λ được chạy ở 64×64 với 20 epoch cho rẻ:
 
 | λ | 0 | 10 | 30 | 100 | 1000 |
 |---|---:|---:|---:|---:|---:|
 | Ā | 57.62 | 57.78 | 57.71 | 57.65 | 57.08 |
 
-Toàn bộ dải nằm trong 0.7 điểm. Không có đỉnh.
+Toàn bộ dải nằm trong 0.7 điểm, không có đỉnh, và kết luận rút ra khi đó là "EWC-DR không làm
+gì ở chế độ fine-tune". Kết luận đó **sai**.
 
-Hai chỉ số chẩn đoán giải thích. `pen/clf` chỉ 0.024 ngay cả ở λ=1000. Và
-`omega_saturated ≈ 0.52` ở mọi λ — hơn một nửa tham số chạm trần `omegamax = 1e-4`, nên ω
-mất khả năng phân biệt tham số quan trọng với không quan trọng, và **EWC-DR thoái hoá thành
-L2 thuần**.
+Hai lý do, và cả hai đều là bài học về cách rút gọn thí nghiệm:
 
-Nguyên nhân sâu hơn: hình phạt tỉ lệ với `(θ−θ*)²`, mà `backbone_lr = 1e-5` khiến backbone
-gần như không dịch chuyển. Repo gốc dùng lr 0.1 — họ hãm một mô hình đang chạy rất nhanh,
-còn ở đây ta hãm một mô hình gần như đứng yên.
+`pen/clf` ở 64px chỉ 0.0045, so với 0.05–0.085 ở 224px. Ảnh nhỏ làm feature yếu đi và thang
+gradient đổi theo.
 
-Ở 224×224 thì khác: `pen/clf` đạt 0.05–0.085 và EWC-DR dẫn 1.5–1.9 điểm `A_t` từ task 4 trở
-đi trên config 3. Chi tiết này chưa hoàn tất tại thời điểm viết.
+Quan trọng hơn: **20 epoch thì trọng số chưa trôi đủ để có gì mà phạt**. Hình phạt tỉ lệ với
+`(θ−θ*)²`, nên cắt ngân sách epoch không phải phép sàng lọc trung tính cho λ — nó bóp chính
+đại lượng mà λ tác động lên. Rút gọn theo chiều nào cũng được, trừ chiều đó.
+
+`omega_saturated ≈ 0.52` ở mọi λ — hơn một nửa tham số chạm trần `omegamax = 1e-4`, nên ω mất
+khả năng phân biệt và **EWC-DR thoái hoá gần thành L2 thuần**. Hạn chế này vẫn còn ở các run
+224px (0.54–0.64), nên con số +3.51 nhiều khả năng là cận dưới.
 
 ## Đối chiếu với hai repo gốc
 
@@ -409,10 +459,13 @@ bù trừ.
 Đóng góp dương duy nhất là bản thân phép chiếu thưa: +2.24 Ā trên ViT và +2.42 trên ResNet,
 tái lập được trên hai backbone.
 
-EWC-DR có tác dụng đo được nhưng không nhất quán giữa hai backbone, chỉ giúp ở các cấu hình
-vốn đã kém, và không đưa cấu hình nào vượt qua được `frozen + Linear`.
+EWC-DR có tác dụng đo được nhưng không nhất quán giữa hai backbone khi backbone đóng băng.
+Ở chế độ fine-tune thì nó nhất quán và đơn điệu theo lượng tham số trôi (+0.00 / +1.42 /
++3.51 Ā cho config 1 / 3 / 5) — nhưng vẫn không đưa cấu hình nào vượt qua được
+`frozen + Linear` với backbone đóng băng.
 
-Fine-tune backbone làm tệ đi 7 điểm với chi phí gấp 170–200 lần.
+Fine-tune backbone làm tệ đi 7 điểm ở hai cấu hình tốt và 17 điểm ở cấu hình có projection
+học được, với chi phí gấp 160–200 lần.
 
 Khoảng cách còn lại so với Fly-CL (3.50 điểm Ā) nằm hoàn toàn ở **cách giải head**, không ở
 representation — bằng chứng là task 1 hai bên trùng khít 97.70. Hướng đáng theo tiếp là thay
