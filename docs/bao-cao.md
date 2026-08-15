@@ -62,20 +62,28 @@ after task    1      2      3      4      5      6      7      8      9     10
 
 ## Bảng tổng hợp — ResNet-50, hai chế độ backbone
 
-Bỏ các cấu hình có MLP head (thua ở cả sáu cặp so sánh, xem mục Ablation).
-
-| Backbone | # | Projection | A_T | Ā | Forgetting | A_T | Ā | Forgetting |
-|---|:-:|---|---:|---:|---:|---:|---:|---:|
-| | | | **no regularizer** | | | **+ EWC-DR (λ=100)** | | |
-| **đóng băng** | 1 | none | 58.61 ± 1.23 | 71.97 ± 1.16 | 14.86 ± 2.04 | n/a | n/a | n/a |
-| | 3 | frozen | **62.46 ± 1.80** | **74.39 ± 1.65** | 15.00 ± 3.33 | n/a | n/a | n/a |
-| | 5 | learnable | 44.86 ± 2.86 | 63.79 ± 2.97 | 43.07 ± 10.55 | 45.13 ± 2.12 | 64.09 ± 0.44 | 37.84 ± 5.85 |
-| **fine-tune** | 1 | none | 48.26 | 64.89 | 4.56 | 49.11 | 64.89 | 4.20 |
-| | 3 | frozen | 50.87 | 67.38 | 4.96 | 54.84 | 68.80 | 3.51 |
-| | 5 | learnable | 24.92 | 46.55 | 27.57 | 33.91 | 50.06 | 31.33 |
+| Backbone | # | Projection | Head | A_T | Ā | Forgetting | A_T | Ā | Forgetting |
+|---|:-:|---|---|---:|---:|---:|---:|---:|---:|
+| | | | | **no regularizer** | | | **+ EWC-DR (λ=100)** | | |
+| **đóng băng** | 1 | none | Linear | 58.61 ± 1.23 | 71.97 ± 1.16 | 14.86 ± 2.04 | n/a | n/a | n/a |
+| | 2 | none | MLP | 52.90 ± 1.40 | 65.89 ± 1.64 | 28.10 ± 2.27 | 57.07 ± 0.56 | 71.27 ± 1.71 | 17.92 ± 5.95 |
+| | 3 | frozen | Linear | **62.46 ± 1.80** | **74.39 ± 1.65** | 15.00 ± 3.33 | n/a | n/a | n/a |
+| | 4 | frozen | MLP | 55.14 ± 0.86 | 68.08 ± 2.21 | 28.52 ± 2.55 | 54.48 ± 2.47 | 70.28 ± 1.80 | 26.57 ± 5.76 |
+| | 5 | learnable | Linear | 44.86 ± 2.86 | 63.79 ± 2.97 | 43.07 ± 10.55 | 45.13 ± 2.12 | 64.09 ± 0.44 | 37.84 ± 5.85 |
+| | 6 | learnable | MLP | 32.07 ± 3.71 | 51.98 ± 2.23 | 64.19 ± 4.55 | 32.88 ± 3.57 | 59.11 ± 1.74 | 53.87 ± 3.98 |
+| **fine-tune** | 1 | none | Linear | 48.26 | 64.89 | 4.56 | 49.11 | 64.89 | 4.20 |
+| | 2 | none | MLP | — | — | — | — | — | — |
+| | 3 | frozen | Linear | 50.87 | 67.38 | 4.96 | 54.84 | 68.80 | 3.51 |
+| | 4 | frozen | MLP | — | — | — | — | — | — |
+| | 5 | learnable | Linear | 24.92 | 46.55 | 27.57 | 33.91 | 50.06 | 31.33 |
+| | 6 | learnable | MLP | — | — | — | — | — | — |
 
 Hàng `đóng băng`: 3 seeds, batch 256, một run 47 giây.
-Hàng `fine-tune`: 1 seed, batch 128, một run ~2.3 giờ. Batch khác nhau vì VRAM.
+Hàng `fine-tune`: 1 seed, batch 128, một run ~2.3 giờ. Batch khác nhau vì giới hạn VRAM.
+
+`—` = chưa chạy. Ba cấu hình MLP ở chế độ fine-tune còn trống, lấp đủ mất khoảng 14 giờ.
+Đây là chỗ duy nhất còn có thể bất ngờ: EWC-DR ở chế độ fine-tune tăng tác dụng theo lượng
+tham số trôi, mà MLP thêm 1.05 M tham số trôi nữa.
 
 **Kết luận về projection giữ nguyên qua cả hai chế độ**, và giữ gần như y hệt về độ lớn:
 
