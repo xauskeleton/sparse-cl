@@ -15,6 +15,11 @@ import argparse
 import glob
 import json
 import statistics as st
+import sys
+
+# Console Windows mac dinh cp1252, khong in duoc 'A' co macron trong tieu de bang.
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 AUG_OF = {'vit_base_patch16_224': 'vit', 'resnet50': 'resnet'}
 ORDER = [('none', 'Linear'), ('none', 'MLP'), ('frozen', 'Linear'),
@@ -29,6 +34,11 @@ def parse():
     p.add_argument('--epochs', default='100')
     p.add_argument('--patience', default='20')
     p.add_argument('--lamda', type=float, default=100.0)
+    p.add_argument('--coding_level', type=float, default=0.1)
+    p.add_argument('--synaptic_degree', default='300')
+    p.add_argument('--projection_lr', type=float, default=0.005)
+    p.add_argument('--seeds', default='1993,2023,2025',
+                   help='chi lay cac seed nay; "all" de lay het')
     p.add_argument('--runs', default='runs')
     return p.parse_args()
 
@@ -36,11 +46,14 @@ def parse():
 def collect(a):
     model = 'resnet50' if a.backbone == 'resnet' else 'vit_base_patch16_224'
     want_frozen = 'False' if a.tuned else 'True'
+    seeds = None if a.seeds == 'all' else set(a.seeds.split(','))
     rows, seen = {}, []
     for f in sorted(glob.glob(f'{a.runs}/*.json')):
         d = json.load(open(f))
         g, m = d['args'], d['metrics']
         if not d.get('complete', True):
+            continue
+        if seeds is not None and g['seed'] not in seeds:
             continue
         if (g['model_name'] != model or g['freeze_backbone'] != want_frozen
                 or g['data_augmentation'] != AUG_OF[model]
@@ -49,6 +62,16 @@ def collect(a):
         if g['cl_reg'] != 'none' and float(g['lamda']) != a.lamda:
             continue
         if g['expand_dim'] not in ('0', '10000'):
+            continue
+        # Cac sweep phu (coding_level, synaptic_degree, proj_bias) deu co
+        # projection dong bang + head tuyen tinh, nen neu khong loc thi chung
+        # roi het vao mot o va lam hong trung binh cua o do.
+        if g['expand_dim'] != '0' and (float(g['coding_level']) != a.coding_level
+                                       or g['synaptic_degree'] != a.synaptic_degree):
+            continue
+        if g.get('proj_bias', 'none') != 'none':
+            continue
+        if g['train_projection'] == 'True' and float(g['projection_lr']) != a.projection_lr:
             continue
         proj = ('none' if g['expand_dim'] == '0'
                 else 'learnable' if g['train_projection'] == 'True' else 'frozen')

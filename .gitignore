@@ -41,3 +41,4 @@ Thumbs.db
 # Log chay - sinh lai duoc, khong track
 log_*.txt
 */log_*.txt
+*.rar
