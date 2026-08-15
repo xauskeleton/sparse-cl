@@ -57,10 +57,9 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def build_transform(dataset, data_augmentation):
+def build_transform(dataset, data_augmentation, input_size=224):
     """Giong het Fly-CL: CIFAR resize thang 224, cac dataset khac resize 256 roi crop."""
     from torchvision import transforms
-    input_size = 224
     is_cifar = dataset == 'CIFAR-100'
     size = input_size if is_cifar else int(256 / 224 * input_size)
     t = [
@@ -119,6 +118,8 @@ def cached_features(args, backbone, device):
     """
     os.makedirs(args.cache_dir, exist_ok=True)
     tag = f"{args.dataset}_{args.model_name}_{args.data_augmentation}"
+    if getattr(args, 'image_size', 224) != 224:
+        tag += f"_px{args.image_size}"
     path = os.path.join(args.cache_dir, f"{tag}.pt")
 
     if os.path.exists(path):
@@ -127,7 +128,8 @@ def cached_features(args, backbone, device):
     else:
         if backbone is None:
             raise RuntimeError("Chua co cache ma khong truyen backbone de trich.")
-        trsf = build_transform(args.dataset, args.data_augmentation)
+        trsf = build_transform(args.dataset, args.data_augmentation,
+                               getattr(args, 'image_size', 224))
         tr, te = load_raw(args.dataset, args.root, trsf)
         Xtr, Ytr = _extract(backbone, tr, device, args.batch_size, 'trich train')
         Xte, Yte = _extract(backbone, te, device, args.batch_size, 'trich test ')
@@ -270,7 +272,7 @@ def _pil_bicubic_matrix(in_size, out_size, device):
     return torch.tensor(m, dtype=torch.float32, device=device)
 
 
-def make_preprocess(args, device, in_size=32, out_size=224):
+def make_preprocess(args, device, in_size=32, out_size=None):
     """uint8 [B,3,32,32] -> float [B,3,224,224] da chuan hoa, lam het tren GPU.
 
     Tuong duong build_transform() nhung khong qua PIL/CPU: DataLoader worker tren
@@ -284,6 +286,7 @@ def make_preprocess(args, device, in_size=32, out_size=224):
     """
     if args.data_augmentation not in _NORM:
         raise ValueError(f"data_augmentation khong ho tro duong anh: {args.data_augmentation}")
+    out_size = out_size or getattr(args, 'image_size', 224)
     mean, std = (torch.tensor(v, device=device).view(1, 3, 1, 1)
                  for v in _NORM[args.data_augmentation])
     M = _pil_bicubic_matrix(in_size, out_size, device)

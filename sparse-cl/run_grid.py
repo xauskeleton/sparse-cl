@@ -47,9 +47,11 @@ CFG = {
 }
 GROUPS = {'a': ['1', '2', '3'], 'b': ['4', '5', '6'], 'all': list('123456')}
 
-# lamda=100 lay tu sweep {1,10,100,1000,10000} tren ViT backbone dong bang.
-REG = {'none': ['--cl_reg', 'none'],
-       'ewc': ['--cl_reg', 'ewc_dr', '--lamda', '100']}
+# lamda=100 lay tu sweep {1,10,100,1000,10000} tren ViT backbone DONG BANG. No
+# khong chuyen sang che do fine-tune: do duoc pen/clf = 0.03 o day, thap hon dai
+# muc tieu 0.1-1 khoang 30 lan, vi tap bao ve doi tu projection/MLP (gradient
+# lon) sang 23.5M tham so backbone chay o lr 1e-5 (gradient nho hon nhieu).
+DEFAULT_LAMDA = 100.0
 
 # Batch theo backbone, chon theo VRAM do duoc khi fine-tune toan bo: ResNet-50
 # het 5.79 GiB o 128, ViT-B/16 het 5.56 GiB o 64 (gap doi la ~11 GiB, sat tran
@@ -68,9 +70,15 @@ def parse():
                    help="'all', 'a' (cau hinh 1,2,3), 'b' (4,5,6), hoac danh "
                         "sach so nhu '3,5'")
     p.add_argument('--regs', default='both', choices=['none', 'ewc', 'both'])
+    p.add_argument('--lamda', default=str(DEFAULT_LAMDA),
+                   help="trong so hinh phat EWC; nhieu gia tri thi cach nhau bang dau "
+                        "phay de quet, vi du '1000,3000,10000'")
     p.add_argument('--batch_size', type=int, default=0,
                    help='0 = tu chon: backbone dong bang 256 (nhu bang ket qua chinh), '
                         'fine-tune thi theo VRAM (ResNet 128, ViT 64)')
+    p.add_argument('--image_size', type=int, default=224,
+                   help='chi ResNet doi duoc; 112 nhanh gap 4 nhung feature khac di nen '
+                        'ket qua khong so duoc voi bang chay o 224')
     p.add_argument('--epochs', type=int, default=100)
     p.add_argument('--patience', type=int, default=20)
     p.add_argument('--seeds', default='1993', help="mot hoac nhieu, vi du '1993,2023,2025'")
@@ -101,12 +109,16 @@ def main():
     # nhu bang ket qua chinh. Fine-tune thi batch phai theo VRAM.
     batch = a.batch_size or (256 if frozen else bb['batch'])
     keys = pick_configs(a.configs)
-    regs = ['none', 'ewc'] if a.regs == 'both' else [a.regs]
     seeds = [s.strip() for s in a.seeds.split(',')]
+    lams = [l.strip() for l in a.lamda.split(',')]
+    # 'none' khong dung lamda -> chi mot muc, tranh chay trung y het n lan
+    regs = ([('none', None)] if a.regs in ('none', 'both') else []) \
+        + ([('ewc', l) for l in lams] if a.regs in ('ewc', 'both') else [])
 
     common = [
         '--model_name', bb['model_name'], '--data_augmentation', bb['aug'],
         '--gpu', str(a.gpu), '--freeze_backbone', a.freeze_backbone,
+        '--image_size', str(a.image_size),
         '--backbone_lr', '1e-5', '--epochs', str(a.epochs),
         '--early_stop_patience', str(a.patience), '--batch_size', str(batch),
         '--out_dir', a.out_dir,
@@ -123,6 +135,9 @@ def main():
     # chieu dong bang, khong MLP, classifier chi THEM hang moi (hang cu duoc giu
     # nguyen va --ce_scope new khong cho chung nhan gradient). Hinh phat luon bang
     # 0 va validate() chan thang. Bo qua thay vi de bao loi giua luoi.
+    def flags_of(r, lam):
+        return ['--cl_reg', 'none'] if r == 'none' else ['--cl_reg', 'ewc_dr', '--lamda', lam]
+
     def skip(k, r):
         if r == 'none' or not frozen:
             return None
@@ -133,25 +148,28 @@ def main():
             return 'backbone dong bang + khong MLP + chieu khong hoc tiep -> EWC luon = 0'
         return None
 
-    jobs = [(k, r, s) for k in keys for r in regs for s in seeds if not skip(k, r)]
+    jobs = [(k, r, lam, s) for k in keys for r, lam in regs for s in seeds
+            if not skip(k, r)]
     emit(f"python   : {sys.executable}")
     emit(f"backbone : {bb['model_name']} | {'dong bang' if frozen else 'fine-tune'} "
          f"| batch {batch} | epochs {a.epochs} | patience {a.patience} | gpu {a.gpu}")
     emit(f"cau hinh : {', '.join(keys)}")
     emit(f"seeds    : {', '.join(seeds)}")
+    if any(r == 'ewc' for r, _ in regs):
+        emit(f"lamda    : {', '.join(lams)}")
     for k in keys:
-        for r in regs:
+        for r, _ in regs:
             why = skip(k, r)
             if why:
                 emit(f"BO QUA   : {k} + {r} ({why})")
     emit(f"so run   : {len(jobs)}\n")
 
     failed, t0 = [], time.time()
-    for k, r, s in jobs:
+    for k, r, lam, s in jobs:
         # -u: khong dem stdout, neu khong log trong hang chuc phut du dang chay
         cmd = ([sys.executable, '-u', 'train.py'] + common + ['--seed', s]
-               + CFG[k] + REG[r])
-        emit(f"===== {a.backbone} | {k} | {' '.join(REG[r])} | seed {s} =====")
+               + CFG[k] + flags_of(r, lam))
+        emit(f"===== {a.backbone} | {k} | {' '.join(flags_of(r, lam))} | seed {s} =====")
         if a.dry_run:
             emit('  ' + ' '.join(cmd[1:]))
             continue

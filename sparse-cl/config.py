@@ -173,6 +173,13 @@ def get_parser() -> argparse.ArgumentParser:
     g = p.add_argument_group('Misc')
     g.add_argument('--gpu', type=int, default=0)
     g.add_argument('--data_augmentation', default='vit', choices=[None, 'vit', 'resnet'])
+    g.add_argument('--image_size', type=int, default=224,
+                   help='Kich thuoc dua vao backbone. Chi phi ti le voi binh phuong: 112 '
+                        'nhanh gap 4, 160 gap 2.\n'
+                        'CHI dung duoc voi ResNet (tich chap hoan toan). ViT-B/16 can 224 '
+                        'cho positional embedding.\n'
+                        'Doi gia tri nay la doi feature, nen ket qua KHONG so duoc voi cac '
+                        'bang chay o 224 - chi dung de quet sieu tham so cho nhanh.')
     g.add_argument('--out_dir', type=str, default='./runs')
     g.add_argument('--exp_name', type=str, default=None)
 
@@ -188,6 +195,13 @@ def validate(args):
     # --- cache chi hop le khi feature khong doi ---
     # cache_features mac dinh True, nen day la HE QUA cua freeze_backbone chu khong
     # phai loi nguoi dung -> tu tat, khong bao loi tren mot gia tri mac dinh.
+    if args.image_size != 224 and 'vit' in args.model_name:
+        raise ValueError(
+            f"image_size={args.image_size} khong dung duoc voi {args.model_name}: "
+            "ViT chia anh thanh patch 16x16 va positional embedding co dinh cho luoi "
+            "14x14. Chi ResNet (tich chap hoan toan) doi duoc kich thuoc."
+        )
+
     if args.cache_features and not args.freeze_backbone:
         _warn("freeze_backbone=False -> tu dat cache_features=False "
               "(feature doi moi epoch nen khong cache duoc). Mot run se het vai gio "
@@ -315,6 +329,8 @@ def _auto_name(args):
     parts = [args.dataset, args.model_name.split('_')[0]]
     if args.data_augmentation != _AUG_OF.get(args.model_name, args.data_augmentation):
         parts.append(f"aug-{args.data_augmentation}")
+    if getattr(args, 'image_size', 224) != 224:
+        parts.append(f"px{args.image_size}")
     if args.expand_dim == 0:
         parts.append('no-expand')
     else:
