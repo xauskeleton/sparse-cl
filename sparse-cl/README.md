@@ -28,7 +28,8 @@ lên các tham số học liên tục).
 | `train.py` | Vòng lặp task, early stopping, EWC-DR, metrics + chẩn đoán |
 | `run_grid.py` | Chạy nhiều cấu hình / seed / λ trong một lệnh, ghi log gộp |
 | `make_table.py` | Dựng bảng kết quả từ `runs/`, **lọc theo giao thức** |
-| `flycl_baseline.py` | Thuật toán Fly-CL (closed-form ridge) chạy trên feature của ta |
+| `flycl_baseline.py` | Thuật toán Fly-CL (closed-form ridge) chạy trên feature của ta — **bản đối chứng, không sửa** |
+| `flycl_improved.py` | Các biến thể đề xuất cho Fly-CL, so với baseline trên cùng phép chiếu |
 | `backbone_run.ipynb` | Bản Kaggle: clone repo → chạy lưới → bảng + zip kết quả |
 
 ## Chạy
@@ -48,8 +49,27 @@ python run_grid.py --backbone resnet --configs 1,3,5 --freeze_backbone False --e
 python make_table.py --backbone resnet
 
 # mốc so sánh Fly-CL trên chính checkpoint của ta
-python flycl_baseline.py --model_name resnet50 --data_augmentation resnet --coding_level 0.3
+python flycl_baseline.py --model_name resnet50 --data_augmentation resnet --coding_level 0.1
 ```
+
+### Giao thức chuẩn của Fly-CL
+
+Ba tham số này phải đúng, sai cái nào cũng làm số ResNet sụt nhiều điểm mà log không báo gì:
+
+| Tham số | Giá trị | Vì sao dễ sai |
+|---|---|---|
+| `--ridge_lower` | **4** | Mặc định của `main.py`. `scripts/test_cifar.sh` ghi 6 nhưng script đó chỉ dành cho ViT; repo không có script ResNet. Đặt 6 làm ResNet mất **7 điểm Ā**. |
+| `--coding_level` | **0.3** | `main.py` mặc định 0.01, script CIFAR ghi đè thành 0.3. |
+| Checkpoint ResNet | **`resnet50.tv2_in1k`** | Tương đương `resnet50-11ad3fa6.pth` họ nạp. Khác `resnet50` mặc định của timm (`a1_in1k`). |
+
+```bash
+# tai lap dung so cua paper: A_T 76.99, A_bar 84.08 (paper: 84.61 +- 0.16)
+python flycl_baseline.py --model_name resnet50.tv2_in1k --data_augmentation resnet \
+                         --coding_level 0.3 --ridge_lower 4 --ridge_upper 10
+```
+
+Nhưng để **so với các bảng ở đây** thì phải dùng `--model_name resnet50` (checkpoint
+`a1_in1k`, giống mọi run khác), nếu không là so hai backbone khác nhau.
 
 Sáu cấu hình trong `run_grid.py`:
 

@@ -125,6 +125,10 @@ Hai nguồn trôi cộng dồn chứ không bù trừ.
 | 4 | frozen | MLP | 55.14 ± 0.86 | 68.08 ± 2.21 | 28.52 ± 2.55 | 54.48 ± 2.47 | 70.28 ± 1.80 | 26.57 ± 5.76 |
 | 5 | learnable | Linear | 44.86 ± 2.86 | 63.79 ± 2.97 | 43.07 ± 10.55 | 45.13 ± 2.12 | 64.09 ± 0.44 | 37.84 ± 5.85 |
 | 6 | learnable | MLP | 32.07 ± 3.71 | 51.98 ± 2.23 | 64.19 ± 4.55 | 32.88 ± 3.57 | 59.11 ± 1.74 | 53.87 ± 3.98 |
+| — | *Fly-CL (mốc)* | *ridge, closed-form* | *72.87* | *81.03* | *9.07* | | | |
+
+Mốc Fly-CL chạy trên cùng checkpoint `a1_in1k` và cùng `coding_level` 0.1 với bảng trên. Ở
+`coding_level` 0.3 của họ thì Ā lên 82.21; ở checkpoint `tv2_in1k` của họ thì lên 84.08.
 
 ### Cách đọc
 
@@ -363,21 +367,67 @@ khả năng phân biệt và **EWC-DR thoái hoá gần thành L2 thuần**. H�
 
 ### Fly-CL
 
-Log có sẵn của Fly-CL trên CIFAR-100 seed 1993, ViT-B/16: A_T **88.68**, Ā **92.99**.
+Thuật toán của họ được cài lại trong `sparse-cl/flycl_baseline.py` để chạy trên **cùng
+feature, cùng class order, cùng split** với mọi bảng ở đây. Bản cài lại đã kiểm chứng trên cả
+hai backbone:
 
-Cấu hình tốt nhất ở đây đạt Ā 89.49, kém 3.50 điểm.
+| | Bản cài lại | Nguồn gốc | Lệch |
+|---|---:|---:|---:|
+| ViT-B/16 (log seed 1993 của họ) | 88.77 / 93.11 | 88.68 / 92.99 | 0.09 / 0.12 |
+| ResNet-50 (Table 2 của paper) | 76.99 / **84.08** | — / 84.61 ± 0.16 | — / 0.53 |
 
-Chênh lệch nằm ở **head chứ không ở representation**. Ở task 1 hai bên đạt giống hệt 97.70 —
-cùng backbone, cùng projection, cùng top-k. Khoảng cách chỉ mở ra từ task 2 và tăng đều, tức
-đúng lúc bắt đầu có forgetting.
+#### Giao thức chuẩn của Fly-CL
 
-Fly-CL dùng nghiệm closed-form ridge, tích luỹ sufficient statistics (ma trận Gram và
-cross-correlation) qua các task nên nghiệm luôn tối ưu trên **toàn bộ dữ liệu đã thấy**.
-Cấu hình ở đây dùng SGD chỉ nhìn task hiện tại. Đó là toàn bộ khoảng cách.
+Ba tham số dưới đây **bắt buộc** phải đúng; sai bất kỳ cái nào cũng làm con số ResNet sụt
+nhiều điểm mà không có dấu hiệu gì bất thường trong log.
 
-Một lệch giao thức cần ghi nhận: script mẫu của Fly-CL dùng `--coding_level 0.3` trong khi
-mọi run ở đây dùng 0.1. Sweep coding_level cho kết quả phẳng trong dải đo được nên khả năng
-cao không đổi kết luận, nhưng đây là điểm chưa đóng.
+| Tham số | Giá trị | Ghi chú |
+|---|---|---|
+| `--ridge_lower` | **4** (mặc định `main.py`) | `scripts/test_cifar.sh` ghi 6 nhưng script đó **chỉ dành cho ViT**. Repo không có script ResNet. |
+| `--coding_level` | **0.3** | `main.py` mặc định 0.01, script CIFAR ghi đè thành 0.3. |
+| Checkpoint ResNet-50 | **`resnet50.tv2_in1k`** | Tương đương `resnet50-11ad3fa6.pth` (torchvision IMAGENET1K_V2) mà `load_model.py` nạp. Khác `resnet50` mặc định của timm (`a1_in1k`) dùng cho mọi bảng ở đây. |
+
+```bash
+# tai lap dung Fly-CL tren ResNet-50
+python flycl_baseline.py --model_name resnet50.tv2_in1k --data_augmentation resnet \
+                         --coding_level 0.3 --ridge_lower 4 --ridge_upper 10
+```
+
+Bóc tách khoảng cách giữa lần đo đầu tiên và số của paper (ResNet-50, Ā):
+
+| Bước | Ā | Δ |
+|---|---:|---:|
+| Đo lần đầu (`ridge_lower 6`, `k` 0.1, `a1_in1k`) | 74.04 | |
+| Hạ sàn λ xuống 1e3 | 81.03 | **+6.99** |
+| `coding_level` 0.1 → 0.3 | 82.21 | +1.18 |
+| Checkpoint `a1_in1k` → `tv2_in1k` | 84.08 | +1.87 |
+| Paper | 84.61 ± 0.16 | *còn 0.53* |
+
+Sàn λ là yếu tố lớn nhất, gấp bốn lần hai yếu tố còn lại cộng lại. GCV chọn λ trong một lưới
+log do người dùng đặt; nếu λ tối ưu nằm dưới sàn thì nó im lặng chọn sàn. Trên ResNet-50 λ tối
+ưu là 1e4, dưới sàn 1e6 mà `test_cifar.sh` dùng cho ViT.
+
+#### Khoảng cách với cấu hình tốt nhất ở đây
+
+So sánh phải dùng **cùng checkpoint** (`a1_in1k`, như mọi bảng ở đây):
+
+| | Fly-CL (`k`=0.1) | Fly-CL (`k`=0.3) | config 3 ở đây | Chênh |
+|---|---:|---:|---:|---:|
+| ViT-B/16, Ā | 92.85 | 93.11 | 89.49 | **−3.36** |
+| ResNet-50, Ā | 81.03 | 82.21 | 74.39 | **−6.64 … −7.82** |
+
+Chênh lệch nằm ở **head chứ không ở representation**. Ở task 1 hai bên đạt giống hệt nhau —
+cùng backbone, cùng projection, cùng top-k. Khoảng cách chỉ mở ra từ task 2 và tăng đều.
+
+Lý do có tính cấu trúc: `Q = Σ H Y` và `G = Σ H Hᵀ` là **sufficient statistics** của bài toán
+ridge, nên `(G + λI)⁻¹Q` bằng **đúng** nghiệm khi gộp toàn bộ dữ liệu mọi task và giải một
+lần — không xấp xỉ, và không phụ thuộc thứ tự task. Phần "continual" của Fly-CL vì thế đã tối
+ưu tuyệt đối và không còn gì để cải tiến; forgetting 4.79 của nó không phải quên mà là mức một
+mô hình tuyến tính train chung trên 100 lớp cũng gặp. Cấu hình ở đây dùng SGD chỉ nhìn task
+hiện tại. Đó là toàn bộ khoảng cách.
+
+Khoảng cách trên ResNet-50 **lớn gấp đôi** trên ViT-B/16. Feature ResNet yếu hơn nên có nhiều
+dư địa tối ưu hơn, và nghiệm đóng khai thác hết dư địa đó còn SGD thì không.
 
 ### EWC-DR
 
@@ -410,7 +460,10 @@ Logits Reversal `logits*-1` trước cross-entropy, và CE chỉ trên logit l�
 tham số này nên mở rộng là nút rẻ. Có một dấu hiệu dương chưa được xác nhận: khi giữ `k` cố
 định thay vì giữ tỉ lệ, forgetting giảm đơn điệu 10.16 → 7.32 qua năm điểm. Cần thêm seed.
 
-**`coding_level`** — phẳng trong dải đo được (0.02–0.30), tức dưới độ phân giải của ba seed.
+**`coding_level`** — phẳng trong dải đo được (0.02–0.30) **khi head học bằng SGD**, tức dưới
+độ phân giải của ba seed. Nhưng với head nghiệm đóng (không có nhiễu tối ưu hoá) thì hiệu ứng
+hiện rõ: 0.1 → 0.3 cho +1.18 Ā trên ResNet-50 và +0.26 trên ViT-B/16. Kết luận "phẳng" chỉ
+đúng trong phạm vi head SGD, nơi nhiễu seed lớn hơn hiệu ứng.
 
 **`proj_bias`** — ba chế độ `none` / `fixed` / `learn` không khác nhau về accuracy. Học bias
 liên tục qua các task làm forgetting tăng 1.49 điểm (3.3 SE), tức có hại nhẹ nhưng đo được.
@@ -475,10 +528,30 @@ EWC-DR có tác dụng đo được nhưng không nhất quán giữa hai backbo
 Fine-tune backbone làm tệ đi 7 điểm ở hai cấu hình tốt và 17 điểm ở cấu hình có projection
 học được, với chi phí gấp 160–200 lần.
 
-Khoảng cách còn lại so với Fly-CL (3.50 điểm Ā) nằm hoàn toàn ở **cách giải head**, không ở
-representation — bằng chứng là task 1 hai bên trùng khít 97.70. Hướng đáng theo tiếp là thay
-SGD head bằng nghiệm closed-form tích luỹ sufficient statistics, chứ không phải làm cho nửa
-trái học được.
+Khoảng cách còn lại so với Fly-CL nằm hoàn toàn ở **cách giải head**, không ở representation —
+bằng chứng là task 1 hai bên trùng khít. Trên cùng checkpoint và cùng `coding_level`, khoảng
+cách là **3.36 Ā trên ViT-B/16 và 6.64 trên ResNet-50** — tức lớn gấp đôi ở backbone yếu hơn,
+vì feature yếu để lại nhiều dư địa tối ưu hơn và nghiệm đóng khai thác hết còn SGD thì không.
+
+Hướng đáng theo tiếp là thay SGD head bằng nghiệm closed-form tích luỹ sufficient statistics,
+chứ không phải làm cho nửa trái học được. Nhưng cần nhận thức rõ giới hạn của hướng đó: phần
+closed-form của Fly-CL **đã tối ưu tuyệt đối** trên feature cho trước (xem phần đối chiếu), nên
+áp dụng nó chỉ đưa ta *bằng* Fly-CL chứ không vượt. Muốn vượt thì phải cải thiện chính feature,
+mà mọi thao tác lên feature đều phải giữ được tính bất biến theo thứ tự task — nếu không sẽ mất
+đúng thứ làm nên giá trị của nghiệm đóng.
+
+Hai cải tiến đã thử trên chính phần head của Fly-CL đều **không ăn thua**, đo trên ResNet-50:
+
+| Cải tiến | Δ Ā |
+|---|---:|
+| GCV trên toàn bộ dữ liệu tích luỹ thay vì từng task | +0.00 |
+| Top-k theo trị tuyệt đối (giữ cả đuôi âm) thay vì chỉ đuôi dương | −0.29 |
+| Cả hai | −1.27 |
+
+Cái thứ nhất là một lệch có thật về mặt logic trong `main.py:112` — λ chọn trên một task rồi
+áp lên `G` tích luỹ — nhưng vô hại về mặt số, vì các task đồng dạng nên λ tối ưu không đổi
+theo quy mô. Cái thứ hai bác bỏ giả thiết "hai đuôi của phân bố mang lượng thông tin tương
+đương": đuôi dương mang nhiều hơn.
 
 ## Giới hạn
 
@@ -487,8 +560,9 @@ ImageNet, nơi backbone đóng băng có thể không còn đủ và kết luậ
 
 Nhánh fine-tune mới có một seed và chưa đủ cả sáu cấu hình.
 
-Mốc Fly-CL lấy từ một log duy nhất, một seed, môi trường khác, và `coding_level` khác. Muốn
-so chặt chẽ phải chạy lại Fly-CL trong cùng môi trường với ít nhất ba seed.
+Mốc Fly-CL nay chạy lại trong cùng môi trường trên cùng feature (`flycl_baseline.py`), nhưng
+vẫn **chỉ một seed** (1993). Phép chiếu là ngẫu nhiên nên con số có nhiễu; muốn so chặt chẽ
+cần ít nhất ba seed cho mỗi ô.
 
 Cột EWC-DR của bảng ViT chỉ có một seed.
 

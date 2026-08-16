@@ -35,6 +35,11 @@ def load_backbone(model_name, device):
         m = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=0)
     elif model_name in ('resnet-50', 'resnet50'):
         m = timm.create_model('resnet50', pretrained=True, num_classes=0)
+    elif '.' in model_name:
+        # Tag timm day du, vd resnet50.tv2_in1k = checkpoint torchvision
+        # IMAGENET1K_V2 ma Fly-CL dung (resnet50-11ad3fa6.pth). Tag di vao ten
+        # cache nen khong dam vao cache cua backbone khac.
+        m = timm.create_model(model_name, pretrained=True, num_classes=0)
     else:
         raise ValueError(f"backbone khong ho tro: {model_name}")
     print(f"[model] backbone {model_name} | tag={m.default_cfg.get('tag', '?')}")
