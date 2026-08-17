@@ -454,11 +454,91 @@ Bản cài đặt ở đây khớp repo gốc ở mọi chi tiết: ước lư�
 chia cho số batch, cắt trần bằng `omegamax`, trộn qua task bằng `alpha = known/total`,
 Logits Reversal `logits*-1` trước cross-entropy, và CE chỉ trên logit lớp mới.
 
+## Thử cải tiến Fly-CL
+
+Bảy can thiệp, tất cả trên ResNet-50 + CIFAR-100, `coding_level` 0.1, checkpoint `a1_in1k`.
+Mốc là Ā 81.03 (seed 1993) / 81.25 ± 0.48 (3 seed).
+
+| Can thiệp | Δ Ā | Kết luận |
+|---|---:|---|
+| GCV trên toàn bộ dữ liệu tích luỹ | +0.00 | lệch có thật về logic, vô hại về số |
+| Top-k theo trị tuyệt đối (giữ đuôi âm) | −0.29 | bác bỏ |
+| Cả hai trên | −1.27 | bác bỏ |
+| Feature đa tầng `s3+s4` | +0.16 ± 0.08 | quá nhỏ |
+| Feature đa tầng `s2+`, `s1+` | −0.38, −0.37 | tầng thấp gây hại |
+| Hỗn hợp chuyên gia, cổng đóng băng (m=8) | −5.93 | bác bỏ mạnh |
+| Top-k theo khối (m = 2…20) | −0.06 | hoàn toàn phẳng |
+| Ensemble m phép chiếu độc lập (m=10) | +0.68 | dương, nhưng thua dense cùng bộ nhớ |
+| **`expand_dim` 10.000 → 20.000** | **+1.05 ± 0.04** | **hiệu ứng dương duy nhất đáng kể** |
+
+### Một quy luật thống nhất các kết quả âm
+
+Bốn can thiệp thua nặng nhất đều là **tăng độ biểu đạt**, và cùng cơ chế thất bại:
+
+| Thay đổi | Δ Ā |
+|---|---:|
+| MLP head | −6.31 |
+| Projection học liên tục | −10.60 |
+| Fine-tune backbone | −7.00 |
+| Hỗn hợp chuyên gia (m=8) | −5.93 |
+
+CIFAR-100 có 500 ảnh mỗi lớp. Chia 8 vùng thì mỗi chuyên gia chỉ còn ~62 ảnh mỗi lớp, trong
+khi vẫn phải phân biệt đủ 100 lớp. Bài toán **bị chặn bởi dữ liệu, không bởi độ biểu đạt** —
+nên mô hình tuyến tính được regularize tốt trên feature đóng băng là đúng lớp phức tạp, và mọi
+thứ mạnh hơn đều thua.
+
+Đáng chú ý là arm giữ nguyên `expand_dim` cho mỗi chuyên gia (không cắt capacity chút nào) vẫn
+mất 5.93 điểm, nên thiệt hại đến từ **phân mảnh dữ liệu** chứ không từ giảm số chiều.
+
+Điều này cũng bác bỏ trước hai hướng chưa chạy: biên quyết định bậc hai (QDA) cần `C × d²` tham
+số ước lượng từ 500 mẫu mỗi lớp, sẽ thua theo đúng cơ chế trên, chỉ nặng hơn.
+
+### `expand_dim` chưa bão hoà trên CIFAR-100 + ResNet-50
+
+| `expand_dim` | Ā (3 seed) | A_T | Forgetting | Bộ nhớ `G` |
+|---:|---:|---:|---:|---:|
+| 10.000 (mặc định) | 81.25 ± 0.48 | 72.63 | 9.29 | 0.4 GB |
+| 20.000 | **82.29 ± 0.52** | 74.12 | 8.97 | 1.6 GB |
+
+Hiệu theo cặp từng seed: **+1.03 / +1.09 / +1.02** → **+1.05 ± 0.04**. Độ lệch của hiệu nhỏ hơn
+độ lệch tuyệt đối 12 lần, và bản thân hiệu ứng lớn gấp đôi nhiễu tuyệt đối.
+
+Đường cong ở seed 1993 chưa gãy: 81.03 (10k) → 81.61 (14k) → 82.06 (20k) → 82.37 (28k), xấp xỉ
+logarit theo `E`.
+
+**Table 9 của paper báo cùng bước đó cho +0.06** kèm kết luận *"saturating beyond m = 10,000"*.
+Ta đo gấp 17 lần. Khác biệt nằm ở chỗ Table 9 chạy trên CUB-200 + ViT-B/16, và Figure 12 — hình
+duy nhất của họ có ResNet-50 — cũng trên CUB-200. **Không hình nào quét `expand_dim` trên
+CIFAR-100.** Kết luận bão hoà được suy rộng từ một dataset sang các dataset khác mà chưa kiểm
+chứng.
+
+Chưa đóng: chưa biết đây là hiện tượng của dataset hay của backbone. Cần quét `expand_dim` trên
+ViT + CIFAR-100 để tách hai yếu tố.
+
+Giá phải trả là bộ nhớ gấp 4 lần và tính toán gấp 8 lần (`G` cỡ `E²`, Cholesky cỡ `E³`). 1.6 GB
+vẫn nhỏ so với 4.6–22.8 GB của các phương pháp trong Table 8 của họ.
+
+### Nới rộng thắng nhân bản, ở cùng ngân sách bộ nhớ
+
+| Bộ nhớ | Dense (một phép chiếu) | Ensemble (m phép chiếu độc lập) |
+|---|---:|---:|
+| 0.8 GB | **81.61** (E=14.142) | 81.43 (m=2) |
+| ~2 GB | **82.06** (E=20.000, 1.6 GB) | 81.91 (m=5, 2.0 GB) |
+
+Ensemble có dương thật (+0.68 so với kỳ vọng của m=1 qua 3 seed), nhưng thua dense ở mọi mức
+ngân sách. Giả thuyết "phép chiếu độc lập khử tương quan sai số nên hiệu quả hơn nới rộng" bị
+bác bỏ.
+
+Nhất quán với thí nghiệm top-k theo khối: mã thưa dư thừa cao đến mức ép mỗi khối 500 unit phải
+góp 50 cái cũng không mất gì (−0.06). Việc *unit nào* thắng gần như không quan trọng; chỉ số
+lượng chiều mới quan trọng.
+
 ## Ablation phụ
 
-**`expand_dim`** — giúp tới khoảng 5000 rồi không phân biệt được nữa. Chi phí tuyến tính theo
-tham số này nên mở rộng là nút rẻ. Có một dấu hiệu dương chưa được xác nhận: khi giữ `k` cố
-định thay vì giữ tỉ lệ, forgetting giảm đơn điệu 10.16 → 7.32 qua năm điểm. Cần thêm seed.
+**`expand_dim`** — với head SGD thì giúp tới khoảng 5000 rồi không phân biệt được nữa. Với head
+nghiệm đóng thì **chưa bão hoà**, xem mục riêng bên dưới. Có một dấu hiệu dương chưa được xác
+nhận: khi giữ `k` cố định thay vì giữ tỉ lệ, forgetting giảm đơn điệu 10.16 → 7.32 qua năm
+điểm. Cần thêm seed.
 
 **`coding_level`** — phẳng trong dải đo được (0.02–0.30) **khi head học bằng SGD**, tức dưới
 độ phân giải của ba seed. Nhưng với head nghiệm đóng (không có nhiễu tối ưu hoá) thì hiệu ứng

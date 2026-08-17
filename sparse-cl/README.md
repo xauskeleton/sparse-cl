@@ -29,7 +29,7 @@ lên các tham số học liên tục).
 | `run_grid.py` | Chạy nhiều cấu hình / seed / λ trong một lệnh, ghi log gộp |
 | `make_table.py` | Dựng bảng kết quả từ `runs/`, **lọc theo giao thức** |
 | `flycl_baseline.py` | Thuật toán Fly-CL (closed-form ridge) chạy trên feature của ta — **bản đối chứng, không sửa** |
-| `flycl_improved.py` | Các biến thể đề xuất cho Fly-CL, so với baseline trên cùng phép chiếu |
+| `flycl_*.py` (improved, multistage, moe, blocktopk, ensemble) | Các biến thể đề xuất cho Fly-CL — xem mục cuối |
 | `backbone_run.ipynb` | Bản Kaggle: clone repo → chạy lưới → bảng + zip kết quả |
 
 ## Chạy
@@ -133,3 +133,35 @@ Accuracy **không** phản ánh ba vấn đề đầu — model vẫn chạy bì
 - `coding_level >= 1.0` → không còn phi tuyến, `W_head · W_proj` sụp thành một
   ma trận, tầng mở rộng vô nghĩa.
 - `--image_size` khác 224 với ViT → patch embedding không khớp.
+
+## Thử nghiệm cải tiến Fly-CL
+
+Mỗi file chạy độc lập, đều `import` lại từ `flycl_baseline.py` và tái lập đúng
+baseline ở cấu hình trung tính (m=1, s4, khối=1) làm phép tự kiểm tra.
+
+| File | Thử gì | Kết quả |
+|---|---|---|
+| `flycl_improved.py` | GCV trên dữ liệu tích luỹ; top-k theo trị tuyệt đối | +0.00 / −0.29 |
+| `flycl_multistage.py` | Ghép feature nhiều stage của backbone | +0.16 (`s3+s4`) |
+| `flycl_moe.py` | Hỗn hợp chuyên gia, cổng đóng băng | −5.93 (m=8) |
+| `flycl_blocktopk.py` | Top-k theo khối thay vì toàn cục | −0.06 |
+| `flycl_ensemble.py` | m phép chiếu độc lập, cộng logit | +0.68 (m=10) |
+
+Kết quả dương duy nhất đáng kể không nằm trong các file trên: **`--expand_dim 20000`
+cho +1.05 ± 0.04** so với mặc định 10000 (3 seed, ResNet-50, CIFAR-100). Xem
+`../docs/bao-cao.md`.
+
+### Cạm bẫy khi viết script mới dùng chung ma trận chiếu
+
+```python
+# SAI - Python danh gia ve PHAI truoc, nen randn chay truoc randperm
+W[r, torch.randperm(d)[:n]] = torch.randn(n)
+
+# DUNG - giong flycl_baseline
+pick = torch.randperm(d)[:n]
+W[r, pick] = torch.randn(n)
+```
+
+Viết gộp một dòng thì thứ tự tiêu thụ RNG bị đảo và ma trận chiếu **khác hẳn**
+dù cùng `--seed`. Không có lỗi nào được báo; chỉ lộ ra khi so hai script lẽ ra
+phải cho cùng kết quả. Đã mất một lần đo vì lỗi này.

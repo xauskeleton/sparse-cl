@@ -351,6 +351,12 @@ def _auto_name(args):
         parts.append(f"ep{args.epochs}")
     if args.early_stop_patience != 20:
         parts.append(f"pat{args.early_stop_patience}")
+    # ce_scope va val_ratio doi han bai toan toi uu chu khong chi sieu tham so,
+    # nen bat buoc phai vao ten. Chi them khi khac mac dinh de ten cu khong doi.
+    if args.ce_scope != 'new':
+        parts.append(f"ce-{args.ce_scope}")
+    if args.val_ratio != 0.1:
+        parts.append(f"val{args.val_ratio:g}")
     if args.proj_bias != 'none':
         parts.append(f"pb-{args.proj_bias}")
     if args.train_projection or args.proj_bias == 'learn':

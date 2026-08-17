@@ -27,6 +27,19 @@ from model import build_model
 
 # --------------------------------------------------------------------------- #
 
+class _MultiStage(torch.nn.Module):
+    """Global-average-pool tung stage roi ghep lai thanh mot vector."""
+
+    STAGE_DIMS = (256, 512, 1024, 2048)
+
+    def __init__(self, base):
+        super().__init__()
+        self.base = base
+
+    def forward(self, x):
+        return torch.cat([f.mean((2, 3)) for f in self.base(x)], 1)
+
+
 def load_backbone(model_name, device):
     """Chi goi khi CHUA co cache. Co cache roi thi khong can ViT -> chay duoc
     ca tren session CPU."""
@@ -35,6 +48,14 @@ def load_backbone(model_name, device):
         m = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=0)
     elif model_name in ('resnet-50', 'resnet50'):
         m = timm.create_model('resnet50', pretrained=True, num_classes=0)
+    elif model_name == 'resnet50+ms':
+        # Ghep global-average-pool cua 4 stage: 256+512+1024+2048 = 3840.
+        # Tang cuoi da chuyen biet hoa cho 1000 lop ImageNet; tang giua tong
+        # quat hon va co the huu ich hon cho dataset khac mien. Backbone van
+        # dong bang nen Q, G van la sufficient statistics.
+        base = timm.create_model('resnet50', pretrained=True,
+                                 features_only=True, out_indices=(1, 2, 3, 4))
+        m = _MultiStage(base)
     elif '.' in model_name:
         # Tag timm day du, vd resnet50.tv2_in1k = checkpoint torchvision
         # IMAGENET1K_V2 ma Fly-CL dung (resnet50-11ad3fa6.pth). Tag di vao ten
@@ -42,7 +63,8 @@ def load_backbone(model_name, device):
         m = timm.create_model(model_name, pretrained=True, num_classes=0)
     else:
         raise ValueError(f"backbone khong ho tro: {model_name}")
-    print(f"[model] backbone {model_name} | tag={m.default_cfg.get('tag', '?')}")
+    cfg = getattr(m, 'default_cfg', None) or {}
+    print(f"[model] backbone {model_name} | tag={cfg.get('tag', '?')}")
     return m.eval().to(device)
 
 
