@@ -488,25 +488,33 @@ statistics, nên **tính bất biến theo thứ tự task được giữ nguyê
 
 ### Bảng 1 — kết quả chính
 
-Trung bình 5 seed (1993 / 2023 / 2025 / 42 / 7), hiệu tính **theo cặp** từng seed:
+Ba seed (1993 / 2023 / 2025) cho cả bốn dòng, hiệu tính **theo cặp** từng seed:
 
-| | A_T | Ā | Forgetting | Bộ nhớ `G` |
-|---|---:|---:|---:|---:|
-| *Paper công bố* | — | *84.61 ± 0.16* | — | 0.4 GB |
-| Fly-CL, bản tái lập | 76.74 ± 0.17 | 83.81 ± 0.85 | 7.82 | 0.4 GB |
-| **+ tương tác s3 × s4** | **78.01 ± 0.08** | **84.90 ± 0.88** | 7.66 | **0.4 GB** |
-| **Hiệu theo cặp** | **+1.28 ± 0.13** | **+1.09 ± 0.18** | −0.16 | **không đổi** |
+| | A_T | Ā | Forgetting | Bộ nhớ `G` | Δ Ā theo cặp |
+|---|---:|---:|---:|---:|---:|
+| *Paper công bố* | — | *84.61 ± 0.16* | — | 0.4 GB | |
+| Fly-CL, bản tái lập | 76.76 | 84.19 ± 0.42 | 8.13 | 0.4 GB | — |
+| **+ tương tác s3 × s4** | **78.07** | **85.38 ± 0.42** | 7.87 | **0.4 GB** | **+1.18 ± 0.14** |
+| + ensemble 2 nhánh | 78.60 | 85.83 ± 0.48 | 7.70 | 0.8 GB | +1.64 ± 0.19 |
+| + ensemble 5 nhánh | **78.84** | **86.11 ± 0.38** | 7.80 | 2.0 GB | **+1.92 ± 0.08** |
 
-Dương ở cả 5 seed (Δ Ā = +1.04 / +1.20 / +1.31 / +0.84 / +1.08). Sai số chuẩn của hiệu là
-0.08, tức hiệu ứng lớn gấp 14 lần sai số. Và A_T của bản cải tiến **ổn định hơn** bản gốc
-(σ 0.08 so với 0.17) — nó ít phụ thuộc may rủi của phép chiếu hơn.
+Ba dòng cải tiến đều dương ở cả ba seed, không có ngoại lệ.
 
-Đây là cải tiến duy nhất trong toàn bộ báo cáo **không tốn thêm bộ nhớ**: cùng 10.000 unit,
-cùng `G` cỡ 10.000², chỉ thêm một ma trận chiếu thưa (3 triệu giá trị, không đáng kể).
+**Dòng thứ hai là cấu hình đáng khuyến nghị**: nó dùng đúng 0.4 GB như bản gốc — cùng 10.000
+unit, cùng `G` cỡ 10.000², chỉ thêm một ma trận chiếu thưa (3 triệu giá trị, không đáng kể).
+Hai dòng dưới mua thêm 0.74 điểm bằng **5 lần bộ nhớ và 5 lần thời gian**, nên không nên coi
+86.11 là con số đại diện.
 
-Ngoài 5 seed trên, hiệu ứng còn được xác nhận độc lập ở 3 seed trên checkpoint `a1_in1k`
-(+0.83 … +1.26) và ở 4 mức `coding_level` 0.05/0.1/0.2/0.3 (+1.03 … +1.16). Tổng cộng
-**12 phép đo, hai checkpoint, bốn coding level, tất cả dương trong khoảng 0.83–1.31**.
+Riêng dòng tương tác s3 × s4 còn được đo trên **5 seed** (thêm 42 và 7), cho
+**+1.09 ± 0.18 Ā** và **+1.28 ± 0.13 A_T** — sai số chuẩn 0.08, tức hiệu ứng lớn gấp 14 lần
+sai số. Xác nhận độc lập thêm ở 3 seed trên checkpoint `a1_in1k` (+0.83 … +1.26) và ở 4 mức
+`coding_level` 0.05/0.1/0.2/0.3 (+1.03 … +1.16). Tổng cộng **12 phép đo, hai checkpoint, bốn
+coding level, tất cả dương trong khoảng 0.83–1.31**.
+
+Một điểm về phương sai đáng ghi: ensemble **không** làm σ giữa các seed nhỏ đi (0.42 → 0.48 →
+0.38). Lý do là `--seed` điều khiển **cả** thứ tự lớp **lẫn** phép chiếu, mà ensemble chỉ trung
+bình hoá được phép chiếu. Phần phương sai còn lại đến từ thứ tự lớp và không cách nào khử bằng
+ensemble. Nhưng ở A_T thì có thấy hiệu ứng: σ của dòng 5 nhánh là 0.09, nhỏ nhất trong bảng.
 
 ### Bảng 2 — chọn tầng và cách kết hợp
 
@@ -541,8 +549,10 @@ liệu**, cộng logit khi dự đoán. Nền là cấu hình trộn nhân. Mộ
 | 2 | 20.000 | 0.8 GB | 196s | 78.47 | 85.50 | +0.38 |
 | **5** | 50.000 | 2.0 GB | 489s | **78.87** | **85.93** | +0.43 |
 | 10 | 100.000 | 4.0 GB | 993s | 78.85 | 85.96 | **+0.03** |
+| 20 | 200.000 | 8.0 GB | 2264s | 78.94 | 85.97 | **+0.01** |
 
-**Bão hoà ở m = 5.** Từ 5 lên 10 chỉ được +0.03 với gấp đôi bộ nhớ và gấp đôi thời gian.
+**Bão hoà ở m = 5.** Từ 5 lên 20 chỉ được **+0.04** trong khi tốn **4 lần bộ nhớ và 4.6 lần
+thời gian**.
 
 Hiệu ứng này **bất biến với cấu hình nền**: đo lần hai trên `a1_in1k` + `coding_level` 0.1 +
 kết hợp tuyến tính cho +0.40 / +0.88 / +0.91 ở m = 2/5/10 — gần trùng khít, và cũng bão hoà
