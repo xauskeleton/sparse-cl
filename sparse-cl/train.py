@@ -48,12 +48,12 @@ def load_backbone(model_name, device):
         m = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=0)
     elif model_name in ('resnet-50', 'resnet50'):
         m = timm.create_model('resnet50', pretrained=True, num_classes=0)
-    elif model_name == 'resnet50+ms':
+    elif model_name.endswith('+ms'):
         # Ghep global-average-pool cua 4 stage: 256+512+1024+2048 = 3840.
         # Tang cuoi da chuyen biet hoa cho 1000 lop ImageNet; tang giua tong
-        # quat hon va co the huu ich hon cho dataset khac mien. Backbone van
-        # dong bang nen Q, G van la sufficient statistics.
-        base = timm.create_model('resnet50', pretrained=True,
+        # quat hon va mang thong tin BO TRO - do duoc khi ket hop bang phep
+        # nhan. Backbone van dong bang nen Q, G van la sufficient statistics.
+        base = timm.create_model(model_name[:-3], pretrained=True,
                                  features_only=True, out_indices=(1, 2, 3, 4))
         m = _MultiStage(base)
     elif '.' in model_name:

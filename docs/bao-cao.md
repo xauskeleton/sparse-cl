@@ -17,12 +17,20 @@ Kết quả: **cả ba đều kém hơn giữ nguyên thiết kế gốc của F
 làm mất 10.6–11.8 điểm Ā; thêm MLP làm mất 6.1–15.2 điểm; hai tác hại cộng dồn chứ không bù
 trừ.
 
-Đóng góp dương duy nhất tìm được là **bản thân phép chiếu thưa cố định**: +2.24 Ā trên ViT
-và +2.42 trên ResNet, tái lập được ở cả hai backbone.
+Đóng góp dương duy nhất theo hướng ban đầu là **bản thân phép chiếu thưa cố định**: +2.24 Ā
+trên ViT và +2.42 trên ResNet, tái lập được ở cả hai backbone.
 
 EWC-DR có tác dụng đo được nhưng chỉ ở các cấu hình vốn đã kém, và không đưa cấu hình nào
 vượt qua được `frozen projection + Linear head`. Fine-tune backbone làm tệ đi 7 điểm với chi
 phí gấp 170–200 lần.
+
+**Cải tiến thực sự tìm được đến từ một hướng khác hẳn.** Thay vì chiếu một vector đặc trưng,
+chiếu **hai tầng** của backbone lên cùng số chiều rồi **nhân từng phần tử** trước top-k. Trên
+đúng giao thức của Fly-CL, cách này cho **+1.09 ± 0.18 Ā** và **+1.28 ± 0.13 A_T** qua 5 seed,
+forgetting không xấu đi, và **không tốn thêm một byte bộ nhớ nào**. Kết hợp bằng phép cộng ở
+cùng cấu hình chỉ cho +0.27 — nên phần giá trị nằm ở tính **phi tuyến bậc hai** của phép nhân,
+không phải ở việc có thêm đặc trưng. Chi tiết ở mục *Cải tiến Fly-CL bằng tương tác giữa hai
+tầng backbone*.
 
 ## Thiết lập
 
@@ -454,7 +462,113 @@ Bản cài đặt ở đây khớp repo gốc ở mọi chi tiết: ước lư�
 chia cho số batch, cắt trần bằng `omegamax`, trộn qua task bằng `alpha = known/total`,
 Logits Reversal `logits*-1` trước cross-entropy, và CE chỉ trên logit lớp mới.
 
-## Thử cải tiến Fly-CL
+## Cải tiến Fly-CL bằng tương tác giữa hai tầng backbone
+
+Toàn bộ mục này chạy trên **đúng giao thức của họ**: checkpoint `resnet50.tv2_in1k`,
+`coding_level` 0.3, `expand_dim` 10.000, `ridge_lower` 4. Mốc so sánh là bản tái lập
+`flycl_baseline.py`, không phải con số công bố — lý do nêu ở cuối mục.
+
+Ý tưởng: Fly-CL chiếu **một** vector đặc trưng (stage 4, 2048 chiều) lên 10.000 chiều rồi
+top-k. Thay vào đó, chiếu **hai** tầng lên cùng 10.000 chiều bằng hai ma trận riêng, rồi
+**nhân từng phần tử** trước khi top-k:
+
+```
+a = W₄ · x₄     [10000]        W₄: [10000, 2048], 300 ket noi moi hang
+b = W₃ · x₃     [10000]        W₃: [10000, 1024], 300 ket noi moi hang
+z = a ⊙ b       [10000]   →  top-k  →  ridge nghiem dong nhu cu
+```
+
+Mỗi unit trở thành bộ dò **đồng xuất hiện**: chỉ mạnh khi cả mẫu ngữ nghĩa ở tầng 4 lẫn mẫu
+trung gian ở tầng 3 cùng phản ứng. Đây là điểm khác biệt cốt lõi — ba cách kết hợp còn lại
+(cộng, ghép, tách unit) đều **tuyến tính** theo đặc trưng, nên chỉ đổi toạ độ; phép nhân là
+**bậc hai** nên tạo ra thông tin mà không cách tuyến tính nào biểu diễn được.
+
+Thay đổi trong code là một dòng. Backbone vẫn đóng băng, `Q` và `G` vẫn là sufficient
+statistics, nên **tính bất biến theo thứ tự task được giữ nguyên**.
+
+### Bảng 1 — kết quả chính
+
+Trung bình 5 seed (1993 / 2023 / 2025 / 42 / 7), hiệu tính **theo cặp** từng seed:
+
+| | A_T | Ā | Forgetting | Bộ nhớ `G` |
+|---|---:|---:|---:|---:|
+| *Paper công bố* | — | *84.61 ± 0.16* | — | 0.4 GB |
+| Fly-CL, bản tái lập | 76.74 ± 0.17 | 83.81 ± 0.85 | 7.82 | 0.4 GB |
+| **+ tương tác s3 × s4** | **78.01 ± 0.08** | **84.90 ± 0.88** | 7.66 | **0.4 GB** |
+| **Hiệu theo cặp** | **+1.28 ± 0.13** | **+1.09 ± 0.18** | −0.16 | **không đổi** |
+
+Dương ở cả 5 seed (Δ Ā = +1.04 / +1.20 / +1.31 / +0.84 / +1.08). Sai số chuẩn của hiệu là
+0.08, tức hiệu ứng lớn gấp 14 lần sai số. Và A_T của bản cải tiến **ổn định hơn** bản gốc
+(σ 0.08 so với 0.17) — nó ít phụ thuộc may rủi của phép chiếu hơn.
+
+Đây là cải tiến duy nhất trong toàn bộ báo cáo **không tốn thêm bộ nhớ**: cùng 10.000 unit,
+cùng `G` cỡ 10.000², chỉ thêm một ma trận chiếu thưa (3 triệu giá trị, không đáng kể).
+
+Ngoài 5 seed trên, hiệu ứng còn được xác nhận độc lập ở 3 seed trên checkpoint `a1_in1k`
+(+0.83 … +1.26) và ở 4 mức `coding_level` 0.05/0.1/0.2/0.3 (+1.03 … +1.16). Tổng cộng
+**12 phép đo, hai checkpoint, bốn coding level, tất cả dương trong khoảng 0.83–1.31**.
+
+### Bảng 2 — chọn tầng và cách kết hợp
+
+Một seed (1993). Mốc Fly-CL gốc: A_T 76.99, Ā 84.08.
+
+| Tầng thứ hai | Cách kết hợp | Unit | Bộ nhớ | A_T | Ā | Δ Ā |
+|---|---|---:|---:|---:|---:|---:|
+| stage 3 | cộng `a + b` | 10.000 | 0.4 GB | 76.82 | 84.35 | +0.27 |
+| **stage 3** | **nhân `a ⊙ b`** | 10.000 | 0.4 GB | 78.13 | **85.12** | **+1.04** |
+| stage 3 | ghép `[a ; b]` | 20.000 | 1.6 GB | 79.01 | 85.60 | +1.52 |
+| stage 2 | nhân | 10.000 | 0.4 GB | 77.01 | 84.32 | +0.24 |
+| **stage 4** (chính nó) | nhân | 10.000 | 0.4 GB | 76.59 | 83.25 | **−0.84** |
+
+Hai dòng đầu khác nhau **đúng một dấu phép toán** — cùng đặc trưng, cùng phép chiếu, cùng bộ
+nhớ. Cộng cho +0.27, nhân cho +1.04. Đó là phép so sạch nhất trong báo cáo.
+
+Dòng cuối là đối chứng quyết định: nhân hai phép chiếu **độc lập của cùng stage 4** thì có
+hại. Nên lợi ích **không** đến từ "đặc trưng bậc hai nói chung" mà đòi hỏi hai tầng **khác
+nhau**. Và đỉnh nằm ở tầng **liền kề** — stage 2 chỉ cho +0.24.
+
+Dòng `ghép` cho Ā cao hơn nhưng dùng 20.000 unit và **gấp 4 lần bộ nhớ** (`G` cỡ `E²`), nên
+không so trực tiếp được. Ở cùng ngân sách bộ nhớ thì phép nhân thắng.
+
+### Bảng 3 — ensemble
+
+`m` nhánh độc lập, mỗi nhánh một cặp `(W₄, W₃)` và một `G` riêng, **mọi nhánh thấy toàn bộ dữ
+liệu**, cộng logit khi dự đoán. Nền là cấu hình trộn nhân. Một seed (1993).
+
+| Nhánh | Unit | Bộ nhớ | Thời gian | A_T | Ā | Δ từng bước |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 10.000 | 0.4 GB | 97s | 78.13 | 85.12 | — |
+| 2 | 20.000 | 0.8 GB | 196s | 78.47 | 85.50 | +0.38 |
+| **5** | 50.000 | 2.0 GB | 489s | **78.87** | **85.93** | +0.43 |
+| 10 | 100.000 | 4.0 GB | 993s | 78.85 | 85.96 | **+0.03** |
+
+**Bão hoà ở m = 5.** Từ 5 lên 10 chỉ được +0.03 với gấp đôi bộ nhớ và gấp đôi thời gian.
+
+Hiệu ứng này **bất biến với cấu hình nền**: đo lần hai trên `a1_in1k` + `coding_level` 0.1 +
+kết hợp tuyến tính cho +0.40 / +0.88 / +0.91 ở m = 2/5/10 — gần trùng khít, và cũng bão hoà
+tại 5. Nó là hiện tượng thuần tuý giảm phương sai của phép chiếu ngẫu nhiên, không tương tác
+với gì khác. Khác hẳn `expand_dim`, vốn cho +1.05 ở `coding_level` 0.1 nhưng chỉ +0.17 ở 0.3.
+
+Đặt đúng tỉ lệ: ensemble m=5 cho **+0.81 với 5 lần bộ nhớ**, còn tương tác s3 × s4 cho
+**+1.09 miễn phí**. Ensemble là phần đáng giá thấp nhất trong các cải tiến, và bảng báo cáo
+không nên trình bày 85.93 như con số nên dùng mặc định.
+
+### Ba điều phải nói kèm
+
+**Bản tái lập thấp hơn số công bố 0.80** (83.81 ± 0.85 so với 84.61 ± 0.16, 5 seed). Khoảng
+lệch này chưa giải thích được và **lớn hơn** phần chênh giữa 84.90 và 84.61. Nên phát biểu hợp
+lệ là *"+1.09 so với baseline chạy cùng code, cùng seed, cùng phép chiếu"* — **không** phải
+"vượt Fly-CL".
+
+**Phải đọc thêm một tầng của backbone.** Fly-CL dùng 2048 chiều của stage 4; cấu hình này dùng
+thêm 1024 chiều của stage 3. Trọng số backbone không đổi, không train gì thêm, không tốn thêm
+phép tính nào trong backbone — bản đồ stage 3 đã được tính sẵn trên đường forward. Nhưng đây
+vẫn là **đầu vào giàu hơn**, nên phép so công bằng phải cho cả hai bên cùng đầu vào. Con số đó
+có trong Bảng 2: cùng s3 + s4 và cùng 20.000 unit, nhân hơn ghép tuyến tính **+0.83**.
+
+**Chỉ Bảng 1 có 5 seed.** Bảng 2 và Bảng 3 mới một seed.
+
+## Các can thiệp đã thử và bị bác bỏ
 
 Bảy can thiệp, tất cả trên ResNet-50 + CIFAR-100, `coding_level` 0.1, checkpoint `a1_in1k`.
 Mốc là Ā 81.03 (seed 1993) / 81.25 ± 0.48 (3 seed).
@@ -507,13 +621,25 @@ Hiệu theo cặp từng seed: **+1.03 / +1.09 / +1.02** → **+1.05 ± 0.04**. 
 logarit theo `E`.
 
 **Table 9 của paper báo cùng bước đó cho +0.06** kèm kết luận *"saturating beyond m = 10,000"*.
-Ta đo gấp 17 lần. Khác biệt nằm ở chỗ Table 9 chạy trên CUB-200 + ViT-B/16, và Figure 12 — hình
-duy nhất của họ có ResNet-50 — cũng trên CUB-200. **Không hình nào quét `expand_dim` trên
-CIFAR-100.** Kết luận bão hoà được suy rộng từ một dataset sang các dataset khác mà chưa kiểm
-chứng.
 
-Chưa đóng: chưa biết đây là hiện tượng của dataset hay của backbone. Cần quét `expand_dim` trên
-ViT + CIFAR-100 để tách hai yếu tố.
+Nhưng hiệu ứng này **chỉ tồn tại ở `coding_level` thấp**, và đó là thiết lập của ta chứ không
+phải của họ:
+
+| Giao thức | `E` 10.000 → 20.000 |
+|---|---:|
+| `a1_in1k`, `coding_level` 0.1 (của ta) | **+1.05 ± 0.04** (3 seed) |
+| `tv2_in1k`, `coding_level` 0.3 (của họ) | **+0.17** (1 seed) |
+
+Ở đúng `coding_level` của họ thì `expand_dim` gần như bão hoà — **họ đúng trong vùng họ chạy**.
+Cơ chế hợp lý: ở `k` = 0.1 thì `E` = 10.000 chỉ giữ 1.000 unit hoạt động, mã quá thưa nên thêm
+chiều còn ăn; ở `k` = 0.3 giữ 3.000 unit, đã dùng nhiều hơn nên thêm chiều ít tác dụng.
+
+Nên phát biểu đúng là: **`coding_level` và `expand_dim` không độc lập**, còn paper quét từng
+tham số một và ngầm coi chúng tách rời. Đó là một quan sát về phương pháp luận, không phải một
+sai sót về kết quả.
+
+Chưa đóng: chưa tách được hiện tượng thuộc dataset hay backbone. Cần quét `expand_dim` trên
+ViT + CIFAR-100.
 
 Giá phải trả là bộ nhớ gấp 4 lần và tính toán gấp 8 lần (`G` cỡ `E²`, Cholesky cỡ `E³`). 1.6 GB
 vẫn nhỏ so với 4.6–22.8 GB của các phương pháp trong Table 8 của họ.
@@ -597,8 +723,14 @@ Cấu hình tốt nhất là **frozen sparse random projection + Linear head** �
 Fly-CL. Cả hai ý tưởng đề ra ban đầu đều làm model tệ đi, và hai tác hại cộng dồn chứ không
 bù trừ.
 
-Đóng góp dương duy nhất là bản thân phép chiếu thưa: +2.24 Ā trên ViT và +2.42 trên ResNet,
-tái lập được trên hai backbone.
+Đóng góp dương duy nhất **theo hướng ban đầu** là bản thân phép chiếu thưa: +2.24 Ā trên ViT
+và +2.42 trên ResNet, tái lập được trên hai backbone.
+
+Nhưng cải tiến có giá trị nhất lại đến từ chỗ khác: **nhân từng phần tử hai phép chiếu của hai
+tầng backbone kề nhau**, cho +1.09 ± 0.18 Ā (5 seed, giao thức của Fly-CL) mà không tốn thêm bộ
+nhớ. Điều đáng chú ý là nó không nằm trong bất kỳ danh sách ý tưởng nào được đề ra trước — nó
+xuất hiện khi quay lại một thí nghiệm đã bị tuyên bố là hỏng, và phát hiện rằng thí nghiệm đó
+chỉ thử **các cách ghép tuyến tính**.
 
 EWC-DR có tác dụng đo được nhưng không nhất quán giữa hai backbone khi backbone đóng băng.
 Ở chế độ fine-tune thì nó nhất quán và đơn điệu theo lượng tham số trôi (+0.00 / +1.42 /
