@@ -115,7 +115,9 @@ def run_ens(a, X3tr, X4tr, X3te, X4te, data, deg3, w3, dev):
     """
     n3, n4 = X3tr.shape[1], X4tr.shape[1]
     m, E = a.branches, a.expand_dim
-    k = int(E * a.coding_level)
+    # concat lam MOI NHANH co 2E unit -> G moi nhanh la [2E, 2E].
+    Eb = E * 2 if a.combine == 'concat' else E
+    k = int(Eb * a.coding_level)
     W4s, W3s, Q, G, sol = [], [], [], [], [None] * m
     for e in range(m):
         set_seed(a.seed + e * 1000)
@@ -129,16 +131,18 @@ def run_ens(a, X3tr, X4tr, X3te, X4te, data, deg3, w3, dev):
                 W3[r, pick] = torch.randn(deg3)
         W4s.append(W4.to(dev))
         W3s.append(W3.to(dev))
-        Q.append(torch.zeros(E, a.num_classes, device=dev))
-        G.append(torch.zeros(E, E, device=dev))
-    eye = torch.eye(E, device=dev)
+        Q.append(torch.zeros(Eb, a.num_classes, device=dev))
+        G.append(torch.zeros(Eb, Eb, device=dev))
+    eye = torch.eye(Eb, device=dev)
     acc = [[0.0] * a.num_tasks for _ in range(a.num_tasks)]
 
     def code(e, i4, i3):
         z = W4s[e] @ i4.T
         if deg3:
             u = w3 * (W3s[e] @ i3.T)
-            z = z * u if a.combine == 'prod' else z + u
+            z = {'prod': lambda: z * u,
+                 'concat': lambda: torch.cat([z, u]),
+                 'sum': lambda: z + u}[a.combine]()
         return topk_rows(z, k)
 
     for task in range(a.num_tasks):
@@ -161,6 +165,61 @@ def run_ens(a, X3tr, X4tr, X3te, X4te, data, deg3, w3, dev):
             for e in range(m):
                 logit = logit + code(e, X4te[msk], X3te[msk]).T @ sol[e]
             acc[i][task] = (logit.argmax(1) == data.yte[msk]).float().mean().item() * 100
+
+    A_t = [float(np.mean([acc[i][t] for i in range(t + 1)])) for t in range(a.num_tasks)]
+    last = a.num_tasks - 1
+    forget = [max(acc[i][j] for j in range(i, last)) - acc[i][last] for i in range(last)]
+    return {'A_T': A_t[-1], 'A_bar': float(np.mean(A_t)),
+            'forgetting': float(np.mean(forget))}
+
+
+def run_concat_sep(a, X4tr, X4te, data, deg3, dev):
+    """Moi tang mot projection 10000 unit RIENG, roi noi tat ca lai.
+
+    Khac `--b_stage 2,3` voi combine=concat: o do feature cua s2 va s3 duoc noi
+    lai roi chieu bang MOT ma tran (van 20000 unit tong). O day moi tang co khoi
+    unit rieng -> (1 + so tang b) x 10000 unit.
+    """
+    blocks_tr = [X4tr] + list(a.blocks_tr)
+    blocks_te = [X4te] + list(a.blocks_te)
+    nb = len(blocks_tr)
+    set_seed(a.seed)
+    Ws = []
+    for X in blocks_tr:
+        n = X.shape[1]
+        W = torch.zeros(a.expand_dim, n)
+        for r in range(a.expand_dim):
+            pick = torch.randperm(n)[:min(deg3 or a.deg_s4, n)]
+            W[r, pick] = torch.randn(pick.numel())
+        Ws.append(W.to(dev))
+
+    E = a.expand_dim * nb
+    k = int(E * a.coding_level)
+    Q = torch.zeros(E, a.num_classes, device=dev)
+    G = torch.zeros(E, E, device=dev)
+    eye = torch.eye(E, device=dev)
+    acc = [[0.0] * a.num_tasks for _ in range(a.num_tasks)]
+
+    def code(msk, tr):
+        src = blocks_tr if tr else blocks_te
+        return topk_rows(torch.cat([W @ X[msk].T for W, X in zip(Ws, src)]), k)
+
+    for task in range(a.num_tasks):
+        lo = task * data.cpt
+        msk = (data.ytr >= lo) & (data.ytr < lo + data.cpt)
+        Ytr = data.ytr[msk]
+        H = code(msk, True)
+        Y = torch.zeros(Ytr.shape[0], a.num_classes, device=dev)
+        Y.scatter_(1, Ytr.long().view(-1, 1), 1.0)
+        Q += H @ Y
+        G += H @ H.T
+        ridge = select_ridge_parameter(H.T, Y, a.ridge_lower, a.ridge_upper)
+        Wo = torch.cholesky_solve(Q, torch.linalg.cholesky(G + ridge * eye))
+        del H, Y
+        for i in range(task + 1):
+            m2 = (data.yte >= i * data.cpt) & (data.yte < (i + 1) * data.cpt)
+            acc[i][task] = ((code(m2, False).T @ Wo).argmax(1)
+                            == data.yte[m2]).float().mean().item() * 100
 
     A_t = [float(np.mean([acc[i][t] for i in range(t + 1)])) for t in range(a.num_tasks)]
     last = a.num_tasks - 1
@@ -246,7 +305,8 @@ def main():
     p.add_argument('--mode', default='mix', choices=['mix', 'split', 'ens'])
     p.add_argument('--branches', type=int, default=1)
     p.add_argument('--combine', default='sum',
-                   choices=['sum', 'prod', 'concat', 's4prod', 'all'])
+                   choices=['sum', 'prod', 'concat', 's4prod', 'all',
+                            'concat_sep'])
     p.add_argument('--blockwise', default='False', choices=['True', 'False'],
                    help='split: top-k rieng trong tung nhom unit thay vi toan cuc')
     p.add_argument('--grid', default='0:1,50:1,100:1,150:1,300:1,150:0.5,150:2',
@@ -274,6 +334,8 @@ def main():
         sc.append((r4 / ri).item())
         X3tr.append(data.Xtr[:, BSL[i]] * sc[-1])
         X3te.append(data.Xte[:, BSL[i]] * sc[-1])
+    if a.combine == 'concat_sep':
+        a.blocks_tr, a.blocks_te = X3tr, X3te      # giu rieng tung tang
     X3tr = torch.cat(X3tr, 1)
     X3te = torch.cat(X3te, 1)
     s = sc[0]
@@ -288,7 +350,11 @@ def main():
     for spec in a.grid.split(','):
         x, y = spec.split(':')
         t0 = time.time()
-        if a.mode == 'ens':
+        if a.combine == 'concat_sep':
+            x, y = int(x), float(y)
+            r = run_concat_sep(a, X4tr, X4te, data, x, dev)
+            lbl = f"{x} | {y:g}"
+        elif a.mode == 'ens':
             x, y = int(x), float(y)
             r = run_ens(a, X3tr, X4tr, X3te, X4te, data, x, y, dev)
             lbl = f"{x} | {y:g}"
