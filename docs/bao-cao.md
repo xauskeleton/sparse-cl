@@ -24,13 +24,25 @@ EWC-DR có tác dụng đo được nhưng chỉ ở các cấu hình vốn đã
 vượt qua được `frozen projection + Linear head`. Fine-tune backbone làm tệ đi 7 điểm với chi
 phí gấp 170–200 lần.
 
-**Cải tiến thực sự tìm được đến từ một hướng khác hẳn.** Thay vì chiếu một vector đặc trưng,
-chiếu **hai tầng** của backbone lên cùng số chiều rồi **nhân từng phần tử** trước top-k. Trên
-đúng giao thức của Fly-CL, cách này cho **+1.09 ± 0.18 Ā** và **+1.28 ± 0.13 A_T** qua 5 seed,
-forgetting không xấu đi, và **không tốn thêm một byte bộ nhớ nào**. Kết hợp bằng phép cộng ở
-cùng cấu hình chỉ cho +0.27 — nên phần giá trị nằm ở tính **phi tuyến bậc hai** của phép nhân,
-không phải ở việc có thêm đặc trưng. Chi tiết ở mục *Cải tiến Fly-CL bằng tương tác giữa hai
-tầng backbone*.
+**Cải tiến thực sự tìm được đến từ một hướng khác hẳn.** Thay vì chiếu **một** vector đặc
+trưng, chiếu **hai tầng** của backbone (stage 3 và stage 4) bằng hai projection riêng rồi kết
+hợp trước top-k. Trên đúng giao thức của Fly-CL, 3 seed:
+
+| | Δ A_T | Δ Ā | Δ Forgetting | Bộ nhớ |
+|---|---:|---:|---:|---|
+| **product** `a ⊙ b` | +1.31 ± 0.15 | +1.18 ± 0.14 | −0.26 | **không đổi** |
+| **concat** `[a ; b]` | +2.07 ± 0.06 | +1.37 ± 0.18 | −1.06 | gấp 4 |
+
+`product` là cải tiến duy nhất trong báo cáo **không tốn thêm bộ nhớ**. `concat` hơn rõ ở A_T
+và forgetting nhưng gấp bốn lần bộ nhớ, vì `G` cỡ `E²`.
+
+Kết hợp bằng phép **cộng** ở cùng cấu hình chỉ cho +0.27 — nên phần giá trị nằm ở **phi tuyến
+bậc hai**, không phải ở việc có thêm đặc trưng. Hai đối chứng chốt cơ chế: nhân hai projection
+của **cùng** stage 4 cho −0.84, và dùng stage 2 thay stage 3 chỉ cho +0.24 — lợi ích đòi hỏi
+**hai tầng khác nhau và liền kề**.
+
+Để so sánh: ở cùng 1.6 GB, tăng `expand_dim` lên 20.000 **làm tệ đi** 1.38 điểm. Chi tiết ở
+mục *Cải tiến Fly-CL bằng tương tác giữa hai tầng backbone*.
 
 ## Thiết lập
 
@@ -469,8 +481,8 @@ Toàn bộ mục này chạy trên **đúng giao thức của họ**: checkpoint
 `flycl_baseline.py`, không phải con số công bố — lý do nêu ở cuối mục.
 
 Ý tưởng: Fly-CL chiếu **một** vector đặc trưng (stage 4, 2048 chiều) lên 10.000 chiều rồi
-top-k. Thay vào đó, chiếu **hai** tầng lên cùng 10.000 chiều bằng hai ma trận riêng, rồi
-**nhân từng phần tử** trước khi top-k:
+top-k. Thay vào đó, chiếu **hai** tầng bằng hai ma trận riêng rồi kết hợp trước khi top-k —
+bằng **product** (giữ 10.000 unit) hoặc **concat** (thành 20.000 unit):
 
 ```
 a = W₄ · x₄     [10000]        W₄: [10000, 2048], 300 ket noi moi hang
@@ -488,71 +500,108 @@ statistics, nên **tính bất biến theo thứ tự task được giữ nguyê
 
 ### Bảng 1 — kết quả chính
 
-Ba seed (1993 / 2023 / 2025) cho cả bốn dòng, hiệu tính **theo cặp** từng seed:
+Ba seed (1993 / 2023 / 2025), hiệu tính **theo cặp** từng seed. Xếp theo ngân sách bộ nhớ để
+so được công bằng — `G` cỡ `E²` nên gấp đôi số unit là gấp bốn bộ nhớ.
 
-| | A_T | Ā | Forgetting | Bộ nhớ `G` | Δ Ā theo cặp |
-|---|---:|---:|---:|---:|---:|
-| *Paper công bố* | — | *84.61 ± 0.16* | — | 0.4 GB | |
-| Fly-CL, bản tái lập | 76.76 | 84.19 ± 0.42 | 8.13 | 0.4 GB | — |
-| **+ tương tác s3 × s4** | **78.07** | **85.38 ± 0.42** | 7.87 | **0.4 GB** | **+1.18 ± 0.14** |
-| + ensemble 2 nhánh | 78.60 | 85.83 ± 0.48 | 7.70 | 0.8 GB | +1.64 ± 0.19 |
-| + ensemble 5 nhánh | **78.84** | **86.11 ± 0.38** | 7.80 | 2.0 GB | **+1.92 ± 0.08** |
+| Cấu hình | Unit | Bộ nhớ | A_T | Ā | Forgetting | Δ Ā theo cặp |
+|---|---:|---:|---:|---:|---:|---:|
+| *Paper công bố* | 10.000 | 0.4 GB | — | *84.61 ± 0.16* | — | |
+| **Fly-CL, bản tái lập** | 10.000 | 0.4 GB | 76.76 | 84.19 ± 0.42 | 8.13 | — |
+| **+ product** `a ⊙ b` | 10.000 | **0.4 GB** | 78.07 | 85.38 ± 0.42 | 7.87 | **+1.18 ± 0.14** |
+| `expand_dim` 20.000 | 20.000 | 1.6 GB | 76.86 | 82.81 | 7.38 | −1.38 |
+| **+ concat** `[a ; b]` | 20.000 | 1.6 GB | **78.83** | **85.56 ± 0.29** | **7.06** | **+1.37 ± 0.18** |
+| + ensemble 5 nhánh | 50.000 | 2.0 GB | 77.49 | 85.01 | 8.09 | +0.82 ± 0.13 |
+| + product + ensemble 5 | 50.000 | 2.0 GB | 78.84 | **86.11 ± 0.38** | 7.80 | **+1.92 ± 0.08** |
 
-Ba dòng cải tiến đều dương ở cả ba seed, không có ngoại lệ.
+Ba cấu hình cải tiến đều dương ở cả ba seed, không ngoại lệ.
 
-**Dòng thứ hai là cấu hình đáng khuyến nghị**: nó dùng đúng 0.4 GB như bản gốc — cùng 10.000
-unit, cùng `G` cỡ 10.000², chỉ thêm một ma trận chiếu thưa (3 triệu giá trị, không đáng kể).
-Hai dòng dưới mua thêm 0.74 điểm bằng **5 lần bộ nhớ và 5 lần thời gian**, nên không nên coi
-86.11 là con số đại diện.
+**Ở ngân sách 0.4 GB** — tức không tốn thêm gì so với Fly-CL gốc — chỉ có `product`. Đây là
+cải tiến duy nhất trong toàn bộ báo cáo **miễn phí**: cùng 10.000 unit, cùng `G` cỡ 10.000²,
+chỉ thêm một projection thưa (3 triệu giá trị khác 0).
 
-Riêng dòng tương tác s3 × s4 còn được đo trên **5 seed** (thêm 42 và 7), cho
-**+1.09 ± 0.18 Ā** và **+1.28 ± 0.13 A_T** — sai số chuẩn 0.08, tức hiệu ứng lớn gấp 14 lần
-sai số. Xác nhận độc lập thêm ở 3 seed trên checkpoint `a1_in1k` (+0.83 … +1.26) và ở 4 mức
-`coding_level` 0.05/0.1/0.2/0.3 (+1.03 … +1.16). Tổng cộng **12 phép đo, hai checkpoint, bốn
-coding level, tất cả dương trong khoảng 0.83–1.31**.
+**Ở ngân sách 1.6 GB**, đối thủ của `concat` không phải Fly-CL gốc mà là `expand_dim` 20.000 —
+cũng 20.000 unit, cũng 1.6 GB. Khác đúng một chỗ: 10.000 unit thứ hai chiếu từ **stage 3** hay
+từ **stage 4 lần nữa**. Chiếu từ stage 3 hơn **+2.75 Ā**, và `expand_dim` 20.000 thực ra
+**làm tệ đi** 1.38 điểm so với 10.000.
 
-Một điểm về phương sai đáng ghi: ensemble **không** làm σ giữa các seed nhỏ đi (0.42 → 0.48 →
-0.38). Lý do là `--seed` điều khiển **cả** thứ tự lớp **lẫn** phép chiếu, mà ensemble chỉ trung
-bình hoá được phép chiếu. Phần phương sai còn lại đến từ thứ tự lớp và không cách nào khử bằng
-ensemble. Nhưng ở A_T thì có thấy hiệu ứng: σ của dòng 5 nhánh là 0.09, nhỏ nhất trong bảng.
+**Product và concat chênh nhau 0.18 ở Ā** — nằm trong nhiễu, không đáng gấp bốn lần bộ nhớ.
+Nhưng ở hai chỉ số còn lại thì concat hơn rõ:
+
+| | Δ A_T | Δ Forgetting |
+|---|---:|---:|
+| product | +1.31 ± 0.15 | −0.26 |
+| **concat** | **+2.07 ± 0.06** | **−1.06** |
+
+Concat tốt hơn hẳn **ở giai đoạn cuối** — đúng chỉ số quan trọng nhất của continual learning —
+còn Ā bị kéo lại vì các giai đoạn đầu hai bên ngang nhau. Độ lệch của Δ A_T chỉ **0.06** qua ba
+seed. Concat cũng **ổn định nhất bảng** (σ 0.29 so với 0.42 của cả baseline lẫn product).
+
+Riêng dòng `product` còn được đo trên **5 seed** (thêm 42 và 7): +1.09 ± 0.18 Ā và
++1.28 ± 0.13 A_T. Xác nhận độc lập thêm ở 3 seed trên checkpoint `a1_in1k` (+0.83 … +1.26) và
+ở 4 mức `coding_level` 0.05/0.1/0.2/0.3 (+1.03 … +1.16). Tổng **12 phép đo, hai checkpoint,
+bốn coding level, tất cả dương trong khoảng 0.83–1.31**.
+
+Product và ensemble **độc lập, cộng dồn được**: riêng lẻ +1.18 và +0.82, kết hợp +1.92 (tổng lý
+thuyết 2.00). Khác với `expand_dim`, vốn **không** cộng dồn với product — cả hai cùng làm mã
+giàu hơn nên thay thế nhau, còn ensemble tác động lên phương sai nên độc lập.
+
+Một điểm về phương sai: ensemble **không** làm σ giữa các seed nhỏ đi (0.42 → 0.38). Lý do là
+`--seed` điều khiển **cả** thứ tự lớp **lẫn** projection, mà ensemble chỉ trung bình hoá được
+projection. Phần phương sai còn lại đến từ thứ tự lớp và không khử được bằng ensemble.
 
 ### Bảng 2 — chọn tầng và cách kết hợp
 
 Một seed (1993). Mốc Fly-CL gốc: A_T 76.99, Ā 84.08.
 
-| Tầng thứ hai | Cách kết hợp | Unit | Bộ nhớ | A_T | Ā | Δ Ā |
-|---|---|---:|---:|---:|---:|---:|
-| stage 3 | cộng `a + b` | 10.000 | 0.4 GB | 76.82 | 84.35 | +0.27 |
-| **stage 3** | **nhân `a ⊙ b`** | 10.000 | 0.4 GB | 78.13 | **85.12** | **+1.04** |
-| stage 3 | ghép `[a ; b]` | 20.000 | 1.6 GB | 79.01 | 85.60 | +1.52 |
-| stage 2 | nhân | 10.000 | 0.4 GB | 77.01 | 84.32 | +0.24 |
-| **stage 4** (chính nó) | nhân | 10.000 | 0.4 GB | 76.59 | 83.25 | **−0.84** |
+| Cách kết hợp stage 3 với stage 4 | Unit | Bộ nhớ | A_T | Ā | Δ Ā |
+|---|---:|---:|---:|---:|---:|
+| **product** `a ⊙ b` | 10.000 | 0.4 GB | 78.13 | 85.12 | +1.04 |
+| **concat** `[a ; b]` | 20.000 | 1.6 GB | **79.01** | **85.60** | **+1.52** |
+| concat, `b` = stage 2 + stage 3 | 20.000 | 1.6 GB | 78.43 | 85.15 | +1.07 |
 
-Hai dòng đầu khác nhau **đúng một dấu phép toán** — cùng đặc trưng, cùng phép chiếu, cùng bộ
-nhớ. Cộng cho +0.27, nhân cho +1.04. Đó là phép so sạch nhất trong báo cáo.
+Hai lựa chọn nằm ở hai ngân sách khác nhau, nên không thay thế nhau. **Product** giữ nguyên
+10.000 unit — cùng bộ nhớ với Fly-CL gốc, tức cải tiến **miễn phí**. **Concat** cho điểm cao
+hơn nhưng gấp đôi số unit, và vì `G` cỡ `E²` nên **gấp bốn bộ nhớ**.
 
-Dòng cuối là đối chứng quyết định: nhân hai phép chiếu **độc lập của cùng stage 4** thì có
-hại. Nên lợi ích **không** đến từ "đặc trưng bậc hai nói chung" mà đòi hỏi hai tầng **khác
-nhau**. Và đỉnh nằm ở tầng **liền kề** — stage 2 chỉ cho +0.24.
+Ở ngân sách 1.6 GB, đối thủ của concat không phải Fly-CL gốc mà là Fly-CL với
+`expand_dim` 20.000 — cũng 20.000 unit, cũng 1.6 GB, khác đúng chỗ 10.000 unit thứ hai chiếu
+từ **stage 3** hay từ **stage 4 lần nữa**. Con số đó là **82.81**, nên concat thắng **+2.79**.
+Đó mới là phép so đúng cho dòng này.
 
-Dòng `ghép` cho Ā cao hơn nhưng dùng 20.000 unit và **gấp 4 lần bộ nhớ** (`G` cỡ `E²`), nên
-không so trực tiếp được. Ở cùng ngân sách bộ nhớ thì phép nhân thắng.
+Một đối chứng chạy riêng định vị nguồn gốc của cải tiến. Nếu kết hợp bằng **phép cộng** thay vì
+product — tức `[W₄ | W₃]·[x₄ ; x₃]`, một projection duy nhất trên đặc trưng đã nối — thì chỉ
+được Ā 84.35, tức **+0.27**. Cùng đặc trưng, cùng projection, cùng số unit, cùng bộ nhớ; khác
+đúng một dấu phép toán. Nên phần giá trị nằm ở **tính phi tuyến bậc hai**, không phải ở việc có
+thêm đặc trưng.
+
+Hai đối chứng chạy riêng, cùng seed và cùng cấu hình, xác định rằng lợi ích đòi hỏi **hai tầng
+khác nhau và kề nhau**:
+
+- Nhân hai phép chiếu **độc lập của cùng stage 4**: Ā 83.25, tức **−0.84**. Nên "đặc trưng bậc
+  hai nói chung" không giải thích được kết quả — nó phải là tương tác **giữa hai tầng**.
+- Dùng **stage 2** thay stage 3: Ā 84.32, chỉ **+0.24**. Đỉnh nằm ở tầng liền kề stage 4.
 
 ### Bảng 3 — ensemble
 
 `m` nhánh độc lập, mỗi nhánh một cặp `(W₄, W₃)` và một `G` riêng, **mọi nhánh thấy toàn bộ dữ
 liệu**, cộng logit khi dự đoán. Nền là cấu hình trộn nhân. Một seed (1993).
 
-| Nhánh | Unit | Bộ nhớ | Thời gian | A_T | Ā | Δ từng bước |
-|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 10.000 | 0.4 GB | 97s | 78.13 | 85.12 | — |
-| 2 | 20.000 | 0.8 GB | 196s | 78.47 | 85.50 | +0.38 |
-| **5** | 50.000 | 2.0 GB | 489s | **78.87** | **85.93** | +0.43 |
-| 10 | 100.000 | 4.0 GB | 993s | 78.85 | 85.96 | **+0.03** |
-| 20 | 200.000 | 8.0 GB | 2264s | 78.94 | 85.97 | **+0.01** |
+Δ tính so với **Fly-CL gốc** (Ā 84.08, cùng seed), không phải so với bước trước.
 
-**Bão hoà ở m = 5.** Từ 5 lên 20 chỉ được **+0.04** trong khi tốn **4 lần bộ nhớ và 4.6 lần
-thời gian**.
+| Nhánh | Unit | Bộ nhớ | Thời gian | Ā, **không** product | Ā, **có** product |
+|---:|---:|---:|---:|---:|---:|
+| — | 10.000 | 0.4 GB | 97s | 84.08 | 85.12 |
+| 2 | 20.000 | 0.8 GB | 196s | 84.57 | 85.50 |
+| **5** | 50.000 | 2.0 GB | 489s | **84.75** | **85.93** |
+| 10 | 100.000 | 4.0 GB | 993s | — | 85.96 |
+| 20 | 200.000 | 8.0 GB | 2264s | — | 85.97 |
+
+Cột cuối là seed 1993. Trung bình 3 seed: ensemble 5 riêng lẻ cho **+0.82 ± 0.13**, chồng lên
+product cho **+0.74** nữa (85.38 → 86.11).
+
+**Bão hoà ở m = 5.** Từ 5 lên 20 chỉ thêm **+0.04** trong khi tốn **4 lần bộ nhớ và 4.6 lần
+thời gian**. Riêng phần đóng góp của ensemble (tách khỏi +1.04 của trộn nhân) là **+0.81** ở
+m = 5, và bằng đó là hết.
 
 Hiệu ứng này **bất biến với cấu hình nền**: đo lần hai trên `a1_in1k` + `coding_level` 0.1 +
 kết hợp tuyến tính cho +0.40 / +0.88 / +0.91 ở m = 2/5/10 — gần trùng khít, và cũng bão hoà
@@ -576,7 +625,11 @@ phép tính nào trong backbone — bản đồ stage 3 đã được tính sẵ
 vẫn là **đầu vào giàu hơn**, nên phép so công bằng phải cho cả hai bên cùng đầu vào. Con số đó
 có trong Bảng 2: cùng s3 + s4 và cùng 20.000 unit, nhân hơn ghép tuyến tính **+0.83**.
 
-**Chỉ Bảng 1 có 5 seed.** Bảng 2 và Bảng 3 mới một seed.
+**Số seed không đều.** Bảng 1 có 3 seed cho mọi dòng (dòng `product` có 5). Bảng 2 và Bảng 3
+mới một seed.
+
+**Cách phân bổ top-k không quan trọng.** Với `concat`, để hai nửa cạnh tranh tự do (6.000 suất
+chung) hay ép chia đều (3.000 mỗi nửa) cho kết quả gần như nhau: 85.59 so với 85.54.
 
 ## Các can thiệp đã thử và bị bác bỏ
 
