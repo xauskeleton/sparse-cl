@@ -1,6 +1,9 @@
-# EWC-DR da co .git rieng (clone tu upstream scarlet0703/EWC-DR).
-# Khong track o day de tranh nested repo; sua doi trong do commit bang git cua no.
+# Cac repo vendor co .git rieng - khong track o day de tranh nested repo.
+# Clone lai bang:
+#   git clone https://github.com/scarlet0703/EWC-DR      upstream/EWC-DR
+#   git clone https://github.com/SalehMomeni/AnaCP       upstream/AnaCP
 upstream/EWC-DR/
+upstream/AnaCP/
 
 # Du lieu - khong bao gio commit
 data/
