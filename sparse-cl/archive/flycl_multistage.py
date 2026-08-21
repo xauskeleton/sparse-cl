@@ -29,9 +29,9 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter, topk_rows
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter, topk_rows
+from backbone import cache_exists, load_backbone
 
 STAGE_DIMS = (256, 512, 1024, 2048)
 SUBSETS = [(3,), (2, 3), (1, 2, 3), (0, 1, 2, 3)]
@@ -48,7 +48,7 @@ def run(a, data, cols, dev):
     set_seed(a.seed)
     W = torch.zeros(a.expand_dim, d)
     for r in range(a.expand_dim):
-        # Phai tach `cols` ra dong rieng, giong het flycl_baseline. Viet gop
+        # Phai tach `cols` ra dong rieng, giong het Fly-CL goc. Viet gop
         # W[r, torch.randperm(d)[:n]] = torch.randn(n) thi Python danh gia ve
         # PHAI truoc -> randn chay truoc randperm -> thu tu tieu thu RNG dao
         # nguoc -> ma tran chieu khac han du cung seed.
@@ -61,7 +61,7 @@ def run(a, data, cols, dev):
     G = torch.zeros(a.expand_dim, a.expand_dim, device=dev)
     acc = [[0.0] * a.num_tasks for _ in range(a.num_tasks)]
 
-    # Vong lap duoi day phai khop TUNG DONG voi flycl_baseline.main(), ke ca
+    # Vong lap duoi day phai khop TUNG DONG voi Fly-CL goc.main(), ke ca
     # thu tu hang va cho tinh ma test: khac di thi thu tu cong don fp32 khac va
     # dong s4 khong con tai lap dung baseline, tuc mat phep tu kiem tra.
     for task in range(a.num_tasks):

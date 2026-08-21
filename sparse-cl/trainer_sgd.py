@@ -1,11 +1,11 @@
 """Vong lap continual learning.
 
-    python train.py                       # cau hinh mac dinh
-    python train.py --help                # toan bo flag
+    python train_sgd.py                       # cau hinh mac dinh
+    python train_sgd.py --help                # toan bo flag
     python config.py <flags>              # chi kiem tra tinh hop le, khong chay
 
 Chi so bao cao khop dinh nghia cua Fly-CL de so sanh truc tiep voi
-Fly-CL-main/log_cifar_seed1993.txt:
+upstream/Fly-CL-main/log_cifar_seed1993.txt:
     A_t  = trung binh accuracy tren cac task 0..t sau khi hoc xong task t
     A_T  = A_t o task cuoi          ("last stage accuracy")
     A~   = trung binh cua A_t       ("accumulated / overall accuracy")
@@ -20,58 +20,13 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from backbone import cache_exists, load_backbone
 from config import get_parser, validate
-from data import ImageTaskData, TaskData, batches, make_preprocess, set_seed
-from model import build_model
+from data_loader import ImageTaskData, TaskData, batches, make_preprocess, set_seed
+from models._sgd_model import build_model
 
 
 # --------------------------------------------------------------------------- #
-
-class _MultiStage(torch.nn.Module):
-    """Global-average-pool tung stage roi ghep lai thanh mot vector."""
-
-    STAGE_DIMS = (256, 512, 1024, 2048)
-
-    def __init__(self, base):
-        super().__init__()
-        self.base = base
-
-    def forward(self, x):
-        return torch.cat([f.mean((2, 3)) for f in self.base(x)], 1)
-
-
-def load_backbone(model_name, device):
-    """Chi goi khi CHUA co cache. Co cache roi thi khong can ViT -> chay duoc
-    ca tren session CPU."""
-    import timm
-    if model_name == 'vit_base_patch16_224':
-        m = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=0)
-    elif model_name in ('resnet-50', 'resnet50'):
-        m = timm.create_model('resnet50', pretrained=True, num_classes=0)
-    elif model_name.endswith('+ms'):
-        # Ghep global-average-pool cua 4 stage: 256+512+1024+2048 = 3840.
-        # Tang cuoi da chuyen biet hoa cho 1000 lop ImageNet; tang giua tong
-        # quat hon va mang thong tin BO TRO - do duoc khi ket hop bang phep
-        # nhan. Backbone van dong bang nen Q, G van la sufficient statistics.
-        base = timm.create_model(model_name[:-3], pretrained=True,
-                                 features_only=True, out_indices=(1, 2, 3, 4))
-        m = _MultiStage(base)
-    elif '.' in model_name:
-        # Tag timm day du, vd resnet50.tv2_in1k = checkpoint torchvision
-        # IMAGENET1K_V2 ma Fly-CL dung (resnet50-11ad3fa6.pth). Tag di vao ten
-        # cache nen khong dam vao cache cua backbone khac.
-        m = timm.create_model(model_name, pretrained=True, num_classes=0)
-    else:
-        raise ValueError(f"backbone khong ho tro: {model_name}")
-    cfg = getattr(m, 'default_cfg', None) or {}
-    print(f"[model] backbone {model_name} | tag={cfg.get('tag', '?')}")
-    return m.eval().to(device)
-
-
-def cache_exists(args):
-    tag = f"{args.dataset}_{args.model_name}_{args.data_augmentation}"
-    return os.path.exists(os.path.join(args.cache_dir, f"{tag}.pt"))
-
 
 def build_optimizer(model, args):
     groups = model.param_groups()
@@ -236,8 +191,8 @@ def compute_metrics(acc, T):
     }
 
 
-def main():
-    args = validate(get_parser().parse_args())
+def train_sgd(args):
+    args = validate(args)
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else 'cpu')
     set_seed(args.seed)
 
@@ -334,4 +289,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    train_sgd(get_parser().parse_args())

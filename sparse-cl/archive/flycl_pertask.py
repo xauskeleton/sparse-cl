@@ -21,9 +21,9 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter, topk_rows
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter, topk_rows
+from backbone import cache_exists, load_backbone
 
 
 def run(a, data, per_task, dev):

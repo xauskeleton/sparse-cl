@@ -3,7 +3,7 @@
     python flycl_improved.py --coding_level 0.1
     python flycl_improved.py --model_name resnet50 --data_augmentation resnet --coding_level 0.1
 
-`flycl_baseline.py` giu nguyen ban da doi chieu duoc voi log goc cua ho
+`Fly-CL goc` giu nguyen ban da doi chieu duoc voi log goc cua ho
 (ViT: 88.77/93.11 so voi 88.68/92.99) va KHONG duoc sua - no la doi chung.
 File nay chi import lai tu do roi them bien the.
 
@@ -36,9 +36,9 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter, topk_rows
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter, topk_rows
+from backbone import cache_exists, load_backbone
 
 VARIANTS = [('task', 'pos'), ('accum', 'pos'), ('task', 'abs'), ('accum', 'abs')]
 

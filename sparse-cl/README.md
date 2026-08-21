@@ -1,8 +1,8 @@
 # sparse-cl
 
-Model riêng. **Không phụ thuộc và không sửa gì trong `EWC-DR/` hay `Fly-CL-main/`** — hai thư mục đó giữ nguyên trạng để đối chứng.
+Model riêng. **Không phụ thuộc và không sửa gì trong `upstream/EWC-DR/` hay `upstream/Fly-CL-main/`** — hai thư mục đó giữ nguyên trạng để đối chứng.
 
-Kết quả đầy đủ: [`../docs/bao-cao.md`](../docs/bao-cao.md).
+Báo cáo kết quả đầy đủ được giữ trong workspace nghiên cứu, không nằm trong repo này.
 
 ## Kiến trúc
 
@@ -18,39 +18,82 @@ Train end-to-end bằng cross-entropy. Hai cơ chế chống quên: **sparsity**
 chiếm một tập con khác nhau của không gian ẩn) và **EWC-DR** (hình phạt bậc hai
 lên các tham số học liên tục).
 
-## File
+## Cấu trúc
 
-| File | Nội dung |
-|---|---|
-| `config.py` | Toàn bộ flag + `validate()` chặn các tổ hợp mâu thuẫn + `_auto_name()` sinh tên run |
-| `model.py` | `SparseProjection`, `TopK`, `IncrementalLinear`, `SparseExpandCL`, `Regularizer` |
-| `data.py` | `TaskData` (feature đã cache) và `ImageTaskData` (ảnh thô, cho fine-tune) |
-| `train.py` | Vòng lặp task, early stopping, EWC-DR, metrics + chẩn đoán |
-| `run_grid.py` | Chạy nhiều cấu hình / seed / λ trong một lệnh, ghi log gộp |
-| `make_table.py` | Dựng bảng kết quả từ `runs/`, **lọc theo giao thức** |
-| `flycl_baseline.py` | Thuật toán Fly-CL (closed-form ridge) chạy trên feature của ta — **bản đối chứng, không sửa** |
-| `flycl_*.py` (improved, multistage, moe, blocktopk, ensemble) | Các biến thể đề xuất cho Fly-CL — xem mục cuối |
-| `backbone_run.ipynb` | Bản Kaggle: clone repo → chạy lưới → bảng + zip kết quả |
+```
+src/sparse_cl/            thu vien, cai bang `pip install -e .`
+  config.py               toan bo flag + validate() + _auto_name()
+  data.py                 TaskData (feature cache) / ImageTaskData (anh tho)
+  backbones.py            load_backbone, cache_exists
+  ridge.py                select_ridge_parameter, topk_rows - sao NGUYEN VAN tu Fly-CL
+  model.py                SparseExpandCL, Regularizer - chi nhanh SGD dung
+
+experiments/              moi file la mot thi nghiem chay duoc, khong import lan nhau
+  flycl.py                Fly-CL nghiem dong;  --grid 0:1 la moc goc,
+                          300:1 la noi stage 3 + stage 4;  --mode ens de ensemble
+  fsa.py                  First-Session Adaptation - sinh cache feature moi
+  anacp_cp.py             tang Contrastive Projection cua AnaCP, 4 vi tri dat
+  anacp_full.py           AnaCP day du: 2 tang ridge + pseudo-replay
+  anacp_reference.py      chay code NGUYEN BAN cua AnaCP tren feature cua ta
+  train_sgd.py            nhanh SGD: projection hoc duoc, MLP head, EWC-DR
+  run_grid.py             chay luoi cau hinh/seed/lambda cho nhanh SGD
+  make_table.py           dung bang tu runs/, LOC THEO GIAO THUC
+
+archive/                  cac bien the da bi bac bo, giu de tra cuu
+notebooks/                backbone_run.ipynb (ban Kaggle)
+cache/ runs/ logs/ data/  sinh ra khi chay, deu trong .gitignore
+```
+
+`src/sparse_cl/ridge.py` giữ hai hàm `select_ridge_parameter` và `topk_rows`, sao **nguyên
+văn** từ `main.py` của Fly-CL. Nhờ đó không file nào trong `experiments/` phải import lẫn nhau.
+
+Không có file baseline riêng: `flycl.py --grid 0:1` (tức `deg_s3 = 0`) tái lập **chính
+xác** Fly-CL gốc — cùng thứ tự tiêu thụ RNG, cùng kết quả đến từng chữ số.
+
+Hai pipeline độc lập trong repo này: **nghiệm đóng** (`flycl`, `fsa`, `anacp_*`) là nơi có
+mọi kết quả dương, và **SGD** (`train_sgd`, `run_grid`, `make_table`, `model.py`) là hướng
+ban đầu — kết quả toàn âm, giữ lại để đối chứng.
+
+## Cài
+
+```bash
+pip install -r requirements.txt
+pip install -e .          # cho `import sparse_cl` chay duoc tu bat ky dau
+```
 
 ## Chạy
 
 ```bash
-# một cấu hình
-python train.py --model_name resnet50 --data_augmentation resnet \
-                --train_projection False --projection_schedule task0 --use_mlp False
+# cai tien chinh: noi stage 3 + stage 4  (grid 0:1 la doi chung khong dung stage 3)
+python experiments/flycl.py --model_name resnet50.tv2_in1k        --coding_level 0.3 --grid 0:1,300:1
 
-# cả lưới 6 cấu hình × {không reg, EWC-DR}, backbone đóng băng, 3 seed
-python run_grid.py --backbone resnet --configs all --regs none,ewc_dr --seeds 1993,2023,2025
+# + ensemble 5 nhanh
+python experiments/flycl.py --model_name resnet50.tv2_in1k        --coding_level 0.3 --mode ens --branches 5 --grid 300:1
 
-# fine-tune backbone
-python run_grid.py --backbone resnet --configs 1,3,5 --freeze_backbone False --epochs 100
+# First-Session Adaptation roi chay lai tren feature da adapt
+python experiments/fsa.py  --seed 1993 --epochs 10
+python experiments/flycl.py --model_name resnet50.tv2_in1k+fsa1993+ms        --coding_level 0.3 --grid 0:1,300:1 --ridge_lower 5
 
-# bảng kết quả
-python make_table.py --backbone resnet
 
-# mốc so sánh Fly-CL trên chính checkpoint của ta
-python flycl_baseline.py --model_name resnet50 --data_augmentation resnet --coding_level 0.1
+# nhanh SGD
+python experiments/run_grid.py --backbone resnet --configs all        --regs none,ewc_dr --seeds 1993,2023,2025
+python experiments/make_table.py --backbone resnet
 ```
+
+`--ridge_lower 5` là **bắt buộc** trên feature đã FSA: ở sàn 3, GCV rơi vào một cực tiểu
+giả ở task 3 (`residual = 0`, `df/n = 0.9922` → GCV = 0/0) và Cholesky sập.
+
+Các file trong `archive/` chạy bằng module: `python -m archive.flycl_moe --help`.
+
+`anacp_reference.py` cần repo AnaCP của tác giả:
+
+```bash
+git clone https://github.com/SalehMomeni/AnaCP
+python experiments/anacp_reference.py --anacp_path ./AnaCP
+```
+
+Lần chạy đầu tự tải CIFAR-100 vào `./data` và trọng số backbone, rồi cache feature
+(~5 phút). Sau đó mỗi run mất 23 giây (ViT) hoặc 47–100 giây (ResNet).
 
 ### Giao thức chuẩn của Fly-CL
 
@@ -64,7 +107,7 @@ Ba tham số này phải đúng, sai cái nào cũng làm số ResNet sụt nhi�
 
 ```bash
 # tai lap dung so cua paper: A_T 76.99, A_bar 84.08 (paper: 84.61 +- 0.16)
-python flycl_baseline.py --model_name resnet50.tv2_in1k --data_augmentation resnet \
+python experiments/flycl.py --model_name resnet50.tv2_in1k --grid 0:1 \
                          --coding_level 0.3 --ridge_lower 4 --ridge_upper 10
 ```
 
@@ -136,20 +179,28 @@ Accuracy **không** phản ánh ba vấn đề đầu — model vẫn chạy bì
 
 ## Thử nghiệm cải tiến Fly-CL
 
-Mỗi file chạy độc lập, đều `import` lại từ `flycl_baseline.py` và tái lập đúng
+Mỗi file chạy độc lập và tái lập đúng
 baseline ở cấu hình trung tính (m=1, s4, khối=1) làm phép tự kiểm tra.
 
-| File | Thử gì | Kết quả |
+| File (trong `archive/`) | Thử gì | Kết quả |
 |---|---|---|
 | `flycl_improved.py` | GCV trên dữ liệu tích luỹ; top-k theo trị tuyệt đối | +0.00 / −0.29 |
-| `flycl_multistage.py` | Ghép feature nhiều stage của backbone | +0.16 (`s3+s4`) |
+| `flycl_multistage.py` | Ghép feature nhiều stage (cấp phát kết nối sai — xem `experiments/flycl.py`) | +0.16 |
 | `flycl_moe.py` | Hỗn hợp chuyên gia, cổng đóng băng | −5.93 (m=8) |
 | `flycl_blocktopk.py` | Top-k theo khối thay vì toàn cục | −0.06 |
 | `flycl_ensemble.py` | m phép chiếu độc lập, cộng logit | +0.68 (m=10) |
+| `flycl_deep.py`, `flycl_pertask.py` | tầng sâu hơn; n ma trận cho n task | −, −23.71 |
 
-Kết quả dương duy nhất đáng kể không nằm trong các file trên: **`--expand_dim 20000`
-cho +1.05 ± 0.04** so với mặc định 10000 (3 seed, ResNet-50, CIFAR-100). Xem
-`../docs/bao-cao.md`.
+Hai kết quả dương không nằm trong các file trên, và chúng là nội dung chính của
+`experiments/flycl.py` và `experiments/fsa.py`:
+
+| | Δ Ā | Ghi chú |
+|---|---:|---|
+| `concat` stage 3 + stage 4 | **+1.37 ± 0.18** | 3 seed; `+ ensemble 5` cho +2.30 ± 0.07 |
+| **First-Session Adaptation** | **+3.77** | 1 seed; cộng cả hai được **89.05 Ā** |
+
+Ngoài ra `--expand_dim 20000` cho +1.05 ± 0.04 ở `coding_level` 0.1 nhưng **−1.38** ở
+0.3 — hai tham số này không độc lập.
 
 ### Cạm bẫy khi viết script mới dùng chung ma trận chiếu
 
@@ -157,7 +208,7 @@ cho +1.05 ± 0.04** so với mặc định 10000 (3 seed, ResNet-50, CIFAR-100).
 # SAI - Python danh gia ve PHAI truoc, nen randn chay truoc randperm
 W[r, torch.randperm(d)[:n]] = torch.randn(n)
 
-# DUNG - giong flycl_baseline
+# DUNG - giong Fly-CL goc
 pick = torch.randperm(d)[:n]
 W[r, pick] = torch.randn(n)
 ```

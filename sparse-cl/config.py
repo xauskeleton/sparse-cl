@@ -31,7 +31,7 @@ def get_parser() -> argparse.ArgumentParser:
     g = p.add_argument_group('Task')
     g.add_argument('--dataset', default='CIFAR-100',
                    choices=['CIFAR-100', 'CUB-200-2011', 'VTAB'])
-    g.add_argument('--root', default='../data')
+    g.add_argument('--root', default='./data')
     g.add_argument('--num_classes', type=int, default=100)
     g.add_argument('--num_tasks', type=int, default=10)
 

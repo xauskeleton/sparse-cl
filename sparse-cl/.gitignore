@@ -1,0 +1,24 @@
+# Feature cache, ket qua chay, log - sinh lai duoc
+cache/
+runs/
+logs/
+*.pt
+*.pth
+*.npy
+*.npz
+
+# Dataset
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

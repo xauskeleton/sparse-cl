@@ -175,7 +175,7 @@ conda activate FlyCL
 conda install pytorch==1.13.1 torchvision==0.14.1 pytorch-cuda=11.7 -c pytorch -c nvidia
 conda install "numpy<2.0.0" && conda install timm==0.9.16 tqdm scipy
 
-cd Fly-CL-main/scripts
+cd upstream/Fly-CL-main/scripts
 # sửa --gpu 5 -> --gpu 0 trước khi chạy
 ./test_cifar.sh
 ```

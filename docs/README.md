@@ -5,8 +5,8 @@ Workspace gồm **model của ta** (`sparse-cl/`) và **hai repo đối chứng*
 | Thư mục | Paper | Hướng tiếp cận | Có huấn luyện backbone? |
 |---|---|---|---|
 | [`sparse-cl/`](../sparse-cl/README.md) | — (của ta) | Sparse projection + top-k, head học bằng SGD | Tuỳ chọn |
-| [`EWC-DR/`](./EWC-DR.md) | *Elastic Weight Consolidation Done Right for Continual Learning* (CVPR 2026) | Regularization-based, train from scratch | Có (SGD, 180–200 epoch/task) |
-| [`Fly-CL-main/`](./Fly-CL.md) | *Fly-CL: A Fly-Inspired Framework...* (ICLR 2026) | Pre-trained model + closed-form ridge regression | Không (backbone đóng băng) |
+| [`upstream/EWC-DR/`](./EWC-DR.md) | *Elastic Weight Consolidation Done Right for Continual Learning* (CVPR 2026) | Regularization-based, train from scratch | Có (SGD, 180–200 epoch/task) |
+| [`upstream/Fly-CL-main/`](./Fly-CL.md) | *Fly-CL: A Fly-Inspired Framework...* (ICLR 2026) | Pre-trained model + closed-form ridge regression | Không (backbone đóng băng) |
 
 ## Bản đồ tài liệu
 
@@ -20,8 +20,8 @@ Workspace gồm **model của ta** (`sparse-cl/`) và **hai repo đối chứng*
 
 | File | Nội dung |
 |---|---|
-| `EWC-DR/README.md` | README gốc của tác giả: yêu cầu môi trường, cách tải dataset, lệnh training, citation. |
-| `Fly-CL-main/readme.md` | README gốc: abstract, setup conda, tải pretrained model, lệnh chạy script, citation, liên hệ. |
+| `upstream/EWC-DR/README.md` | README gốc của tác giả: yêu cầu môi trường, cách tải dataset, lệnh training, citation. |
+| `upstream/Fly-CL-main/readme.md` | README gốc: abstract, setup conda, tải pretrained model, lệnh chạy script, citation, liên hệ. |
 
 Tài liệu trong `docs/` **bổ sung** chứ không thay thế hai README trên: README gốc nói *chạy thế nào*, `docs/` giải thích *code hoạt động ra sao và chỗ nào cần sửa*.
 
@@ -46,7 +46,7 @@ CL/
 │   ├── exps/                   <- 10 file JSON cấu hình thí nghiệm
 │   ├── *.ipynb                 <- notebook chạy trên Kaggle
 │   └── data/                   <- dataset (cifar-100-python.tar.gz đã có sẵn)
-└── Fly-CL-main/
+└── upstream/Fly-CL-main/
     ├── main.py                 <- toàn bộ thuật toán nằm ở đây
     ├── utils.py                <- seed, trích xuất đặc trưng, one-hot
     ├── models/load_model.py    <- nạp ViT / ResNet-50 pretrained qua timm

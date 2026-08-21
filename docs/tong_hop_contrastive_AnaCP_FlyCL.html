@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Contrastive CL / AnaCP / Fly-CL</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Contrastive CL / AnaCP / Fly-CL</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tổng-hợp-contrastive-learning-trong-cil-anacp-kế-hoạch-ghép-với-fly-cl">Tổng hợp: Contrastive Learning trong CIL → AnaCP → Kế hoạch ghép với Fly-CL</a>
+<ul>
+<li><a href="#phần-i-nền-tảng-khái-niệm">Phần I — Nền tảng khái niệm</a>
+<ul>
+<li><a href="#ewc-và-giới-hạn-của-regularization">1. EWC và giới hạn của regularization</a></li>
+<li><a href="#contrastive-loss-bản-chất">2. Contrastive loss — bản chất</a></li>
+<li><a href="#hai-trường-phái-tách-class">3. Hai trường phái tách class</a></li>
+<li><a href="#taxonomy-representation-based-cl">4. Taxonomy representation-based CL</a></li>
+<li><a href="#vì-sao-w-của-fly-cl-phải-cố-định">5. Vì sao W của Fly-CL phải cố định</a></li>
+</ul></li>
+<li><a href="#phần-ii-khảo-sát-paper-20252026">Phần II — Khảo sát paper (2025–2026)</a>
+<ul>
+<li><a href="#nhóm-contrastive-full-train-xuyên-suốt">Nhóm “contrastive full” (train xuyên suốt)</a></li>
+<li><a href="#nhóm-contrastive-adapt-chỉ-task-đầu">Nhóm “contrastive adapt” (chỉ task đầu)</a></li>
+<li><a href="#dòng-chảy-co2l">Dòng chảy Co2L</a></li>
+<li><a href="#bài-học-từ-iclr-2026-bị-reject-openreview-ycxnigv6ce">Bài học từ ICLR 2026 bị reject (OpenReview yCXNIgV6ce)</a></li>
+</ul></li>
+<li><a href="#phần-iii-kiến-thức-toán-nền">Phần III — Kiến thức toán nền</a>
+<ul>
+<li><a href="#covariance">Covariance</a></li>
+<li><a href="#whitening">Whitening</a></li>
+<li><a href="#svd">SVD</a></li>
+<li><a href="#neural-collapse-etf">Neural Collapse &amp; ETF</a></li>
+</ul></li>
+<li><a href="#phần-iv-anacp-chi-tiết">Phần IV — AnaCP chi tiết</a>
+<ul>
+<li><a href="#điểm-mấu-chốt">Điểm mấu chốt</a></li>
+<li><a href="#kiến-trúc">Kiến trúc</a></li>
+<li><a href="#background">§3 — Background</a></li>
+<li><a href="#positive-alignment">§4.1 — Positive Alignment</a></li>
+<li><a href="#negative-repulsion">§4.2 — Negative Repulsion</a></li>
+<li><a href="#classifier">§4.3 — Classifier</a></li>
+<li><a href="#thực-nghiệm">§5 — Thực nghiệm</a></li>
+<li><a href="#fsa-điểm-dễ-bỏ-sót">FSA — điểm dễ bỏ sót</a></li>
+<li><a href="#caveat">Caveat</a></li>
+</ul></li>
+<li><a href="#phần-v-kế-hoạch-ghép-với-fly-cl">Phần V — Kế hoạch ghép với Fly-CL</a>
+<ul>
+<li><a href="#so-sánh-pipeline">So sánh pipeline</a></li>
+<li><a href="#pipeline-đầy-đủ-sau-khi-ghép">Pipeline đầy đủ sau khi ghép</a></li>
+<li><a href="#bảng-thay-đổi">Bảng thay đổi</a></li>
+<li><a href="#bê-được-phần-nào">Bê được phần nào</a></li>
+<li><a href="#hai-phương-án-cho-classifier">Hai phương án cho classifier</a></li>
+<li><a href="#ba-rủi-ro-khi-implement">Ba rủi ro khi implement</a></li>
+<li><a href="#code-cần-thêm">Code cần thêm</a></li>
+</ul></li>
+<li><a href="#phần-vi-kế-hoạch-ablation">Phần VI — Kế hoạch ablation</a>
+<ul>
+<li><a href="#nhóm-a-đóng-góp-từng-thành-phần-bắt-chước-table-3-anacp">Nhóm A — Đóng góp từng thành phần (bắt chước Table 3 AnaCP)</a></li>
+<li><a href="#nhóm-b-tần-suất-cập-nhật-cp-đóng-góp-riêng-anacp-không-có">Nhóm B — Tần suất cập nhật CP <em>(đóng góp riêng, AnaCP không có)</em></a></li>
+<li><a href="#nhóm-c-tương-tác-với-đặc-thù-fly-cl-chưa-paper-nào-có">Nhóm C — Tương tác với đặc thù Fly-CL <em>(chưa paper nào có)</em></a></li>
+<li><a href="#nhóm-d-siêu-tham-số">Nhóm D — Siêu tham số</a></li>
+<li><a href="#metric-bổ-sung">Metric bổ sung</a></li>
+<li><a href="#thứ-tự-chạy">Thứ tự chạy</a></li>
+</ul></li>
+<li><a href="#phần-vii-lộ-trình-thực-hiện">Phần VII — Lộ trình thực hiện</a>
+<ul>
+<li><a href="#bước-1-reproduce-anacp">Bước 1 — Reproduce AnaCP</a></li>
+<li><a href="#bước-2-đọc-anacp.py">Bước 2 — Đọc <code>anacp.py</code></a></li>
+<li><a href="#bước-3-port-sang-fly-cl">Bước 3 — Port sang Fly-CL</a></li>
+<li><a href="#bước-4-chạy-ablation-a-b">Bước 4 — Chạy ablation A, B</a></li>
+<li><a href="#bước-5-tùy-chọn-thử-etf">Bước 5 (tùy chọn) — Thử ETF</a></li>
+<li><a href="#ngưỡng-quyết-định">Ngưỡng quyết định</a></li>
+<li><a href="#với-resnet-50">Với ResNet-50</a></li>
+</ul></li>
+<li><a href="#phần-viii-danh-sách-paper">Phần VIII — Danh sách paper</a>
+<ul>
+<li><a href="#có-code-ưu-tiên">Có code (ưu tiên)</a></li>
+<li><a href="#không-có-code-bỏ-qua">Không có code (bỏ qua)</a></li>
+<li><a href="#đáng-đọc-thêm">Đáng đọc thêm</a></li>
+<li><a href="#negative-results-đọc-để-tránh-cạm-bẫy">Negative results (đọc để tránh cạm bẫy)</a></li>
+</ul></li>
+<li><a href="#phụ-lục-ghi-chú-nhanh">Phụ lục — Ghi chú nhanh</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tổng-hợp-contrastive-learning-trong-cil-anacp-kế-hoạch-ghép-với-fly-cl">Tổng hợp: Contrastive Learning trong CIL → AnaCP → Kế hoạch ghép với Fly-CL</h1>
+<p><em>(Tổng hợp toàn bộ cuộc trao đổi, 20/08/2026)</em></p>
+<hr />
+<h2 id="phần-i-nền-tảng-khái-niệm">Phần I — Nền tảng khái niệm</h2>
+<h3 id="ewc-và-giới-hạn-của-regularization">1. EWC và giới hạn của regularization</h3>
+<p><strong>EWC vanilla so với fine-tune trần:</strong> chỉ nhỉnh hơn vài điểm phần trăm, cả hai đều suy giảm nặng.</p>
+<p>Số liệu từ survey CIL (TPAMI 2024):</p>
+<table>
+<thead>
+<tr class="header">
+<th>Setup</th>
+<th>Finetune</th>
+<th>EWC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CIFAR-100 Base50-Inc25 (session cuối)</td>
+<td>20.88</td>
+<td>23.85</td>
+</tr>
+<tr class="even">
+<td>ImageNet-100 Base0-Inc5 (session cuối)</td>
+<td>4.70</td>
+<td>6.14</td>
+</tr>
+</tbody>
+</table>
+<p><em>(LwF cùng setup ImageNet-100 đạt 17.74)</em></p>
+<p><strong>Nguyên nhân sâu (theo EWC-DR):</strong> khi model hội tụ và tự tin cao (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>c</mi></msub><mo>→</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">p_c \to 1</annotation></semantics></math>), gradient <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\to 0</annotation></semantics></math> → FIM và importance <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Ω</mi><annotation encoding="application/x-tex">\Omega</annotation></semantics></math> gần 0 → regularization gần như “tắt”, EWC thoái hóa thành fine-tune trần ở đúng những weight quan trọng nhất.</p>
+<p><strong>Trường hợp EWC còn tệ hơn không regularize:</strong> - <strong>Progress &amp; Compress</strong> (DeepMind, RL/Atari): Finetune 117/125/117/105/98 vs EWC 55/53/53/50/54 — EWC bóp nghẹt khả năng học task mới - <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math> quá lớn → model đóng băng, task mới cũng học kém - RL / non-stationary: Fisher noisy, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Ω</mi><annotation encoding="application/x-tex">\Omega</annotation></semantics></math> không phản ánh đúng importance - Long sequences: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>∑</mo><mi>t</mi></msub><msup><mi>Ω</mi><mi>t</mi></msup></mrow><annotation encoding="application/x-tex">\sum_t \Omega^t</annotation></semantics></math> tích lũy → mất plasticity hoàn toàn - Domain-IL: Fisher từ task cũ không transfer sang task mới</p>
+<hr />
+<h3 id="contrastive-loss-bản-chất">2. Contrastive loss — bản chất</h3>
+<p><strong>Định nghĩa:</strong> hàm mất mát học biểu diễn, kéo positive gần, đẩy negative xa trong không gian embedding. <strong>Không phân loại</strong> — chỉ định hình cấu trúc feature space.</p>
+<p><strong>Dạng cơ bản (Chopra 2005):</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mi>y</mi><mo>⋅</mo><msup><mi>D</mi><mn>2</mn></msup><mo>+</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>y</mi><mo stretchy="false" form="postfix">)</mo><mo>max</mo><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mi>m</mi><mo>−</mo><mi>D</mi><msup><mo stretchy="false" form="postfix">)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">L = y \cdot D^2 + (1-y)\max(0, m - D)^2</annotation></semantics></math></p>
+<p><strong>InfoNCE (SimCLR, CLIP, MoCo):</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mo>−</mo><mo>log</mo><mfrac><mrow><mo>exp</mo><mo stretchy="false" form="prefix">(</mo><mstyle mathvariant="normal"><mi>s</mi><mi>i</mi><mi>m</mi></mstyle><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>,</mo><msup><mi>x</mi><mo>+</mo></msup><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow><mrow><munder><mo>∑</mo><mi>i</mi></munder><mo>exp</mo><mo stretchy="false" form="prefix">(</mo><mstyle mathvariant="normal"><mi>s</mi><mi>i</mi><mi>m</mi></mstyle><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>,</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">L = -\log\frac{\exp(\mathrm{sim}(x,x^+)/\tau)}{\sum_i \exp(\mathrm{sim}(x,x_i)/\tau)}</annotation></semantics></math></p>
+<p>Về bản chất là cross-entropy trên bài toán “đâu là positive trong N+1 candidates”. Càng nhiều negative càng tốt → cần batch lớn.</p>
+<p><strong>SupCon (Khosla 2020):</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>s</mi><mi>c</mi><mi>l</mi></mrow></msub><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><mfrac><mrow><mo>−</mo><mn>1</mn></mrow><mrow><mo stretchy="false" form="prefix">|</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>p</mi><mo>∈</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></munder><mo>log</mo><mfrac><mrow><mo>exp</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mi>i</mi></msub><mo>⋅</mo><msub><mi>z</mi><mi>p</mi></msub><mi>/</mi><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow><mrow><munder><mo>∑</mo><mrow><mi>a</mi><mo>∈</mo><mi>A</mi><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></munder><mo>exp</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mi>i</mi></msub><mo>⋅</mo><msub><mi>z</mi><mi>a</mi></msub><mi>/</mi><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">L_{scl} = \sum_i \frac{-1}{|P(i)|}\sum_{p\in P(i)}\log\frac{\exp(z_i\cdot z_p/\tau)}{\sum_{a\in A(i)}\exp(z_i\cdot z_a/\tau)}</annotation></semantics></math></p>
+<p>Positive định nghĩa bằng <strong>label</strong> thay vì augmentation.</p>
+<p><strong>Ứng dụng:</strong> SSL (SimCLR/MoCo/BYOL), metric learning (FaceNet, re-ID), multimodal (CLIP), sentence embedding (SimCSE), recommendation, graph, continual learning.</p>
+<p><strong>Điểm quan trọng:</strong> contrastive loss <strong>luôn cần gradient</strong>. Không có biến thể “training-free contrastive loss”. Muốn tách class mà không train thì phải đổi cơ chế hoàn toàn (random projection, ETF hình học).</p>
+<hr />
+<h3 id="hai-trường-phái-tách-class">3. Hai trường phái tách class</h3>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>(a) Hard/training-free</th>
+<th>(b) Learned contrastive</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Đại diện</td>
+<td>Fly-CL, RanPAC</td>
+<td>Co2L, GPLASC, SupCon</td>
+</tr>
+<tr class="even">
+<td>Cơ chế</td>
+<td>Random projection chiều cao + top-k</td>
+<td>Loss + gradient descent</td>
+</tr>
+<tr class="odd">
+<td>Nền toán</td>
+<td>Johnson-Lindenstrauss, xác suất chiều cao</td>
+<td>Học có giám sát</td>
+</tr>
+<tr class="even">
+<td>Cần data?</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr class="odd">
+<td>Cần label?</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr class="even">
+<td>Risk forgetting</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr class="odd">
+<td>Chất lượng tách</td>
+<td>“Đủ tốt” theo xác suất</td>
+<td>Tối ưu theo data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Điểm giao:</strong> first-session adaptation (train task 0 rồi đóng băng), guided random projection, và <strong>AnaCP</strong> — analytic contrastive.</p>
+<hr />
+<h3 id="taxonomy-representation-based-cl">4. Taxonomy representation-based CL</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Nhánh</th>
+<th>Train ở đâu</th>
+<th>Đại diện</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Frozen backbone</td>
+<td>0 lần</td>
+<td>Fly-CL, RanDumb</td>
+</tr>
+<tr class="even">
+<td>First-session adaptation</td>
+<td>Chỉ task 0</td>
+<td>FSA, APER, RanPAC, AnaCP</td>
+</tr>
+<tr class="odd">
+<td>Continuously training</td>
+<td>Mọi task</td>
+<td>Co2L, GPLASC, ProNC</td>
+</tr>
+</tbody>
+</table>
+<p><strong>“Training-free” không có nghĩa toàn bộ pipeline không train</strong> — mà là <strong>giai đoạn incremental (task 1→T) không train</strong>. Task 0 vẫn có thể train.</p>
+<hr />
+<h3 id="vì-sao-w-của-fly-cl-phải-cố-định">5. Vì sao W của Fly-CL phải cố định</h3>
+<p>Không phải lựa chọn tùy ý mà là <strong>điều kiện bắt buộc</strong>:</p>
+<ol type="1">
+<li><p><strong>Phép tích lũy <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>t</mi></msub><mo>=</mo><msub><mi>G</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msubsup><mi>H</mi><mi>t</mi><mi>⊤</mi></msubsup><msub><mi>H</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">G_t = G_{t-1} + H_t^\top H_t</annotation></semantics></math> chỉ hợp lệ nếu mọi <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mi>t</mi></msub><annotation encoding="application/x-tex">H_t</annotation></semantics></math> cùng không gian.</strong> Nếu mỗi task có <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mi>t</mi></msub><annotation encoding="application/x-tex">W_t</annotation></semantics></math> riêng, chiều thứ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math> ở task 1 và task 2 là hai tổ hợp tuyến tính khác nhau → cộng dồn vô nghĩa.</p></li>
+<li><p><strong>Inference cần so sánh across-task.</strong> Class ở task 1 và task 2 phải nằm chung hệ tọa độ mới so được.</p></li>
+</ol>
+<p><strong>Cùng kích thước KHÔNG đủ</strong> — phải cùng <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math> cụ thể. Đây là bẫy nguy hiểm: code chạy không lỗi nhưng kết quả sai.</p>
+<hr />
+<h2 id="phần-ii-khảo-sát-paper-20252026">Phần II — Khảo sát paper (2025–2026)</h2>
+<h3 id="nhóm-contrastive-full-train-xuyên-suốt">Nhóm “contrastive full” (train xuyên suốt)</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Paper</th>
+<th>Venue</th>
+<th>Code</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>GPLASC</strong></td>
+<td>FCS 2025 (Q1, IF 4.11)</td>
+<td>❌</td>
+<td>ETF liên-task cố định + R2SCL nội-task; +5% vs Co2L</td>
+</tr>
+<tr class="even">
+<td><strong>FNC²/MNC³L</strong></td>
+<td>WACV 2025</td>
+<td>❌</td>
+<td>Focal Neural Collapse Contrastive, không buffer</td>
+</tr>
+<tr class="odd">
+<td><strong>Projection-Enhanced CL</strong></td>
+<td>ICLR 2026</td>
+<td>❌</td>
+<td><strong>BỊ REJECT</strong></td>
+</tr>
+<tr class="even">
+<td><strong>ProNC</strong></td>
+<td>ICLR 2026</td>
+<td>✅</td>
+<td>ETF mở rộng dần; CE-based, không phải contrastive</td>
+</tr>
+<tr class="odd">
+<td><strong>IPAL</strong></td>
+<td>2025</td>
+<td>—</td>
+<td>Continual graph learning</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nhóm-contrastive-adapt-chỉ-task-đầu">Nhóm “contrastive adapt” (chỉ task đầu)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Paper</th>
+<th>Venue</th>
+<th>Code</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>AnaCP</strong></td>
+<td>NeurIPS 2025 Spotlight</td>
+<td>✅</td>
+<td><strong>Ưu tiên số 1</strong></td>
+</tr>
+<tr class="even">
+<td><strong>MoTiC</strong></td>
+<td>2025</td>
+<td>✅</td>
+<td>FSCIL</td>
+</tr>
+<tr class="odd">
+<td><strong>FACL</strong></td>
+<td>2025</td>
+<td>—</td>
+<td>FSCIL</td>
+</tr>
+<tr class="even">
+<td><strong>BR-FSCIL/HierCon</strong></td>
+<td>J.Imaging 2025</td>
+<td>—</td>
+<td>FSCIL</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dòng-chảy-co2l">Dòng chảy Co2L</h3>
+<p>Co2L (ICCV 2021) → CILA (ICML 2024) → CCLIS (AAAI 2024) → GPLASC (2025) → FNC² (WACV 2025)</p>
+<p>Xu hướng: chuyển sang <strong>ETF/neural collapse</strong> để không cần replay buffer.</p>
+<hr />
+<h3 id="bài-học-từ-iclr-2026-bị-reject-openreview-ycxnigv6ce">Bài học từ ICLR 2026 bị reject (OpenReview yCXNIgV6ce)</h3>
+<p>Tác giả: Jeevan Thapa, Ruochen Shi, Rui Li. Điểm: 2, 2, 4, 6. <strong>Decision: Reject</strong> (26/01/2026).</p>
+<p><strong>Bảng forgetting do chính tác giả cung cấp (CIFAR100-10):</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Forgetting</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LR only</td>
+<td>12.17</td>
+</tr>
+<tr class="even">
+<td>LR + Contrastive</td>
+<td>15.26</td>
+</tr>
+<tr class="odd">
+<td>LR + Contrastive + Old-class Rep</td>
+<td><strong>15.82</strong></td>
+</tr>
+</tbody>
+</table>
+<p>→ <strong>Thêm contrastive làm forgetting TĂNG.</strong></p>
+<p>Reviewer 232d chốt: <em>“the performance gain comes largely from a significant boost in the initial accuracy of each task instead of reducing forgetting… It feels more like a representation learning technique applied to a continual learning setting.”</em></p>
+<p><strong>Ý nghĩa với hướng của mình:</strong> contrastive là <strong>kỹ thuật representation learning</strong>, không phải kỹ thuật continual learning. Nhưng trong pipeline analytic (Fly-CL/AnaCP), forgetting đã được giải bằng cơ chế khác → vai trò “chỉ cải thiện representation” <strong>lại đúng là điều cần</strong>. Đây có thể là luận điểm framing tốt.</p>
+<p><strong>Hai paper phát sinh từ review (đáng đọc):</strong> - <strong>DPCR</strong> — He et al., ICML 2025, closed-form linear regression + SVD trên uncentered covariance - <strong>REAL</strong> — He et al., arXiv:2403.13522, analytic learning cho EFCIL</p>
+<p>Cùng nhóm Run He, nằm đúng giao điểm analytic + EFCIL.</p>
+<hr />
+<h2 id="phần-iii-kiến-thức-toán-nền">Phần III — Kiến thức toán nền</h2>
+<h3 id="covariance">Covariance</h3>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Σ</mi><mo>=</mo><mstyle mathvariant="normal"><mi>C</mi><mi>o</mi><mi>v</mi></mstyle><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>E</mi><mo stretchy="false" form="prefix">[</mo><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false" form="postfix">)</mo><mi>⊤</mi></msup><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\Sigma = \mathrm{Cov}(x) = E[(x-\mu)(x-\mu)^\top]</annotation></semantics></math></p>
+<ul>
+<li>Đường chéo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Σ</mi><mrow><mi>i</mi><mi>i</mi></mrow></msub><annotation encoding="application/x-tex">\Sigma_{ii}</annotation></semantics></math> = phương sai chiều <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math></li>
+<li>Ngoài đường chéo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Σ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">\Sigma_{ij}</annotation></semantics></math> = tương quan giữa chiều <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math> và <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math></li>
+<li>Luôn đối xứng, nửa xác định dương</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math> đường chéo → các chiều độc lập; <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Σ</mi><mo>=</mo><mi>I</mi></mrow><annotation encoding="application/x-tex">\Sigma = I</annotation></semantics></math> → đã whiten</li>
+</ul>
+<h3 id="whitening">Whitening</h3>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mo>=</mo><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="1.0em"></mspace><mstyle mathvariant="normal"><mi>C</mi><mi>o</mi><mi>v</mi></mstyle><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>I</mi><mo>⇔</mo><msup><mi>W</mi><mi>⊤</mi></msup><mi>W</mi><mo>=</mo><msup><mi>Σ</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">z = W(x-\mu), \quad \mathrm{Cov}(z) = I \iff W^\top W = \Sigma^{-1}</annotation></semantics></math></p>
+<p><strong>Không duy nhất</strong> — <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Q</mi><mi>W</mi></mrow><annotation encoding="application/x-tex">QW</annotation></semantics></math> cũng là nghiệm với mọi <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math> trực giao.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Loại</th>
+<th>Công thức</th>
+<th>Đặc điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>ZCA</strong> (AnaCP dùng)</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Σ</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><mo>=</mo><mi>U</mi><msup><mi>Λ</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><msup><mi>U</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">\Sigma^{-1/2} = U\Lambda^{-1/2}U^\top</annotation></semantics></math></td>
+<td>Đối xứng, giữ hướng gốc tối đa</td>
+</tr>
+<tr class="even">
+<td>PCA</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Λ</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><msup><mi>U</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">\Lambda^{-1/2}U^\top</annotation></semantics></math></td>
+<td>Xoay về hệ trục PCA</td>
+</tr>
+<tr class="odd">
+<td>Cholesky</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>L</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">L^{-1}</annotation></semantics></math></td>
+<td>Rẻ nhất, phụ thuộc thứ tự chiều</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ý nghĩa hình học:</strong> elip nghiêng → xoay (khử tương quan) → co giãn (chuẩn hóa phương sai) → hình cầu.</p>
+<p><strong>Quan hệ Mahalanobis:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msup><mi>Σ</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>y</mi><mo stretchy="false" form="postfix">)</mo><msup><mo stretchy="false" form="postfix">∥</mo><mn>2</mn></msup><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>y</mi><msup><mo stretchy="false" form="postfix">)</mo><mi>⊤</mi></msup><msup><mi>Σ</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>−</mo><mi>y</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>d</mi><mi>M</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><msup><mo stretchy="false" form="postfix">)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\|\Sigma^{-1/2}(x-y)\|^2 = (x-y)^\top\Sigma^{-1}(x-y) = d_M(x,y)^2</annotation></semantics></math></p>
+<p>Euclid <strong>sau</strong> whitening = Mahalanobis <strong>trước</strong> whitening.</p>
+<p><strong>Vấn đề số học:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math> suy biến khi <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>&lt;</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">n &lt; d</annotation></semantics></math>. Xử lý bằng clamp eigenvalue hoặc Ledoit-Wolf shrinkage.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Sigma <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (Sigma <span class="op">+</span> Sigma.T)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>lam, U <span class="op">=</span> torch.linalg.eigh(Sigma)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>lam <span class="op">=</span> torch.clamp(lam, <span class="bu">min</span><span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>Sig_inv_half <span class="op">=</span> U <span class="op">@</span> torch.diag(lam.rsqrt()) <span class="op">@</span> U.T</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>Sig_half     <span class="op">=</span> U <span class="op">@</span> torch.diag(lam.sqrt())  <span class="op">@</span> U.T</span></code></pre></div>
+<h3 id="svd">SVD</h3>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo>=</mo><mi>U</mi><mi>S</mi><msup><mi>V</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">A = U S V^\top</annotation></semantics></math></p>
+<p><strong>Hình học:</strong> mọi biến đổi tuyến tính = xoay (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>V</mi><mi>⊤</mi></msup><annotation encoding="application/x-tex">V^\top</annotation></semantics></math>) → giãn (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math>) → xoay (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>).</p>
+<p><strong>Dạng tổng:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo>=</mo><msub><mo>∑</mo><mi>k</mi></msub><msub><mi>σ</mi><mi>k</mi></msub><msub><mi>u</mi><mi>k</mi></msub><msubsup><mi>v</mi><mi>k</mi><mi>⊤</mi></msubsup></mrow><annotation encoding="application/x-tex">A = \sum_k \sigma_k u_k v_k^\top</annotation></semantics></math> (tổng các ma trận rank-1, sắp theo độ quan trọng)</p>
+<p><strong>Với ma trận đối xứng nửa xác định dương:</strong> SVD ≡ eigendecomposition (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">U = V</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mi>i</mi></msub><mo>=</mo><msub><mi>λ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\sigma_i = \lambda_i</annotation></semantics></math>)</p>
+<p><strong>Tìm cơ sở trực giao:</strong> QR (rẻ nhất) / SVD (thêm singular values) / eigh (ma trận đối xứng). Gram-Schmidt không ổn định số học, không dùng thực tế.</p>
+<h3 id="neural-collapse-etf">Neural Collapse &amp; ETF</h3>
+<p><strong>4 hiện tượng NC</strong> (Papyan, Han, Donoho, PNAS 2020) khi train quá điểm zero error: 1. Within-class variance → 0 2. Class mean → simplex ETF 3. Classifier weight ∥ class mean 4. Classifier ≡ NCM</p>
+<p><strong>Simplex ETF:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math> vector cùng norm, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>cos</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>m</mi><mi>i</mi></msub><mo>,</mo><msub><mi>m</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mrow><mi>K</mi><mo>−</mo><mn>1</mn></mrow></mfrac></mrow><annotation encoding="application/x-tex">\cos(m_i, m_j) = -\frac{1}{K-1}</annotation></semantics></math> (nhỏ nhất có thể)</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo>=</mo><msqrt><mstyle displaystyle="false"><mfrac><mi>K</mi><mrow><mi>K</mi><mo>−</mo><mn>1</mn></mrow></mfrac></mstyle></msqrt><mspace width="0.167em"></mspace><mi>U</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>I</mi><mi>K</mi></msub><mo>−</mo><mstyle displaystyle="false"><mfrac><mn>1</mn><mi>K</mi></mfrac></mstyle><mstyle mathvariant="bold"><mn>1</mn></mstyle><msup><mstyle mathvariant="bold"><mn>1</mn></mstyle><mi>⊤</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E = \sqrt{\tfrac{K}{K-1}}\, U\left(I_K - \tfrac{1}{K}\mathbf{1}\mathbf{1}^\top\right)</annotation></semantics></math></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> simplex_etf(d, K):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> torch.randn(d, K)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    U, _ <span class="op">=</span> torch.linalg.qr(A)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    P <span class="op">=</span> torch.eye(K) <span class="op">-</span> torch.ones(K,K)<span class="op">/</span>K</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> math.sqrt(K<span class="op">/</span>(K<span class="op">-</span><span class="dv">1</span>)) <span class="op">*</span> (U <span class="op">@</span> P)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">/</span> M.norm(dim<span class="op">=</span><span class="dv">0</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+<p><strong>Vì sao hấp dẫn trong CL:</strong> prototype cố định → không drift → không cần buffer để tạo negative.</p>
+<p><strong>Nhược:</strong> phải biết trước tổng số class. ProNC giải bằng cách mở rộng ETF dần.</p>
+<hr />
+<h2 id="phần-iv-anacp-chi-tiết">Phần IV — AnaCP chi tiết</h2>
+<p><strong>Saleh Momeni, Changnan Xiao, Bing Liu — NeurIPS 2025 Spotlight — arXiv:2511.13880 — <a href="https://github.com/SalehMomeni/AnaCP">code</a></strong></p>
+<h3 id="điểm-mấu-chốt">Điểm mấu chốt</h3>
+<p><strong>AnaCP KHÔNG dùng contrastive loss.</strong> Nguyên văn: <em>“applying this directly to CIL would lead to CF due to iterative gradient updates. We achieve similar effects via an analytic CP layer.”</em></p>
+<table>
+<thead>
+<tr class="header">
+<th>Contrastive loss thật</th>
+<th>AnaCP thay bằng</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kéo positive gần</td>
+<td>Ridge regression về target prototype (§4.1)</td>
+</tr>
+<tr class="even">
+<td>Đẩy negative xa</td>
+<td>Whitening + SVD + nhiễu loạn <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math> (§4.2)</td>
+</tr>
+</tbody>
+</table>
+<p>Không anchor, không positive/negative pair, không <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>, không backward pass.</p>
+<h3 id="kiến-trúc">Kiến trúc</h3>
+<pre><code>PTM đóng băng (input layer, d chiều)
+  → Random Projection: Z = GELU(XR), D = 5000
+  → Contrastive Projection (CP) layer          ← ĐÓNG GÓP MỚI
+  → Classifier (NCM hoặc ELM ridge)</code></pre>
+<h3 id="background">§3 — Background</h3>
+<p>Ridge: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msup><mi>Z</mi><mi>⊤</mi></msup><mi>Z</mi><mo>+</mo><mi>λ</mi><mi>I</mi><msup><mo stretchy="false" form="postfix">)</mo><mrow><mo>−</mo><mn>1</mn></mrow></msup><msup><mi>Z</mi><mi>⊤</mi></msup><mi>Y</mi></mrow><annotation encoding="application/x-tex">W = (Z^\top Z + \lambda I)^{-1}Z^\top Y</annotation></semantics></math></p>
+<p>Nguồn gốc: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>min</mo><mi>W</mi></msub><mo stretchy="false" form="postfix">∥</mo><mi>Z</mi><mi>W</mi><mo>−</mo><mi>Y</mi><msup><mo stretchy="false" form="postfix">∥</mo><mn>2</mn></msup><mo>+</mo><mi>λ</mi><mo stretchy="false" form="postfix">∥</mo><mi>W</mi><msup><mo stretchy="false" form="postfix">∥</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\min_W \|ZW-Y\|^2 + \lambda\|W\|^2</annotation></semantics></math>, đạo hàm = 0.</p>
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi><mo>=</mo><msup><mi>Z</mi><mi>⊤</mi></msup><mi>Z</mi></mrow><annotation encoding="application/x-tex">G = Z^\top Z</annotation></semantics></math> (Gram matrix)</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><msup><mi>Z</mi><mi>⊤</mi></msup><mi>Y</mi></mrow><annotation encoding="application/x-tex">H = Z^\top Y</annotation></semantics></math> (cross matrix)</li>
+</ul>
+<p>Tích lũy: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>t</mi></msub><mo>=</mo><msub><mi>G</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msubsup><mi>X</mi><mi>t</mi><mi>⊤</mi></msubsup><msub><mi>X</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">G_t = G_{t-1} + X_t^\top X_t</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mi>t</mi></msub><mo>=</mo><msub><mi>H</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msubsup><mi>X</mi><mi>t</mi><mi>⊤</mi></msubsup><msub><mi>Y</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">H_t = H_{t-1} + X_t^\top Y_t</annotation></semantics></math> (cần zero-pad khi số class tăng)</p>
+<p>Random projection: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mo>=</mo><mi>ϕ</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mi>R</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Z = \phi(XR)</annotation></semantics></math>, hoạt động như kernel, mở rộng không gian và tạo tương tác phi tuyến.</p>
+<h3 id="positive-alignment">§4.1 — Positive Alignment</h3>
+<p><strong>Quan sát then chốt:</strong> khi <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math> là one-hot,</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><msup><mi>Z</mi><mi>⊤</mi></msup><mi>T</mi><mo>=</mo><mi>M</mi><mi>N</mi><mspace width="2.0em"></mspace><mo stretchy="false" form="prefix">(</mo><mn>8</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">H = Z^\top T = MN \qquad (8)</annotation></semantics></math></p>
+<p>Chứng minh: cột <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math> của <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Z</mi><mi>⊤</mi></msup><mi>T</mi></mrow><annotation encoding="application/x-tex">Z^\top T</annotation></semantics></math> = <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>c</mi></mrow></msub><msub><mi>z</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\sum_{i\in c} z_i</annotation></semantics></math> = <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mi>c</mi></msub><msub><mi>m</mi><mi>c</mi></msub></mrow><annotation encoding="application/x-tex">n_c m_c</annotation></semantics></math></p>
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>∈</mo><msup><mstyle mathvariant="double-struck"><mi>ℝ</mi></mstyle><mrow><mi>D</mi><mo>×</mo><mi>C</mi></mrow></msup></mrow><annotation encoding="application/x-tex">M \in \mathbb{R}^{D\times C}</annotation></semantics></math> — class prototype (mean của random feature)</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mstyle mathvariant="normal"><mi>d</mi><mi>i</mi><mi>a</mi><mi>g</mi></mstyle><mo stretchy="false" form="prefix">(</mo><msub><mi>n</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>n</mi><mi>C</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">N = \mathrm{diag}(n_1,\ldots,n_C)</annotation></semantics></math> — số mẫu mỗi class</li>
+</ul>
+<p><strong>Mở rộng:</strong> thay one-hot bằng target prototype <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo>∈</mo><msup><mstyle mathvariant="double-struck"><mi>ℝ</mi></mstyle><mrow><mi>C</mi><mo>×</mo><mi>d</mi></mrow></msup></mrow><annotation encoding="application/x-tex">P \in \mathbb{R}^{C\times d}</annotation></semantics></math>:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><msup><mi>Z</mi><mi>⊤</mi></msup><mi>T</mi><mo>=</mo><munder><mo>∑</mo><mi>c</mi></munder><mrow><mo stretchy="true" form="prefix">(</mo><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>c</mi></mrow></munder><msub><mi>z</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><msubsup><mi>p</mi><mi>c</mi><mi>⊤</mi></msubsup><mo>=</mo><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>m</mi><mi>c</mi></msub><msub><mi>n</mi><mi>c</mi></msub><msubsup><mi>p</mi><mi>c</mi><mi>⊤</mi></msubsup><mo>=</mo><mi>M</mi><mi>N</mi><mi>P</mi><mspace width="2.0em"></mspace><mo stretchy="false" form="prefix">(</mo><mn>9</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">H = Z^\top T = \sum_c\left(\sum_{i\in c}z_i\right)p_c^\top = \sum_c m_c n_c p_c^\top = MNP \qquad (9)</annotation></semantics></math></p>
+<p><strong>Vì sao được phép thay:</strong> ridge regression <strong>không biết <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math> là nhãn</strong>. Nó chỉ tìm <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math> sao cho <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mi>W</mi><mo>≈</mo><mi>T</mi></mrow><annotation encoding="application/x-tex">ZW \approx T</annotation></semantics></math>. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math> chứa gì cũng được — giá nhà, tọa độ, prototype. One-hot chỉ là <strong>một lựa chọn</strong>, không phải yêu cầu.</p>
+<p><strong>Trong code:</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># thay vì</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>T <span class="op">=</span> one_hot(y, C)        <span class="co"># (N, C)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dùng</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>T <span class="op">=</span> P[y]                 <span class="co"># (N, d) — tra bảng theo nhãn</span></span></code></pre></div>
+<p><strong>Vì sao đây là “positive alignment”:</strong> mọi mẫu class <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math> có chung đích <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>p</mi><mi>c</mi></msub><annotation encoding="application/x-tex">p_c</annotation></semantics></math> → ridge ép chúng về cùng điểm → co cụm.</p>
+<p><strong>Vì sao chiều <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math> = <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>:</strong> <em>“to preserve the geometric structure of the representations”</em> — giữ cấu trúc ngữ nghĩa PTM đã học (mèo gần hổ, xa xe hơi). One-hot vứt bỏ điều này (mọi class cách đều nhau).</p>
+<h3 id="negative-repulsion">§4.2 — Negative Repulsion</h3>
+<p><strong>Vấn đề:</strong> nếu 2 class mean vốn đã gần nhau, kéo về đó vẫn nhầm.</p>
+<p><strong>Eq. 10 — tích lũy covariance:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Σ</mi><mi>t</mi></msub><mo>=</mo><mfrac><msub><mi>N</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><msub><mi>N</mi><mi>t</mi></msub></mfrac><msub><mi>Σ</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><mfrac><mn>1</mn><msub><mi>N</mi><mi>t</mi></msub></mfrac><munder><mo>∑</mo><mrow><mi>c</mi><mo>∈</mo><msub><mi>C</mi><mi>t</mi></msub></mrow></munder><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>c</mi></mrow></munder><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>c</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>c</mi></msub><msup><mo stretchy="false" form="postfix">)</mo><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">\Sigma_t = \frac{N_{t-1}}{N_t}\Sigma_{t-1} + \frac{1}{N_t}\sum_{c\in C_t}\sum_{i\in c}(x_i-\mu_c)(x_i-\mu_c)^\top</annotation></semantics></math></p>
+<p>Trung bình có trọng số → đúng bằng covariance trên toàn bộ data, không cần lưu data cũ. Trừ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math> (mean của class) → <strong>within-class covariance</strong>.</p>
+<p><strong>Eq. 11 — whitening:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>C</mi><mo accent="true">̂</mo></mover><mo>=</mo><msup><mi>Σ</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><mi>C</mi></mrow><annotation encoding="application/x-tex">\hat{C} = \Sigma^{-1/2}C</annotation></semantics></math></p>
+<p><em>“a large variance in some dimensions can give a false impression of class separability”</em> — chiều phương sai cao cần khoảng cách lớn hơn mới có ý nghĩa tương đương.</p>
+<p><strong>Eq. 12 — SVD:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>C</mi><mo accent="true">̂</mo></mover><mo>=</mo><mi>U</mi><mi>S</mi><msup><mi>V</mi><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">\hat{C} = USV^\top</annotation></semantics></math></p>
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo>×</mo><mi>C</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(d\times C)</annotation></semantics></math> — hướng các class mean trải theo</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math> — độ lớn trải theo từng hướng</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math> — cách từng class phân bổ</li>
+</ul>
+<p><strong>Quan trọng — vì sao KHÔNG dùng ETF:</strong></p>
+<blockquote>
+<p><em>“In principle, maximum separation would be achieved if the means were arranged uniformly on the surface of a hypersphere. However, this strict configuration would significantly alter the original data geometry, distorting the feature representations.”</em></p>
+</blockquote>
+<p>→ Tác giả <strong>biết</strong> về ETF, <strong>cân nhắc</strong>, và <strong>cố tình từ chối</strong>. Đây là khác biệt triết lý với GPLASC/ProNC/NC-FSCIL.</p>
+<p><strong>Eq. 13 — nhiễu loạn:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>S</mi><mo accent="true">̃</mo></mover><mo>=</mo><mi>S</mi><mo>+</mo><mi>α</mi><mspace width="0.167em"></mspace><mstyle mathvariant="normal"><mi>D</mi><mi>i</mi><mi>a</mi><mi>g</mi></mstyle><mo stretchy="false" form="prefix">{</mo><msub><mi>δ</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>δ</mi><mi>C</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\tilde{S} = S + \alpha\,\mathrm{Diag}\{\delta_1,\ldots,\delta_C\}</annotation></semantics></math></p>
+<p>Vì <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>δ</mi><mi>i</mi></msub><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><mn>1</mn><mo>,</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\delta_i \in \{-1,0,1\}</annotation></semantics></math>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>σ</mi><mo accent="true">̃</mo></mover><mi>i</mi></msub><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>σ</mi><mi>i</mi></msub><mo>−</mo><mi>α</mi><mo>,</mo><mspace width="0.222em"></mspace><msub><mi>σ</mi><mi>i</mi></msub><mo>,</mo><mspace width="0.222em"></mspace><msub><mi>σ</mi><mi>i</mi></msub><mo>+</mo><mi>α</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\tilde\sigma_i \in \{\sigma_i-\alpha,\ \sigma_i,\ \sigma_i+\alpha\}</annotation></semantics></math></p>
+<p><strong>Lemma 4.1:</strong></p>
+<p>Đặt <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><msup><mi>V</mi><mi>⊤</mi></msup><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>w</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>w</mi><mi>C</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">SV^\top = (w_1,\ldots,w_C)</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>V</mi><mi>⊤</mi></msup><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>e</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>e</mi><mi>C</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">V^\top = (e_1,\ldots,e_C)</annotation></semantics></math>.</p>
+<p>Hàm mục tiêu: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle mathvariant="script"><mi>𝒥</mi></mstyle><mo>=</mo><msub><mo>∑</mo><mi>i</mi></msub><msub><mo>∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></msub><mo stretchy="false" form="prefix">|</mo><mi>θ</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">\mathcal{J} = \sum_i\sum_{j\neq i}|\theta(w_i,w_j)|</annotation></semantics></math></p>
+<p>Xét <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>α</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mo>∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></msub><mstyle displaystyle="true"><mfrac><mrow><mo stretchy="false" form="prefix">|</mo><mo stretchy="false" form="prefix">⟨</mo><msub><mi>w</mi><mi>j</mi></msub><mo>,</mo><msub><mi>w</mi><mi>i</mi></msub><mo>+</mo><mi>α</mi><msub><mi>δ</mi><mi>i</mi></msub><msub><mi>e</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo stretchy="false" form="prefix">|</mo></mrow><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">∥</mo><mo>⋅</mo><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>i</mi></msub><mo>+</mo><mi>α</mi><msub><mi>δ</mi><mi>i</mi></msub><msub><mi>e</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow></mfrac></mstyle></mrow><annotation encoding="application/x-tex">f_i(\alpha) = \sum_{j\neq i}\dfrac{|\langle w_j, w_i+\alpha\delta_i e_i\rangle|}{\|w_j\|\cdot\|w_i+\alpha\delta_i e_i\|}</annotation></semantics></math></p>
+<p>Đạo hàm tại <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\alpha=0</annotation></semantics></math> (dùng <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>d</mi><mo stretchy="false" form="prefix">|</mo><mi>x</mi><mo stretchy="false" form="prefix">|</mo></mrow><mrow><mi>d</mi><mi>x</mi></mrow></mfrac><mo>=</mo><mn>2</mn><mo>⋅</mo><msub><mstyle mathvariant="bold"><mn>1</mn></mstyle><mrow><mi>x</mi><mo>≥</mo><mn>0</mn></mrow></msub><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\frac{d|x|}{dx} = 2\cdot\mathbf{1}_{x\geq0}-1</annotation></semantics></math>):</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><msub><mi>′</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mfrac><msub><mi>δ</mi><mi>i</mi></msub><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>i</mi></msub><msup><mo stretchy="false" form="postfix">∥</mo><mn>3</mn></msup></mrow></mfrac><msub><mi>Φ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">f&#39;_i(0) = \frac{\delta_i}{\|w_i\|^3}\Phi_i</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Φ</mi><mi>i</mi></msub><mo>=</mo><munder><mo>∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></munder><mfrac><mn>1</mn><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow></mfrac><mo minsize="1.8" maxsize="1.8" stretchy="false" form="prefix">[</mo><mo stretchy="false" form="prefix">(</mo><mn>2</mn><mo>⋅</mo><msub><mstyle mathvariant="bold"><mn>1</mn></mstyle><mrow><mo stretchy="false" form="prefix">⟨</mo><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo>≥</mo><mn>0</mn></mrow></msub><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="prefix">⟨</mo><msub><mi>e</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>i</mi></msub><msup><mo stretchy="false" form="postfix">∥</mo><mn>2</mn></msup><mo>−</mo><mo stretchy="false" form="prefix">⟨</mo><msub><mi>e</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo stretchy="false" form="prefix">|</mo><mo stretchy="false" form="prefix">⟨</mo><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo stretchy="false" form="prefix">|</mo><mo minsize="1.8" maxsize="1.8" stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\Phi_i = \sum_{j\neq i}\frac{1}{\|w_j\|}\Big[(2\cdot\mathbf{1}_{\langle w_i,w_j\rangle\geq0}-1)\langle e_i,w_j\rangle\|w_i\|^2 - \langle e_i,w_i\rangle|\langle w_i,w_j\rangle|\Big]</annotation></semantics></math></p>
+<p>Chọn <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>δ</mi><mi>i</mi></msub><mo>=</mo><mo>−</mo><mstyle mathvariant="normal"><mi>s</mi><mi>i</mi><mi>g</mi><mi>n</mi></mstyle><mo stretchy="false" form="prefix">(</mo><msub><mi>Φ</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\delta_i = -\mathrm{sign}(\Phi_i)</annotation></semantics></math> để <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><msub><mi>′</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo>≤</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">f&#39;_i(0) \leq 0</annotation></semantics></math>.</p>
+<p><strong>Bản chất: một bước gradient descent, tính bằng công thức đóng, chỉ lấy dấu.</strong></p>
+<p>Hai hạng tử trong <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Φ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\Phi_i</annotation></semantics></math>: (A) ảnh hưởng tử số cosine, (B) ảnh hưởng mẫu số (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="postfix">∥</mo><msub><mi>w</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\|w_i\|</annotation></semantics></math>).</p>
+<p>Dùng <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">|</mo><mi>θ</mi><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">|\theta|</annotation></semantics></math> vì cosine âm cũng là “gần” (cùng đường thẳng) — muốn về vuông góc.</p>
+<p><strong>Lỗi trong paper:</strong> phát biểu Lemma viết <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>2</mn><mo>⋅</mo><msub><mstyle mathvariant="bold"><mn>1</mn></mstyle><mrow><mo>⋅</mo><mo>≥</mo><mn>0</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(2\cdot\mathbf{1}_{\cdot\geq0})</annotation></semantics></math> thiếu <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">-1</annotation></semantics></math>; Appendix A viết đúng.</p>
+<p><strong>Về <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>:</strong> <em>“if too small, the shift becomes negligible; if too large, the reduction may no longer be valid”</em> — vì đạo hàm chỉ đúng cục bộ. Đặt <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\alpha=1</annotation></semantics></math>, <strong>không ablate</strong>.</p>
+<p><strong>Eq. 15 — bảo toàn qua <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">⟨</mo><mi>U</mi><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><mi>U</mi><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">⟩</mo><mo>=</mo><msubsup><mi>w</mi><mi>i</mi><mi>⊤</mi></msubsup><msup><mi>U</mi><mi>⊤</mi></msup><mi>U</mi><msub><mi>w</mi><mi>j</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">⟨</mo><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">⟩</mo></mrow><annotation encoding="application/x-tex">\langle Uw_i, Uw_j\rangle = w_i^\top U^\top U w_j = \langle w_i,w_j\rangle</annotation></semantics></math></p>
+<p>→ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo stretchy="false" form="prefix">(</mo><mi>U</mi><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><mi>U</mi><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>θ</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>w</mi><mi>i</mi></msub><mo>,</mo><msub><mi>w</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\theta(Uw_i,Uw_j) = \theta(w_i,w_j)</annotation></semantics></math>. Nhờ đó kết luận trong <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mstyle mathvariant="double-struck"><mi>ℝ</mi></mstyle><mi>C</mi></msup><annotation encoding="application/x-tex">\mathbb{R}^C</annotation></semantics></math> chuyển lên <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mstyle mathvariant="double-struck"><mi>ℝ</mi></mstyle><mi>d</mi></msup><annotation encoding="application/x-tex">\mathbb{R}^d</annotation></semantics></math>.</p>
+<p><strong>Eq. 16 — de-whiten:</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mover><mi>C</mi><mo accent="true">̃</mo></mover><mo accent="true">̂</mo></mover><mo>=</mo><mi>U</mi><mover><mi>S</mi><mo accent="true">̃</mo></mover><msup><mi>V</mi><mi>⊤</mi></msup><mo>,</mo><mspace width="2.0em"></mspace><mover><mi>C</mi><mo accent="true">̃</mo></mover><mo>=</mo><msup><mi>Σ</mi><mrow><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><mover><mover><mi>C</mi><mo accent="true">̃</mo></mover><mo accent="true">̂</mo></mover><mo>,</mo><mspace width="2.0em"></mspace><mi>P</mi><mo>=</mo><msup><mover><mi>C</mi><mo accent="true">̃</mo></mover><mi>⊤</mi></msup></mrow><annotation encoding="application/x-tex">\hat{\tilde{C}} = U\tilde{S}V^\top, \qquad \tilde{C} = \Sigma^{1/2}\hat{\tilde{C}}, \qquad P = \tilde{C}^\top</annotation></semantics></math></p>
+<p><strong>Vì sao phải de-whiten:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math> dùng làm đích cho ridge, mà ridge làm việc trên feature <strong>chưa whiten</strong>. Nếu để nguyên → hai bên khác hệ tọa độ, <strong>code chạy không lỗi nhưng sai</strong>.</p>
+<p><strong>Chuỗi biến đổi:</strong> <span class="math display">$$C \xrightarrow{\Sigma^{-1/2}} \hat{C} \xrightarrow{\text{SVD}} USV^\top \xrightarrow{S\to S+\alpha\Delta} U\tilde{S}V^\top \xrightarrow{\Sigma^{1/2}} \tilde{C} = P^\top$$</span></p>
+<p><strong>Về Mahalanobis:</strong> đo cosine trên data đã whiten ≡ đo Mahalanobis — dẫn FeCAM.</p>
+<h3 id="classifier">§4.3 — Classifier</h3>
+<p><strong>Multi-head (Eq. 17):</strong> <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>u</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow></msup><mo>=</mo><mi>ϕ</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><msup><mi>R</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow></msup><mo stretchy="false" form="postfix">)</mo><msup><mi>W</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow></msup><mo>,</mo><mspace width="2.0em"></mspace><mi>u</mi><mo>=</mo><mfrac><mn>1</mn><mi>H</mi></mfrac><munder><mo>∑</mo><mi>h</mi></munder><msup><mi>u</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow></msup></mrow><annotation encoding="application/x-tex">u^{(h)} = \phi(xR^{(h)})W^{(h)}, \qquad u = \frac{1}{H}\sum_h u^{(h)}</annotation></semantics></math></p>
+<p>Các head <strong>chia sẻ chung <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math></strong> → output cùng không gian → trung bình có nghĩa.</p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">H=1</annotation></semantics></math>: 91.99 | <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">H=3</annotation></semantics></math>: 92.15 | <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">H=5</annotation></semantics></math>: 92.20 → lợi ích giảm nhanh. <em>“even with H=1, AnaCP outperforms all baselines”</em></p>
+<p><strong>NCM:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>y</mi><mo accent="true">̂</mo></mover><mo>=</mo><mo>arg</mo><msub><mo>min</mo><mi>c</mi></msub><mo stretchy="false" form="postfix">∥</mo><mi>u</mi><mo>−</mo><msub><mi>p</mi><mi>c</mi></msub><mo stretchy="false" form="postfix">∥</mo></mrow><annotation encoding="application/x-tex">\hat{y} = \arg\min_c \|u - p_c\|</annotation></semantics></math>. Không tham số, không cần train.</p>
+<p><strong>ELM:</strong> mạng 1 lớp ẩn, weight random cố định, output giải least squares. Chính là thứ Fly-CL đang dùng.</p>
+<p>NCM 91.86 → ELM 92.15 (trung bình +0.66%).</p>
+<p><strong>Vấn đề CF của classifier:</strong></p>
+<blockquote>
+<p><em>“Unlike PTM features and their random projections, which remain fixed, the CP outputs evolve as new tasks are introduced… Directly updating the ELM classifier incrementally may therefore lead to CF.”</em></p>
+</blockquote>
+<table>
+<thead>
+<tr class="header">
+<th>Tầng</th>
+<th>Input</th>
+<th>Cố định?</th>
+<th>Tích lũy được?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math></td>
+<td>feature PTM</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi><annotation encoding="application/x-tex">G</annotation></semantics></math></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics></math> (sau RP)</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>C</mi><mi>P</mi></mrow></msub><annotation encoding="application/x-tex">W_{CP}</annotation></semantics></math></td>
+<td>từ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>,</mo><mi>N</mi><mo>,</mo><mi>P</mi></mrow><annotation encoding="application/x-tex">M,N,P</annotation></semantics></math></td>
+<td>—</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td><strong>Classifier</strong></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mi>Z</mi><msub><mi>W</mi><mrow><mi>C</mi><mi>P</mi></mrow></msub></mrow><annotation encoding="application/x-tex">u = ZW_{CP}</annotation></semantics></math></td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quy tắc: input của tầng nào cố định thì tầng đó tích lũy được.</strong></p>
+<p><strong>Giải pháp — Gaussian pseudo-replay:</strong></p>
+<p>Sau mỗi task, train lại classifier từ đầu: 1. Mọi class đã gặp: sinh mẫu giả <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>x</mi><mo accent="true">̃</mo></mover><mo>∼</mo><mstyle mathvariant="script"><mi>𝒩</mi></mstyle><mo stretchy="false" form="prefix">(</mo><msub><mi>μ</mi><mi>c</mi></msub><mo>,</mo><mi>Σ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\tilde{x} \sim \mathcal{N}(\mu_c, \Sigma)</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mo>=</mo><mn>100</mn></mrow><annotation encoding="application/x-tex">R=100</annotation></semantics></math> mẫu 2. Đưa qua RP + CP <strong>phiên bản mới nhất</strong> 3. Giải ELM từ đầu</p>
+<p><strong>Vì sao được:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math> ở input layer, PTM đóng băng thật → <strong>không bao giờ lỗi thời</strong>.</p>
+<p>Covariance chung thay vì riêng từng class: giảm bộ nhớ 100 lần, chênh accuracy chỉ 0.00–0.36%.</p>
+<h3 id="thực-nghiệm">§5 — Thực nghiệm</h3>
+<p><strong>Kết quả (DINO-v2, 10 task, 3 seed):</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>AnaCP (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mrow><mi>a</mi><mi>v</mi><mi>g</mi></mrow></msub><annotation encoding="application/x-tex">A_{avg}</annotation></semantics></math>/<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">A_{last}</annotation></semantics></math>)</th>
+<th>RanPAC</th>
+<th>Joint FT</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CIFAR100</td>
+<td>95.43 / <strong>92.15</strong></td>
+<td>94.10 / 90.09</td>
+<td>93.35</td>
+</tr>
+<tr class="even">
+<td>ImageNet-R</td>
+<td>90.37 / <strong>86.60</strong></td>
+<td>87.96 / 84.41</td>
+<td>88.79</td>
+</tr>
+<tr class="odd">
+<td>CUB</td>
+<td>93.84 / <strong>90.57</strong></td>
+<td>92.37 / 88.44</td>
+<td>89.87</td>
+</tr>
+<tr class="even">
+<td>TinyImageNet</td>
+<td>91.57 / <strong>87.35</strong></td>
+<td>89.55 / 84.67</td>
+<td>88.81</td>
+</tr>
+<tr class="odd">
+<td>Cars</td>
+<td>94.16 / <strong>90.65</strong></td>
+<td>91.48 / 87.48</td>
+<td>89.92</td>
+</tr>
+</tbody>
+</table>
+<p>Vượt cận trên joint fine-tuning trên CIFAR100 và CUB. Giảm lỗi tương đối 4.8–31.4%.</p>
+<p><strong>MoCo-v3 (PTM yếu hơn):</strong> CIFAR100 83.70, khoảng cách tới joint giãn lên ~6%. Nhưng <em>“AnaCP outperforms the baselines by a larger margin with MoCo-v3… as the weaker features make the CP layer more impactful”</em>.</p>
+<p><strong>Ablation (Table 3):</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>So sánh</th>
+<th>Chênh lệch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Bỏ CP layer (row 1 vs 3)</td>
+<td><strong>−2.93% đến −19.97%</strong></td>
+</tr>
+<tr class="even">
+<td>Tắt NR (row 2 vs 3)</td>
+<td>−0.38% đến −3.23%</td>
+</tr>
+<tr class="odd">
+<td>NCM → ELM (row 3 vs 6)</td>
+<td>+0.66% trung bình</td>
+</tr>
+<tr class="even">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>R</mi><annotation encoding="application/x-tex">R</annotation></semantics></math> = 20/50/100</td>
+<td>92.14/92.13/92.15 (gần như không đổi)</td>
+</tr>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math> = 1/3/5</td>
+<td>91.99/92.15/92.20</td>
+</tr>
+<tr class="even">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math> = 1000/2000/5000/10000</td>
+<td>90.64/91.35/92.15/92.75</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Phân tích CF (§5.3):</strong> dùng setting TIL, in ma trận <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo stretchy="false" form="prefix">[</mo><mi>t</mi><mo stretchy="false" form="postfix">]</mo><mo stretchy="false" form="prefix">[</mo><mi>i</mi><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">A[t][i]</annotation></semantics></math>. Cột task 1 qua 10 bước: 0.987 → 0.987 → 0.989 → … → 0.986. Gần như phẳng.</p>
+<p>Lý do dùng TIL: trong CIL accuracy tất yếu giảm khi thêm class (bài toán khó hơn), không phân biệt được với forgetting thật.</p>
+<p><strong>Thời gian (§5.5) — CIFAR100 + DINO-v2:</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Bước</th>
+<th>Thời gian</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>FSA</strong></td>
+<td>6 phút 5 giây (65%)</td>
+</tr>
+<tr class="even">
+<td>Extract feature</td>
+<td>3 phút 8 giây</td>
+</tr>
+<tr class="odd">
+<td><strong>Lõi AnaCP</strong></td>
+<td><strong>5 giây</strong></td>
+</tr>
+<tr class="even">
+<td>Tổng</td>
+<td>9 phút 18 giây</td>
+</tr>
+</tbody>
+</table>
+<p>So sánh: CODA-Prompt 3h47m, joint fine-tuning 1h58m.</p>
+<p><strong>Bộ nhớ:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo>=</mo><mn>200</mn></mrow><annotation encoding="application/x-tex">C=200</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>=</mo><mn>768</mn></mrow><annotation encoding="application/x-tex">d=768</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>=</mo><mn>5000</mn></mrow><annotation encoding="application/x-tex">D=5000</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">H=3</annotation></semantics></math> → ~106.6M tham số, phần lớn là Gram matrices <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>×</mo><mi>D</mi></mrow><annotation encoding="application/x-tex">D\times D</annotation></semantics></math> (không tăng theo số class). Float8 → ~102 MiB.</p>
+<p><strong>Discussion (§5.6):</strong> <em>“a strong PTM is the key to CL, and representation-level forgetting is not the primary limitation”</em> + liên hệ neuroscience (não giữ biểu diễn ổn định, PTM ≈ kết quả tiến hóa).</p>
+<h3 id="fsa-điểm-dễ-bỏ-sót">FSA — điểm dễ bỏ sót</h3>
+<p><strong>FSA = First Session Adaptation</strong> (Panos et al., ICCV 2023, arXiv:2303.13199): fine-tune backbone chỉ ở task 1 bằng gradient, rồi đóng băng vĩnh viễn.</p>
+<p>AnaCP có dùng: <em>“We also adopt FSA following [56] before applying AnaCP to the frozen PTM as it helps improve accuracy.”</em> — nhưng chỉ ghi ở Implementation Details, không phải Methodology.</p>
+<p><strong>Vì sao đáng chú ý:</strong> - Paper quảng cáo “no gradient-based training”, nhưng FSA <strong>là</strong> gradient training và chiếm 65% compute - <strong>Không ablate FSA</strong> — lỗ hổng rõ nhất của bài - Fly-CL cố tình bỏ FSA (phê phán RanPAC tốn compute)</p>
+<p><strong>Vì sao bắt buộc đóng băng sau FSA:</strong> analytic tích lũy <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>t</mi></msub><mo>=</mo><msub><mi>G</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msubsup><mi>Z</mi><mi>t</mi><mi>⊤</mi></msubsup><msub><mi>Z</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">G_t = G_{t-1} + Z_t^\top Z_t</annotation></semantics></math> chỉ hợp lệ nếu mọi <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics></math> cùng không gian.</p>
+<h3 id="caveat">Caveat</h3>
+<ul>
+<li>Dùng <strong>DINO-v2 và MoCo-v3</strong> (self-supervised) để tránh information leakage, <strong>không phải</strong> ViT-B/16-IN21K supervised</li>
+<li><strong>Không có ResNet</strong> — <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>=</mo><mn>2048</mn></mrow><annotation encoding="application/x-tex">d=2048</annotation></semantics></math> chưa được test</li>
+<li>Test trên CIFAR100, ImageNet-R, CUB, TinyImageNet, Cars</li>
+</ul>
+<hr />
+<h2 id="phần-v-kế-hoạch-ghép-với-fly-cl">Phần V — Kế hoạch ghép với Fly-CL</h2>
+<h3 id="so-sánh-pipeline">So sánh pipeline</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Tầng</th>
+<th>AnaCP</th>
+<th>Fly-CL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Input</td>
+<td>PTM đóng băng, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math> chiều</td>
+<td>Giống</td>
+</tr>
+<tr class="even">
+<td>Projection</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mo>=</mo><mstyle mathvariant="normal"><mi>G</mi><mi>E</mi><mi>L</mi><mi>U</mi></mstyle><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mi>R</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Z = \mathrm{GELU}(XR)</annotation></semantics></math>, dense</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mi>′</mi><mo>=</mo><mtext mathvariant="normal">top-</mtext><mi>k</mi><mo stretchy="false" form="prefix">(</mo><mi>W</mi><mi>v</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">h&#39; = \text{top-}k(Wv)</annotation></semantics></math>, sparse</td>
+</tr>
+<tr class="odd">
+<td><strong>CP layer</strong></td>
+<td><strong>Có</strong></td>
+<td><strong>Không</strong></td>
+</tr>
+<tr class="even">
+<td>Chọn <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math></td>
+<td>Cố định 100</td>
+<td><strong>GCV</strong></td>
+</tr>
+<tr class="odd">
+<td>Giải hệ</td>
+<td>Nghịch đảo</td>
+<td><strong>Cholesky</strong></td>
+</tr>
+<tr class="even">
+<td>Classifier</td>
+<td>NCM / ELM</td>
+<td>Streaming ridge</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hai pipeline giống nhau trừ tầng CP</strong> → port khả thi.</p>
+<h3 id="pipeline-đầy-đủ-sau-khi-ghép">Pipeline đầy đủ sau khi ghép</h3>
+<p><strong>Giai đoạn 0:</strong></p>
+<pre><code>1. PTM pretrained, đóng băng (không FSA — giữ tinh thần Fly-CL)
+2. Sample W_proj sparse (m × d), mỗi hàng p phần tử ≠ 0, cố định</code></pre>
+<p><strong>Mỗi task t:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 1: extract</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> PTM(images)                      <span class="co"># (n, d)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 2: tích lũy ở INPUT LAYER  [MỚI]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> classes_in_task_t:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    Xc <span class="op">=</span> x[y <span class="op">==</span> c]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    mu[c] <span class="op">=</span> Xc.mean(<span class="dv">0</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    outer <span class="op">+=</span> (Xc <span class="op">-</span> mu[c]).T <span class="op">@</span> (Xc <span class="op">-</span> mu[c])</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>N_t <span class="op">=</span> N_prev <span class="op">+</span> n_task</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>Sigma <span class="op">=</span> (N_prev<span class="op">/</span>N_t)<span class="op">*</span>Sigma <span class="op">+</span> outer<span class="op">/</span>N_t</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 3: sparse projection + top-k  [GIỮ NGUYÊN]</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>h_prime <span class="op">=</span> top_k(W_proj <span class="op">@</span> x.T, k).T   <span class="co"># (n, m)</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 4: tích lũy sau projection</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> G <span class="op">+</span> h_prime.T <span class="op">@</span> h_prime</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>M[:, c] <span class="op">=</span> mean theo <span class="kw">class</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>N_diag[c] <span class="op">=</span> số mẫu</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 5: tính P  [MỚI]</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>Sig_inv_half, Sig_half <span class="op">=</span> whiten_matrices(Sigma)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>C_hat <span class="op">=</span> Sig_inv_half <span class="op">@</span> C_mat</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>U, S, Vh <span class="op">=</span> svd(C_hat, full_matrices<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>delta <span class="op">=</span> compute_delta(diag(S) <span class="op">@</span> Vh, Vh)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>S_tilde <span class="op">=</span> diag(S) <span class="op">+</span> alpha <span class="op">*</span> diag(delta)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> (Sig_half <span class="op">@</span> (U <span class="op">@</span> S_tilde <span class="op">@</span> Vh)).T   <span class="co"># (C, d)</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 6: giải CP layer  [LAI]</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>lam_star <span class="op">=</span> GCV(G, M <span class="op">@</span> N_diag <span class="op">@</span> P)        <span class="co"># ← Fly-CL</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>W_CP <span class="op">=</span> cho_solve(cholesky(G <span class="op">+</span> lam_star<span class="op">*</span>I), M <span class="op">@</span> N_diag <span class="op">@</span> P)   <span class="co"># (m, d)</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Bước 7: classifier</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Phương án (a): NCM — không cần gì thêm</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Phương án (b): ELM + pseudo-replay — phải tính lại mỗi task</span></span></code></pre></div>
+<p><strong>Inference:</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> top_k(W_proj <span class="op">@</span> x, k)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> h <span class="op">@</span> W_CP</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> argmin_c <span class="op">||</span>u <span class="op">-</span> P[c]<span class="op">||</span>        <span class="co"># NCM</span></span></code></pre></div>
+<h3 id="bảng-thay-đổi">Bảng thay đổi</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Thành phần</th>
+<th>Fly-CL gốc</th>
+<th>Sau khi ghép</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Backbone, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">W_{proj}</annotation></semantics></math>, top-k</td>
+<td>Giữ nguyên</td>
+<td>Giữ nguyên</td>
+</tr>
+<tr class="even">
+<td>Tích lũy <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi><annotation encoding="application/x-tex">G</annotation></semantics></math></td>
+<td>Có</td>
+<td>Có</td>
+</tr>
+<tr class="odd">
+<td>Tích lũy <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math> (one-hot)</td>
+<td>Có</td>
+<td><strong>→ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>N</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">MNP</annotation></semantics></math></strong></td>
+</tr>
+<tr class="even">
+<td>GCV + Cholesky</td>
+<td>Có</td>
+<td>Có (dùng 2 lần)</td>
+</tr>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math></td>
+<td>✗</td>
+<td><strong>Thêm</strong></td>
+</tr>
+<tr class="even">
+<td>CP layer</td>
+<td>✗</td>
+<td><strong>Thêm</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>m</mi><mo>×</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(m\times d)</annotation></semantics></math></td>
+</tr>
+<tr class="odd">
+<td>Classifier</td>
+<td>Tích lũy vĩnh viễn</td>
+<td>Tùy phương án</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bê-được-phần-nào">Bê được phần nào</h3>
+<p><strong>Bê nguyên:</strong> - Whitening + SVD + Lemma 4.1 → <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math> (ở input layer, độc lập cách chiếu) - Tích lũy <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math></p>
+<p><strong>Bê nhưng sửa chiều:</strong> - Đổi target ridge sang <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>t</mi></msub><annotation encoding="application/x-tex">S_t</annotation></semantics></math> từ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>m</mi><mo>×</mo><mi>C</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(m\times C)</annotation></semantics></math> → <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>m</mi><mo>×</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(m\times d)</annotation></semantics></math> - NCM classifier</p>
+<p><strong>Phải thiết kế lại:</strong> - Cơ chế tích lũy classifier (xem 2 phương án dưới)</p>
+<p><strong>Không nên bê:</strong> - Multi-head (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">H=1</annotation></semantics></math> đủ), ELM (kéo theo pseudo-replay), GELU (đã có top-k), <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math> cố định, nghịch đảo trực tiếp</p>
+<h3 id="hai-phương-án-cho-classifier">Hai phương án cho classifier</h3>
+<p><strong>(a) Đóng băng CP sau task 1</strong> - Giữ nguyên toàn bộ cơ chế Fly-CL (tích lũy vĩnh viễn, không cần pseudo-replay) - Giữ tính order-independent - Đơn giản nhất - Mất khả năng thích nghi liên tục</p>
+<p><strong>(b) CP cập nhật mỗi task + pseudo-replay</strong> - Giống AnaCP - Phải bỏ tích lũy, tính lại classifier mỗi task - Phải lưu <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>c</mi></msub><annotation encoding="application/x-tex">\mu_c</annotation></semantics></math> + <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math></p>
+<p>→ Đây là <strong>ablation đáng chạy</strong>: so sánh xem “adaptation liên tục” đáng giá bao nhiêu.</p>
+<h3 id="ba-rủi-ro-khi-implement">Ba rủi ro khi implement</h3>
+<p><strong>1. Quên tính lại classifier</strong> — code chạy không lỗi, kết quả tệ, khó debug. Kiểm tra: in <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>C</mi><mi>P</mi></mrow></msub><annotation encoding="application/x-tex">W_{CP}</annotation></semantics></math> sau task 1 và 2, nếu khác → bắt buộc tính lại.</p>
+<p><strong>2. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math> không còn sparse</strong> — sau top-k mỗi mẫu có <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math> vị trí ≠ 0 nhưng <strong>vị trí khác nhau</strong>, nên mean là union → có thể dày đặc. Kiểm tra: <code>(M != 0).float().mean()</code></p>
+<p><strong>3. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math> suy biến với ResNet-50</strong> — <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>=</mo><mn>2048</mn></mrow><annotation encoding="application/x-tex">d=2048</annotation></semantics></math>, CIFAR-100 mỗi task ~5000 mẫu. Kiểm tra: <code>torch.linalg.cond(Sigma)</code>, nếu &gt; 1e6 cần shrinkage mạnh.</p>
+<h3 id="code-cần-thêm">Code cần thêm</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> whiten_matrices(Sigma, eps<span class="op">=</span><span class="fl">1e-6</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (Sigma <span class="op">+</span> Sigma.T)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    lam, U <span class="op">=</span> torch.linalg.eigh(S)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    lam <span class="op">=</span> torch.clamp(lam, <span class="bu">min</span><span class="op">=</span>eps)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (U <span class="op">@</span> torch.diag(lam.rsqrt()) <span class="op">@</span> U.T,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>            U <span class="op">@</span> torch.diag(lam.sqrt())  <span class="op">@</span> U.T)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_delta(W, E):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;W, E: (C, C), cột i là w_i, e_i&quot;&quot;&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    norms <span class="op">=</span> W.norm(dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    G  <span class="op">=</span> W.T <span class="op">@</span> W</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    EW <span class="op">=</span> E.T <span class="op">@</span> W</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    sign <span class="op">=</span> torch.where(G <span class="op">&gt;=</span> <span class="dv">0</span>, <span class="fl">1.0</span>, <span class="op">-</span><span class="fl">1.0</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> sign <span class="op">*</span> EW <span class="op">*</span> norms.<span class="bu">pow</span>(<span class="dv">2</span>).unsqueeze(<span class="dv">1</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    B <span class="op">=</span> EW.diagonal().unsqueeze(<span class="dv">1</span>) <span class="op">*</span> G.<span class="bu">abs</span>()</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    Mmat <span class="op">=</span> (A <span class="op">-</span> B) <span class="op">/</span> norms.unsqueeze(<span class="dv">0</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    Mmat.fill_diagonal_(<span class="dv">0</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.sign(<span class="op">-</span>Mmat.<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_target_prototypes(class_means, Sigma, alpha<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;class_means: (d, C) → P: (C, d)&quot;&quot;&quot;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    Sig_inv_half, Sig_half <span class="op">=</span> whiten_matrices(Sigma)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    C_hat <span class="op">=</span> Sig_inv_half <span class="op">@</span> class_means</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    U, S, Vh <span class="op">=</span> torch.linalg.svd(C_hat, full_matrices<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    delta <span class="op">=</span> compute_delta(torch.diag(S) <span class="op">@</span> Vh, Vh)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    S_tilde <span class="op">=</span> torch.diag(S) <span class="op">+</span> alpha <span class="op">*</span> torch.diag(delta)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (Sig_half <span class="op">@</span> (U <span class="op">@</span> S_tilde <span class="op">@</span> Vh)).T</span></code></pre></div>
+<p><strong>Metric kiểm chứng:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_abs_cos(M):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    Mn <span class="op">=</span> M <span class="op">/</span> M.norm(dim<span class="op">=</span><span class="dv">0</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    G <span class="op">=</span> (Mn.T <span class="op">@</span> Mn).<span class="bu">abs</span>()</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    C <span class="op">=</span> M.shape[<span class="dv">1</span>]</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (G.<span class="bu">sum</span>() <span class="op">-</span> C) <span class="op">/</span> (C<span class="op">*</span>C <span class="op">-</span> C)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># PHẢI giảm sau khi tách</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mean_abs_cos(C_mat), <span class="st">&quot;→&quot;</span>, mean_abs_cos(C_sep))</span></code></pre></div>
+<hr />
+<h2 id="phần-vi-kế-hoạch-ablation">Phần VI — Kế hoạch ablation</h2>
+<h3 id="nhóm-a-đóng-góp-từng-thành-phần-bắt-chước-table-3-anacp">Nhóm A — Đóng góp từng thành phần (bắt chước Table 3 AnaCP)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Target</th>
+<th>Pseudo-replay</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A0</td>
+<td>one-hot</td>
+<td>✗</td>
+<td>Fly-CL gốc (baseline)</td>
+</tr>
+<tr class="even">
+<td>A1</td>
+<td>class mean thô</td>
+<td>✗</td>
+<td>Chỉ positive alignment</td>
+</tr>
+<tr class="odd">
+<td>A2</td>
+<td>class mean đã tách</td>
+<td>✗</td>
+<td>+ negative repulsion</td>
+</tr>
+<tr class="even">
+<td>A3</td>
+<td>class mean đã tách</td>
+<td>✓</td>
+<td>Full</td>
+</tr>
+</tbody>
+</table>
+<p>A2 về mặt toán học <strong>sai</strong> (tích lũy trên feature đã đổi) nhưng chạy vẫn ra số → cho biết sai lệch đó tốn bao nhiêu.</p>
+<h3 id="nhóm-b-tần-suất-cập-nhật-cp-đóng-góp-riêng-anacp-không-có">Nhóm B — Tần suất cập nhật CP <em>(đóng góp riêng, AnaCP không có)</em></h3>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>CP cập nhật khi nào</th>
+<th>Pseudo-replay?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>B1</td>
+<td>Không có CP</td>
+<td>✗</td>
+</tr>
+<tr class="even">
+<td>B2</td>
+<td>Chỉ task 1 rồi đóng băng</td>
+<td>✗</td>
+</tr>
+<tr class="odd">
+<td>B3</td>
+<td>Mỗi 2 task</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>B4</td>
+<td>Mỗi task</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>Nếu B2 ≈ B4 → kết luận mạnh: <em>“adaptation liên tục không cần thiết khi backbone đủ tốt”</em> — phản biện chính AnaCP.</p>
+<h3 id="nhóm-c-tương-tác-với-đặc-thù-fly-cl-chưa-paper-nào-có">Nhóm C — Tương tác với đặc thù Fly-CL <em>(chưa paper nào có)</em></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Biến</th>
+<th>Giá trị</th>
+<th>Câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math> (top-k)</td>
+<td>1%, 5%, 10%, 100% của <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math></td>
+<td>CP bù được cho top-k gắt không?</td>
+</tr>
+<tr class="even">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math></td>
+<td>2000, 5000, 10000</td>
+<td>Chiều cao rồi thì CP còn cần không?</td>
+</tr>
+<tr class="odd">
+<td>Mật độ <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">W_{proj}</annotation></semantics></math></td>
+<td>sparse vs dense</td>
+<td>Sparse làm CP kém đi không?</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Giả thuyết:</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math> lớn → RP đã tách đủ → CP đóng góp ít. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math> nhỏ → CP quan trọng hơn. Nếu đúng: <em>“CP và chiều chiếu là hai cách thay thế nhau”</em>.</p>
+<h3 id="nhóm-d-siêu-tham-số">Nhóm D — Siêu tham số</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Biến</th>
+<th>Giá trị</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></td>
+<td>0, 0.5, 1, 2, 5</td>
+<td><strong>AnaCP không ablate — lỗ hổng rõ</strong></td>
+</tr>
+<tr class="even">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math></td>
+<td>1, 3</td>
+<td>Bắt đầu <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">H=1</annotation></semantics></math></td>
+</tr>
+<tr class="odd">
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>R</mi><annotation encoding="application/x-tex">R</annotation></semantics></math></td>
+<td>20, 50, 100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>shrinkage <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϵ</mi><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></td>
+<td>1e-6, 1e-4, 1e-2</td>
+<td>Quan trọng với ResNet-50</td>
+</tr>
+</tbody>
+</table>
+<h3 id="metric-bổ-sung">Metric bổ sung</h3>
+<p>Ngoài <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">A_{last}</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>A</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar{A}</annotation></semantics></math>, Forgetting:</p>
+<ul>
+<li><strong>Mean pairwise cosine giữa prototype</strong> (trước/sau CP) — đại lượng Lemma 4.1 tối ưu, <strong>phải giảm</strong>, nếu không thì implement sai</li>
+<li><strong>Tỉ lệ intra/inter class distance</strong> — đo cả hai hiệu ứng trong một số</li>
+</ul>
+<h3 id="thứ-tự-chạy">Thứ tự chạy</h3>
+<ol type="1">
+<li><strong>Nhóm A</strong> — xác nhận pipeline đúng</li>
+<li><strong>Nhóm D</strong> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>) — tìm giá trị tốt trước</li>
+<li><strong>Nhóm B</strong> — đóng góp riêng</li>
+<li><strong>Nhóm C</strong> — tốn nhất, để cuối</li>
+</ol>
+<p>Ngân sách hạn chế: A + B là đủ cho một paper.</p>
+<hr />
+<h2 id="phần-vii-lộ-trình-thực-hiện">Phần VII — Lộ trình thực hiện</h2>
+<h3 id="bước-1-reproduce-anacp">Bước 1 — Reproduce AnaCP</h3>
+<p>Clone <a href="https://github.com/SalehMomeni/AnaCP">github.com/SalehMomeni/AnaCP</a>, chạy CIFAR-100 + DINO-v2. <strong>Mốc: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">A_{last}</annotation></semantics></math> = 92.15</strong></p>
+<p>Nếu không reproduce được thì đừng port — không có mốc so sánh.</p>
+<h3 id="bước-2-đọc-anacp.py">Bước 2 — Đọc <code>anacp.py</code></h3>
+<p>Đối chiếu implementation thật với công thức. Chú ý: - Thứ tự cập nhật <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi><annotation encoding="application/x-tex">P</annotation></semantics></math> và <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mrow><mi>C</mi><mi>P</mi></mrow></msub><annotation encoding="application/x-tex">W_{CP}</annotation></semantics></math> trong cùng task - <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mi>i</mi></msub><annotation encoding="application/x-tex">w_i</annotation></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>e</mi><mi>i</mi></msub><annotation encoding="application/x-tex">e_i</annotation></semantics></math> là cột hay hàng - Cách nhiễu loạn singular value chính xác</p>
+<h3 id="bước-3-port-sang-fly-cl">Bước 3 — Port sang Fly-CL</h3>
+<p>Phiên bản tối giản: chỉ §4.1 + §4.2 + NCM + phương án (a). ~60-80 dòng code thêm. Ước lượng 1-2 ngày nếu quen codebase.</p>
+<h3 id="bước-4-chạy-ablation-a-b">Bước 4 — Chạy ablation A, B</h3>
+<h3 id="bước-5-tùy-chọn-thử-etf">Bước 5 (tùy chọn) — Thử ETF</h3>
+<p>Nếu muốn thử ETF của ProNC, dùng nội suy thay vì thay thẳng:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>β</mi><mo stretchy="false" form="postfix">)</mo><msup><mover><mi>C</mi><mo accent="true">̃</mo></mover><mi>⊤</mi></msup><mo>+</mo><mi>β</mi><mi>E</mi></mrow><annotation encoding="application/x-tex">P = (1-\beta)\tilde{C}^\top + \beta E</annotation></semantics></math></p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\beta=0</annotation></semantics></math> → AnaCP, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\beta=1</annotation></semantics></math> → ETF. Chạy ablation trên <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>. Nếu tối ưu ở giữa → cả hai paper đều sai vì chọn cực đoan.</p>
+<p>Không cần code ProNC — chỉ cần hàm ETF (~10 dòng, lấy từ NC-FSCIL) + phép nội suy.</p>
+<h3 id="ngưỡng-quyết-định">Ngưỡng quyết định</h3>
+<ul>
+<li>Không vượt Fly-CL gốc ≥1% <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">A_{last}</annotation></semantics></math> → lợi ích phụ thuộc backbone, pivot sang biến thể contrastive-chỉ-first-session</li>
+<li>Mean pairwise cosine không giảm → implement sai, dừng lại debug</li>
+</ul>
+<h3 id="với-resnet-50">Với ResNet-50</h3>
+<p>AnaCP chưa test CNN backbone. Đây là <strong>đóng góp phụ có giá trị</strong>: <em>“AnaCP có generalize sang CNN không?”</em></p>
+<p>Lưu ý: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>=</mo><mn>2048</mn></mrow><annotation encoding="application/x-tex">d=2048</annotation></semantics></math> → <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math> lớn hơn 7 lần, eigendecomposition tốn hơn, condition number có thể xấu. Kiểm tra sớm.</p>
+<hr />
+<h2 id="phần-viii-danh-sách-paper">Phần VIII — Danh sách paper</h2>
+<h3 id="có-code-ưu-tiên">Có code (ưu tiên)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Paper</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>AnaCP</strong></td>
+<td>github.com/SalehMomeni/AnaCP</td>
+</tr>
+<tr class="even">
+<td><strong>RanPAC</strong></td>
+<td>github.com/McDonnell-Research-Lab/RanPAC</td>
+</tr>
+<tr class="odd">
+<td><strong>ProNC</strong></td>
+<td>github.com/Continue-Edge-AI-Lab/ProNC</td>
+</tr>
+<tr class="even">
+<td><strong>NC-FSCIL</strong></td>
+<td>github.com/NeuralCollapseApplications/FSCIL</td>
+</tr>
+<tr class="odd">
+<td><strong>MoTiC</strong></td>
+<td>github.com/huangshuai0605/MoTiC</td>
+</tr>
+<tr class="even">
+<td><strong>Co2L</strong></td>
+<td>github.com/chaht01/Co2L</td>
+</tr>
+<tr class="odd">
+<td><strong>PCR</strong></td>
+<td>github.com/FelixHuiweiLin/PCR</td>
+</tr>
+<tr class="even">
+<td><strong>RAPF</strong></td>
+<td>github.com/linlany/RAPF</td>
+</tr>
+</tbody>
+</table>
+<h3 id="không-có-code-bỏ-qua">Không có code (bỏ qua)</h3>
+<p>GPLASC, CILA, CCLIS, FNC²/MNC³L, Projection-Enhanced CL (đã reject)</p>
+<h3 id="đáng-đọc-thêm">Đáng đọc thêm</h3>
+<ul>
+<li><strong>DPCR</strong> — He et al., ICML 2025</li>
+<li><strong>REAL</strong> — He et al., arXiv:2403.13522</li>
+<li><strong>FSA</strong> — Panos et al., ICCV 2023, arXiv:2303.13199</li>
+<li><strong>FeCAM</strong> — Goswami et al., NeurIPS 2023 (nguồn Eq. 10 của AnaCP)</li>
+<li><strong>SupCon</strong> — Khosla et al., NeurIPS 2020</li>
+</ul>
+<h3 id="negative-results-đọc-để-tránh-cạm-bẫy">Negative results (đọc để tránh cạm bẫy)</h3>
+<ul>
+<li>arXiv:2304.00933 — SupCon quên nhanh dù transferability cao</li>
+<li>Davari et al., CVPR 2022, arXiv:2203.13381 — Probing representation forgetting</li>
+<li>NeurIPS 2021 — Contrastive learning và shortcut solutions</li>
+<li>arXiv:2503.17024 — SupCon suy giảm khi mất cân bằng lớp</li>
+</ul>
+<hr />
+<h2 id="phụ-lục-ghi-chú-nhanh">Phụ lục — Ghi chú nhanh</h2>
+<p><strong>Ký hiệu dễ nhầm:</strong> - <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>C</mi><annotation encoding="application/x-tex">C</annotation></semantics></math> vừa là ma trận class mean <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo>×</mo><mi>C</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(d\times C)</annotation></semantics></math>, vừa là số class — paper viết ẩu - PyTorch <code>svd</code> trả <code>Vh</code> = <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>V</mi><mi>⊤</mi></msup><annotation encoding="application/x-tex">V^\top</annotation></semantics></math>, không phải <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math> - PyTorch <code>svd</code> trả <code>S</code> là <strong>vector</strong>, cần <code>torch.diag(S)</code></p>
+<p><strong>Hàm PyTorch:</strong> - <code>torch.linalg.eigh</code> — eigendecomposition ma trận đối xứng, eigenvalue tăng dần, eigenvector trực chuẩn. Chỉ đọc tam giác dưới → phải ép đối xứng trước. - <code>torch.linalg.svd(A, full_matrices=False)</code> — thin SVD - <code>torch.linalg.qr</code> — cơ sở trực chuẩn (rẻ nhất)</p>
+<p><strong>Chi phí:</strong> - <code>eigh</code> trên <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Σ</mi><annotation encoding="application/x-tex">\Sigma</annotation></semantics></math>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false" form="prefix">(</mo><msup><mi>d</mi><mn>3</mn></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">O(d^3)</annotation></semantics></math> — ViT 768 → &lt;1s, ResNet 2048 → vài giây - SVD trên <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>C</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{C}</annotation></semantics></math> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo>×</mo><mi>C</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(d\times C)</annotation></semantics></math>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false" form="prefix">(</mo><mi>d</mi><msup><mi>C</mi><mn>2</mn></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">O(dC^2)</annotation></semantics></math> — rẻ hơn nhiều</p>
+<p><strong>Kết luận cốt lõi:</strong> &gt; Contrastive loss là kỹ thuật <strong>representation learning</strong>, không phải kỹ thuật <strong>continual learning</strong>. Trong pipeline analytic, forgetting đã được giải bằng cơ chế khác — nên vai trò “chỉ cải thiện representation” lại đúng là điều cần.</p>
+</body>
+</html>

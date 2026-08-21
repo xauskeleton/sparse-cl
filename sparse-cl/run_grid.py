@@ -17,7 +17,7 @@ LUU Y so sanh: bang ket qua chinh chay o 100 epoch / patience 20 / batch 256 voi
 backbone DONG BANG. Luoi nay khac ca ba, nen phai so NOI BO voi dong
 frozen+Linear cua chinh no, khong so tuyet doi voi 89.49 / 74.38.
 
-train.py ghi JSON sau MOI task, nen dung giua chung van con ket qua den do -
+trainer_sgd.py ghi JSON sau MOI task, nen dung giua chung van con ket qua den do -
 xem 'tasks_done' va 'complete' trong file JSON.
 """
 
@@ -167,7 +167,7 @@ def main():
     failed, t0 = [], time.time()
     for k, r, lam, s in jobs:
         # -u: khong dem stdout, neu khong log trong hang chuc phut du dang chay
-        cmd = ([sys.executable, '-u', 'train.py'] + common + ['--seed', s]
+        cmd = ([sys.executable, '-u', 'trainer_sgd.py'] + common + ['--seed', s]
                + CFG[k] + flags_of(r, lam))
         emit(f"===== {a.backbone} | {k} | {' '.join(flags_of(r, lam))} | seed {s} =====")
         if a.dry_run:

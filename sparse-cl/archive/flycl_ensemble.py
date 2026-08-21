@@ -19,7 +19,7 @@ vong chu khong chi phuong sai.
 Van chinh xac tang dan: moi nhanh tich luy Q, G rieng tren toan bo du lieu, nen
 tung nhanh bat bien theo thu tu task -> tong cung vay.
 
-m=1 phai tai lap DUNG flycl_baseline.
+m=1 phai tai lap DUNG Fly-CL goc.
 """
 
 import time
@@ -28,13 +28,13 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter, topk_rows
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter, topk_rows
+from backbone import cache_exists, load_backbone
 
 
 def make_projection(expand, d, degree, seed, dev):
-    """Hai dong rieng, giong het flycl_baseline: viet gop mot dong thi Python
+    """Hai dong rieng, giong het Fly-CL goc: viet gop mot dong thi Python
     danh gia ve phai truoc -> randn chay truoc randperm -> W khac han."""
     set_seed(seed)
     W = torch.zeros(expand, d)

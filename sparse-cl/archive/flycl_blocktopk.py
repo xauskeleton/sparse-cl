@@ -16,7 +16,7 @@ unit dang ap dao vi feature ResNet toan duong. Canh tranh theo khoi ep hoat dong
 trai deu.
 
 W hoan toan khong doi giua cac m - chi cach chon thay doi - nen so sanh la theo
-CAP tuyet doi, va m=1 phai tai lap DUNG flycl_baseline.
+CAP tuyet doi, va m=1 phai tai lap DUNG Fly-CL goc.
 """
 
 import time
@@ -25,15 +25,15 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter
+from backbone import cache_exists, load_backbone
 
 
 def topk_blocks(Z, k, m):
     """Z la [E, N]. Chia E thanh m khoi, giu k/m gia tri lon nhat MOI KHOI.
 
-    m=1 tro ve dung topk_rows cua flycl_baseline.
+    m=1 tro ve dung topk_rows cua Fly-CL goc.
     """
     E, N = Z.shape
     zb = Z.view(m, E // m, N)

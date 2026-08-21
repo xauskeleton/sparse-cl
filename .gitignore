@@ -1,6 +1,6 @@
 # EWC-DR da co .git rieng (clone tu upstream scarlet0703/EWC-DR).
 # Khong track o day de tranh nested repo; sua doi trong do commit bang git cua no.
-EWC-DR/
+upstream/EWC-DR/
 
 # Du lieu - khong bao gio commit
 data/

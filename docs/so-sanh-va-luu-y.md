@@ -148,11 +148,11 @@ for task in range(num_tasks):
 
 Sắp theo mức độ ảnh hưởng:
 
-1. **Sửa `_set_device` trong `EWC-DR/trainer.py`** để tôn trọng config và có nhánh CPU — hiện là rào cản cứng khi chạy thử trên máy không GPU.
+1. **Sửa `_set_device` trong `upstream/EWC-DR/trainer.py`** để tôn trọng config và có nhánh CPU — hiện là rào cản cứng khi chạy thử trên máy không GPU.
 2. **Sửa `_set_random` để dùng `args["seed"]`** — nếu không, "3 independent trials" không thực sự độc lập ở phần khởi tạo.
 3. **Thêm 3 file thiếu (`ewc_mas`, `ewc_online`, `ewc_si`)** hoặc bỏ chúng khỏi `factory.py` để tránh lỗi import khó hiểu.
 4. **Sửa `--gpu` trong 3 script Fly-CL** về `0`.
 5. **Cache đặc trưng test trong `Fly-CL/main.py`** — giảm khoảng 5 lần thời gian đánh giá, không đổi kết quả.
 6. **Đưa `omegamax` và `lamda` vào JSON làm biến khảo sát** — hiện `omegamax` bị khóa cứng ở mặc định.
-7. Dọn: gộp 6 notebook EWC-DR, xóa `Fly-CL-main/2.7`, cân nhắc xóa phần kế thừa PyCIL không dùng — 9/11 file trong `convs/` (thực tế chỉ `resnet.py` + `linears.py` được khởi tạo), `utils/rl_utils/`, `utils/autoaugment.py`, và ~200 dòng herding exemplar trong `models/base.py`.
+7. Dọn: gộp 6 notebook EWC-DR, xóa `upstream/Fly-CL-main/2.7`, cân nhắc xóa phần kế thừa PyCIL không dùng — 9/11 file trong `convs/` (thực tế chỉ `resnet.py` + `linears.py` được khởi tạo), `utils/rl_utils/`, `utils/autoaugment.py`, và ~200 dòng herding exemplar trong `models/base.py`.
 8. Truyền `increment` thật vào `toolkit.accuracy()` để nhãn nhóm trong log khớp ranh giới task.

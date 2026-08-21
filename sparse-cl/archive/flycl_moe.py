@@ -25,7 +25,7 @@ Hai che do ngan sach:
   --budget dim: E = expand_dim cho moi chuyen gia. Tach rieng anh huong cua
     tinh cuc bo, nhung ton m lan bo nho.
 
-m=1 phai tai lap DUNG flycl_baseline - do la phep tu kiem tra.
+m=1 phai tai lap DUNG Fly-CL goc - do la phep tu kiem tra.
 """
 
 import time
@@ -34,13 +34,13 @@ import numpy as np
 import torch
 
 from config import get_parser
-from data import TaskData, set_seed
-from flycl_baseline import select_ridge_parameter, topk_rows
-from train import cache_exists, load_backbone
+from data_loader import TaskData, set_seed
+from utils import select_ridge_parameter, topk_rows
+from backbone import cache_exists, load_backbone
 
 
 def make_projection(expand, d, degree, seed):
-    """Phai giu dung hai dong nhu flycl_baseline: viet gop mot dong thi Python
+    """Phai giu dung hai dong nhu Fly-CL goc: viet gop mot dong thi Python
     danh gia ve phai truoc -> randn chay truoc randperm -> W khac han."""
     set_seed(seed)
     W = torch.zeros(expand, d)
