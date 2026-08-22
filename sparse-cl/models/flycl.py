@@ -73,7 +73,6 @@ class FlyCL:
             self.W3s.append(W3.to(device))
             self.G.append(torch.zeros(self.Eb, self.Eb, device=device))
             self.Q.append(torch.zeros(self.Eb, self.C, device=device))
-        self.eye = torch.eye(self.Eb, device=device)
         self.Wo = [None] * branches
         self.branches = branches
 
@@ -99,9 +98,15 @@ class FlyCL:
             self.Q[e] += H @ Y1h
             self.G[e] += H @ H.T
             ridge = select_ridge_parameter(H.T, Y1h, self.lo, self.hi)
-            self.Wo[e] = torch.cholesky_solve(
-                self.Q[e], torch.linalg.cholesky(self.G[e] + ridge * self.eye))
             del H
+            # `G + ridge*eye` phai dung ba ma tran Eb x Eb cung luc: eye, ban
+            # tam, va dau ra. O concat + ensemble 5 thi moi cai la 1.6 GB tren
+            # nen G da chiem 8 GB. Cong thang vao duong cheo cua ban sao thi chi
+            # con hai, va bo han duoc `eye` thuong tru.
+            Gl = self.G[e].clone()
+            Gl.diagonal().add_(ridge)
+            self.Wo[e] = torch.cholesky_solve(self.Q[e], torch.linalg.cholesky(Gl))
+            del Gl
         self.last_ridge = float(ridge)
 
     @torch.no_grad()
