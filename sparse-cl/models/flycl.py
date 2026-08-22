@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from utils import select_ridge_parameter, topk_rows
+from utils import select_ridge_accumulated, select_ridge_parameter, topk_rows
 
 
 class FlyCL:
@@ -33,8 +33,12 @@ class FlyCL:
 
     def __init__(self, num_classes, expand_dim, coding_level, deg_s4, deg_s3,
                  w_s3, b_stage, branches, ridge_lower, ridge_upper, seed,
-                 stage_norms, device):
+                 stage_norms, device, lam_mode='task'):
         self.device = device
+        self.lam_mode = lam_mode
+        self.seed = seed
+        self.n_total = 0
+        self.ridges = []
         self.C = num_classes
         self.k_ratio = coding_level
         self.deg_s3 = deg_s3
@@ -94,15 +98,27 @@ class FlyCL:
     def update(self, X, Y):
         Y1h = torch.zeros(Y.shape[0], self.C, device=self.device)
         Y1h.scatter_(1, Y.long().view(-1, 1), 1.0)
+        self.n_total += X.shape[0]
         for e in range(self.branches):
             H = self._code(e, X)
             self.Q[e] += H @ Y1h
             self.G[e] += H @ H.T
-            ridge = select_ridge_parameter(H.T, Y1h, self.lo, self.hi)
+            # task  = GCV tren task hien tai (nhu upstream)
+            # accum = GCV tren toan bo du lieu da thay, tu (G, Q, n)
+            ridge = (select_ridge_accumulated(self.G[e], self.Q[e], self.n_total,
+                                              self.lo, self.hi, seed=self.seed)
+                     if self.lam_mode == 'accum'
+                     else select_ridge_parameter(H.T, Y1h, self.lo, self.hi))
             self.Wo[e] = torch.cholesky_solve(
                 self.Q[e], torch.linalg.cholesky(self.G[e] + ridge * self.eye))
             del H
         self.last_ridge = float(ridge)
+        self.ridges.append(float(ridge))
+        print(f"    [lam] task {len(self.ridges) - 1}: n={self.n_total} "
+              f"lam={ridge:g}", flush=True)
+
+    def diagnostics(self):
+        return {'lam_first': self.ridges[0], 'lam_last': self.ridges[-1]}
 
     @torch.no_grad()
     def predict(self, X):
