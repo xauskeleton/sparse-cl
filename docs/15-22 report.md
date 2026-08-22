@@ -210,18 +210,21 @@ gì".
 thấy toàn bộ dữ liệu**, cộng logit khi dự đoán. Đo trên Fly-CL nguyên bản, không
 kèm concat. Ba seed.
 
-| Nhánh | Unit | Bộ nhớ | Thời gian | A_T | Ā | Δ Ā theo cặp |
-|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 10.000 | 0.4 GB | 97s | 76.76 | 84.19 ± 0.42 | — |
-| 2 | 20.000 | 0.8 GB | 196s | 77.33 | 84.83 ± 0.39 | **+0.64 ± 0.16** |
-| **5** | 50.000 | 2.0 GB | 489s | **77.49** | **85.01 ± 0.46** | **+0.82 ± 0.13** |
-| 10 | 100.000 | 4.0 GB | 971s | 77.48 | 84.73 * | +0.65 * |
+| Nhánh | Seed | Unit | Bộ nhớ | Thời gian | A_T | Ā | Δ Ā theo cặp |
+|---:|:-:|---:|---:|---:|---:|---:|---:|
+| 1 | 3 | 10.000 | 0.4 GB | 97s | 76.76 | 84.19 ± 0.42 | — |
+| 2 | 3 | 20.000 | 0.8 GB | 196s | 77.33 | 84.83 ± 0.39 | **+0.64 ± 0.16** |
+| **5** | **3** | 50.000 | 2.0 GB | 489s | **77.49** | **85.01 ± 0.46** | **+0.82 ± 0.13** |
+| 10 | **1** | 100.000 | 4.0 GB | 971s | 77.48 | 84.73 | +0.65 |
 
-\* một seed (1993). Các dòng trên là trung bình ba seed.
+**Đừng đọc dòng m = 10 như một cú tụt.** Nó là **một seed**, còn các dòng trên là
+trung bình **ba seed** — hai loại số khác nhau đặt cùng một cột. So ở **cùng seed
+1993** thì m=5 cho 84.75 và m=10 cho 84.73, tức chênh **−0.02**, không phải −0.28.
 
-Dương ở cả ba seed tới m = 5. Nhưng bước từ 1 lên 2 cho +0.64 còn từ 2 lên 5 chỉ
-thêm **+0.18**, và từ 5 lên 10 thì **không thêm gì** — ở cùng seed 1993, m=5 cho
-84.75 còn m=10 cho 84.73.
+Dương ở cả ba seed tới m = 5. Bước từ 1 lên 2 cho +0.64, từ 2 lên 5 chỉ thêm
+**+0.18**, và từ 5 lên 10 thì **phẳng**. Đo trên nền có `feature mix` (xem
+`bao-cao.md`, Bảng 3) cũng cùng kết luận và cùng seed: 85.93 ở m=5, 85.96 ở m=10,
+85.97 ở m=20 — từ 5 lên 20 chỉ thêm **+0.04** với 4 lần bộ nhớ và 4.6 lần thời gian.
 
 **Bão hoà ở m = 5.** Xác nhận lại trên feature đã FSA (mục 8): bước 2→5 nhánh cho
 +0.15, gần trùng con số +0.18 ở đây — điểm bão hoà không đổi.

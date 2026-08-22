@@ -22,7 +22,8 @@ def build_parser():
     p.add_argument('--mode', default='cil', choices=['cil', 'sgd'],
                    help='cil = nghiem dong; sgd = nhanh huan luyen bang gradient')
     p.add_argument('--method', default='flycl',
-                   choices=['flycl', 'anacp_cp', 'anacp_full', 'anacp_ref'])
+                   choices=['flycl', 'flycl_lp', 'anacp_cp', 'anacp_full',
+                            'anacp_ref'])
     p.add_argument('--training_method', default='none', choices=['none', 'aper'],
                    help='aper = First-Session Adaptation truoc khi trich feature')
     p.add_argument('--log_dir', default='./logs')
@@ -37,6 +38,15 @@ def build_parser():
     g.add_argument('--branches', type=int, default=1)
     g.add_argument('--grid', default='0:1,300:1',
                    help='danh sach deg_s3:w_s3. 0:1 = Fly-CL goc')
+
+    g = p.add_argument_group('flycl_lp: hoc phep chieu mot lan o task 0')
+    g.add_argument('--lp_rank', type=int, default=64, help='hang cua adapter')
+    g.add_argument('--lp_epochs', type=int, default=5)
+    g.add_argument('--lp_lr', type=float, default=1e-3)
+    g.add_argument('--lp_bs', type=int, default=256)
+    g.add_argument('--lp_wd', type=float, default=1e-4)
+    g.add_argument('--lp_pres', type=float, default=0.0,
+                   help='he so phat giu feature gan ban goc')
 
     g = p.add_argument_group('anacp')
     g.add_argument('--pos', default='post', choices=['none', 'pre', 'post', 'whiten'])
