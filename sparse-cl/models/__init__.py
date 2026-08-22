@@ -16,8 +16,7 @@ def get_model(args):
                      deg_s3=args.deg_s3, w_s3=args.w_s3, b_stage=args.b_stage,
                      branches=args.branches, ridge_lower=args.ridge_lower,
                      ridge_upper=args.ridge_upper, seed=args.seed,
-                     stage_norms=args.stage_norms, device=args.device,
-                     lam_mode=args.lam_mode)
+                     stage_norms=args.stage_norms, device=args.device)
 
     if name == 'flycl_lp':
         from .flycl_lp import FlyCLLearnedProj
@@ -31,8 +30,7 @@ def get_model(args):
             deg_s3=args.deg_s3, w_s3=args.w_s3, b_stage=args.b_stage,
             branches=args.branches, ridge_lower=args.ridge_lower,
             ridge_upper=args.ridge_upper, seed=args.seed,
-            stage_norms=args.stage_norms, device=args.device,
-            lam_mode=args.lam_mode)
+            stage_norms=args.stage_norms, device=args.device)
 
     if name == 'anacp_cp':
         from .anacp_cp import AnaCPProjection

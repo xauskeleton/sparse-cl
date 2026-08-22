@@ -31,9 +31,6 @@ def build_parser():
     g = p.add_argument_group('ridge')
     g.add_argument('--ridge_lower', type=int, default=3)
     g.add_argument('--ridge_upper', type=int, default=13)
-    g.add_argument('--lam_mode', default='task', choices=['task', 'accum'],
-                   help='task = GCV tren task hien tai (nhu upstream); '
-                        'accum = GCV tren toan bo du lieu, tu (G, Q, n)')
 
     g = p.add_argument_group('flycl')
     g.add_argument('--deg_s4', type=int, default=300)
