@@ -26,6 +26,17 @@ def build_parser():
                             'anacp_ref'])
     p.add_argument('--training_method', default='none', choices=['none', 'aper'],
                    help='aper = First-Session Adaptation truoc khi trich feature')
+    p.add_argument('--fsa_adapter', default='conv', choices=['conv', 'film'],
+                   help='kieu adapter cho FSA: conv = down-up rank 8 nhu AnaCP, '
+                        'film = scale+shift theo kenh (it tham so hon 8 lan)')
+    p.add_argument('--fsa_workers', type=int, default=2,
+                   help='so worker DataLoader khi chay FSA. Cao thi nhanh hon, '
+                        'nhung moi worker map mot vung shared memory rieng - '
+                        'tren may gan het commit memory thi DataLoader TREO IM '
+                        'LANG, khong bao loi (da gap 29/08).')
+    p.add_argument('--fsa_pace', type=int, default=0,
+                   help='1 = Improved FSA kieu PACE: lr bat doi xung, train '
+                        'theo giai doan, chon tang bang CKA')
     p.add_argument('--log_dir', default='./logs')
 
     g = p.add_argument_group('ridge')
@@ -76,6 +87,16 @@ def main():
     a.cache_features = a.freeze_backbone = True
     a.model_name_method = a.method
     a.b_stage = [int(x) for x in a.b_stage.split(',')]
+
+    # Kich thuoc chuan cua ba dataset trong giao thuc Fly-CL. Chi ap khi nguoi
+    # dung de nguyen mac dinh cua CIFAR, nen --num_classes/--num_tasks tuong
+    # minh van thang. Khong co cho nay thi chay CUB voi 100 lop se AM THAM bo
+    # mat mot nua dataset.
+    SHAPE = {'CIFAR-100': (100, 10), 'CUB-200-2011': (200, 10), 'VTAB': (50, 5)}
+    if a.dataset != 'CIFAR-100' and (a.num_classes, a.num_tasks) == (100, 10):
+        a.num_classes, a.num_tasks = SHAPE[a.dataset]
+        print(f"[run] {a.dataset}: num_classes={a.num_classes} "
+              f"num_tasks={a.num_tasks}")
 
     if a.mode == 'sgd':
         from trainer_sgd import train_sgd

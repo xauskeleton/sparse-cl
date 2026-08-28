@@ -18,6 +18,9 @@ from data_loader import TaskData, set_seed
 from models import get_model
 
 STAGE_DIMS = (256, 512, 1024, 2048)
+# Chieu feature -> cach chia stage. ResNet co bon stage khac chieu; ViT+ms
+# la bon lat CLS bang nhau (block 3/6/9/12).
+STAGE_DIMS_BY_DIM = {sum(STAGE_DIMS): STAGE_DIMS, 3072: (768,) * 4}
 
 
 def compute_metrics(acc, T):
@@ -42,8 +45,18 @@ def _ensure_fsa(args, device):
     if args.training_method != 'aper':
         raise ValueError(f"training_method khong ho tro: {args.training_method}")
 
+    # Idempotent. Vong lap `--grid` trong run.py goi train_cil nhieu lan tren
+    # CUNG mot object args, ma lan dau da ghi de model_name thanh tag FSA. Neu
+    # khong chan o day thi lan hai se di FSA cho 'xxx+fsa1993' va timm bao
+    # "Unknown model" - lam chet dong thu hai tro di cua moi lenh co --grid.
+    if '+fsa' in args.model_name:
+        return args.model_name
+
     base = args.model_name.replace('+ms', '')
-    tag = f"{base}+fsa{args.seed}" + ('+ms' if args.model_name.endswith('+ms') else '')
+    ad = '' if getattr(args, 'fsa_adapter', 'conv') == 'conv' else args.fsa_adapter
+    ad += 'pace' if getattr(args, 'fsa_pace', 0) else ''
+    tag = (f"{base}+fsa{args.seed}{ad}"
+           + ('+ms' if args.model_name.endswith('+ms') else ''))
     probe = type(args)(**vars(args))
     probe.model_name = tag
     if not cache_exists(probe):
@@ -65,8 +78,9 @@ def train_cil(args):
 
     args.in_dim = data.Xtr.shape[1]
     # Chuan hoa thang giua cac stage, tinh mot lan tren toan bo train set.
-    if args.in_dim == sum(STAGE_DIMS):
-        off = np.cumsum((0,) + STAGE_DIMS)
+    args.stage_dims = STAGE_DIMS_BY_DIM.get(args.in_dim)
+    if args.stage_dims:
+        off = np.cumsum((0,) + args.stage_dims)
         args.stage_norms = [data.Xtr[:, off[i]:off[i + 1]].norm(dim=1).mean().item()
                             for i in range(4)]
     else:

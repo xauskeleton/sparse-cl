@@ -4,8 +4,35 @@ Tach ra day vi moi script trong experiments/ deu dung, va de khong file nao
 trong experiments/ phai import lan nhau.
 """
 
+import os
+
 import numpy as np
 import torch
+
+
+def _select_ridge_parameter_svd(X, Y, lo, hi):
+    """Ban GOC cua upstream/Fly-CL-main/main.py, chep nguyen van, chi de do doi
+    chieu. Bat bang bien moi truong FLYCL_GCV=svd; mac dinh khong chay.
+
+    Hai cho ton kem, giu nguyen ca hai: `svd` dung ma tran vector ky di phai
+    [n, E] roi vut, va vong lap dung lai `Y_hat = U (diag * UTY)` moi buoc luoi.
+    """
+    U, S, Vh = torch.linalg.svd(X, full_matrices=False)
+    S_sq = S ** 2
+    UTY = U.T @ Y
+    ridges = torch.tensor(10.0 ** np.arange(lo, hi))
+    n_samples = X.shape[0]
+
+    gcv_scores = []
+    for ridge in ridges:
+        diag = S_sq / (S_sq + ridge)
+        df = diag.sum()
+        Y_hat = U @ (diag[:, None] * UTY)
+        residual = torch.norm(Y - Y_hat) ** 2
+        gcv = (residual / n_samples) / (1 - df / n_samples) ** 2
+        gcv_scores.append(gcv.item())
+
+    return ridges[int(np.argmin(gcv_scores))]
 
 
 def select_ridge_parameter(X, Y, lo, hi):
@@ -31,6 +58,9 @@ def select_ridge_parameter(X, Y, lo, hi):
 
     Do duoc: 9.20s -> 0.56s moi task, lambda chon ra trung khop tung truong hop.
     """
+    if os.environ.get('FLYCL_GCV') == 'svd':
+        return _select_ridge_parameter_svd(X, Y, lo, hi)
+
     n, E = X.shape
     normY2 = Y.pow(2).sum()
 

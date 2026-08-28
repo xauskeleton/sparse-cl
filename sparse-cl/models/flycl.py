@@ -33,7 +33,7 @@ class FlyCL:
 
     def __init__(self, num_classes, expand_dim, coding_level, deg_s4, deg_s3,
                  w_s3, b_stage, branches, ridge_lower, ridge_upper, seed,
-                 stage_norms, device):
+                 stage_norms, device, in_dim=None, stage_dims=None):
         self.device = device
         self.C = num_classes
         self.k_ratio = coding_level
@@ -41,15 +41,26 @@ class FlyCL:
         self.w_s3 = w_s3
         self.lo, self.hi = ridge_lower, ridge_upper
 
-        off = np.cumsum((0,) + self.STAGE_DIMS)
-        self.sl4 = slice(off[3], off[4])
-        self.sl_b = [slice(off[i - 1], off[i]) for i in b_stage]
-        # Dua khoi b ve thang cua stage 4 truoc, de `w_s3` la he so tuong doi
-        # thuan tuy chu khong lan voi chenh lech do lon giua cac tang.
-        self.scale_b = [stage_norms[3] / stage_norms[i - 1] for i in b_stage]
-
-        n4 = self.STAGE_DIMS[3]
-        n3 = sum(self.STAGE_DIMS[i - 1] for i in b_stage)
+        dims = tuple(stage_dims or self.STAGE_DIMS)
+        off = np.cumsum((0,) + dims)
+        if in_dim is not None and in_dim != off[4]:
+            # Backbone khong phai ResNet bon stage - vd ViT tra ve mot vector
+            # CLS 768 chieu. Khi do CA vector dong vai tro "stage 4" va khong
+            # co tang nao de noi, nen `deg_s3` bat buoc bang 0.
+            if deg_s3:
+                raise ValueError(
+                    f"concat can feature bon stage (+ms), o day d={in_dim}")
+            self.sl4 = slice(0, in_dim)
+            self.sl_b, self.scale_b = [], []
+            n4, n3 = in_dim, 1
+        else:
+            self.sl4 = slice(off[3], off[4])
+            self.sl_b = [slice(off[i - 1], off[i]) for i in b_stage]
+            # Dua khoi b ve thang cua stage 4 truoc, de `w_s3` la he so tuong
+            # doi thuan tuy chu khong lan voi chenh lech do lon giua cac tang.
+            self.scale_b = [stage_norms[3] / stage_norms[i - 1] for i in b_stage]
+            n4 = dims[3]
+            n3 = sum(dims[i - 1] for i in b_stage)
         E = expand_dim
         self.Eb = E * 2 if deg_s3 else E
         self.k = int(self.Eb * coding_level)
