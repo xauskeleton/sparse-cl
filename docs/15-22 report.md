@@ -254,6 +254,8 @@ lại đến từ thứ tự lớp và không khử được. Đây là hạn ch
 | `expand_dim` 20.000 (ở `coding_level` 0.3) | −1.38 |
 | 10 khối riêng, mọi khối đủ dữ liệu | −3.47 |
 | Hỗn hợp chuyên gia, chia dữ liệu (m=8) | −5.93 |
+| Học phép chiếu ở task 0 rồi đóng băng (8 cấu hình) | −0.02 … −0.14 |
+| GCV trên thống kê tích luỹ (λ "đúng" thay vì λ hiện tại) | −0.60 |
 | **n ma trận cho n task** | **−23.71** |
 
 ### Vì sao "n ma trận cho n task" hỏng nặng
@@ -270,12 +272,74 @@ Khối cuối chỉ có 1/10 dữ liệu nhưng logit vẫn được cộng **ng
 Và ngay cả đối chứng — 10 khối riêng nhưng mọi khối đủ dữ liệu — cũng mất 3.47
 điểm, vì `G` khối chéo bỏ mất tương quan giữa các khối.
 
+### Học phép chiếu một lần rồi đóng băng — không ăn
+
+FSA cho +3.77 bằng đúng một ý: có một chỗ được học một lần rồi khoá vĩnh viễn.
+Chỗ còn lại có tham số trong Fly-CL là phép chiếu thưa, và nó đang hoàn toàn ngẫu
+nhiên. `models/flycl_lp.py` học một adapter trên feature ở task 0 rồi đóng băng:
+
+```
+A(x) = x + Up(Down(x)),  Up khoi tao = 0   →  A = DONG NHAT luc bat dau
+Down: 2048 → r,  Up: r → 2048              →  cap nhat bi chan hang r
+```
+
+Hai ràng buộc đó sinh ra từ chẩn đoán của `--pos pre` (mất 43.8 điểm vì ridge với
+đích `C` hàng cho ma trận hạng ≤ C). Adapter chỉ đụng vào **đúng lát stage 4** —
+cho nó chạy trên cả vector 4 tầng thì nó bơm được thông tin stage 3 sang ô của
+stage 4, và thứ đó là concat trá hình.
+
+| cấu hình | drift | task 0 | A_T | Ā | Δ Ā |
+|---|---:|---:|---:|---:|---:|
+| mốc Fly-CL | 0 | 93.10 | 76.99 | 84.08 | — |
+| ep=3 r=64 pres=0 | 0.154 | 92.90 | 76.69 | 84.02 | −0.06 |
+| ep=10 r=64 pres=0 | 0.180 | 93.10 | 76.91 | 83.97 | −0.11 |
+| ep=30 r=64 pres=0 | 0.190 | 93.40 | 76.88 | 84.02 | −0.06 |
+| ep=10 r=64 pres=0.1 | 0.088 | 93.30 | 76.88 | 84.03 | −0.05 |
+| ep=10 r=64 pres=1 | 0.036 | 93.40 | 76.83 | 84.01 | −0.07 |
+| ep=10 r=64 pres=10 | 0.012 | 93.30 | 76.86 | 84.00 | −0.08 |
+| ep=10 r=16 pres=0 | 0.171 | 92.80 | 76.86 | 84.06 | −0.02 |
+| ep=10 r=256 pres=0 | 0.292 | 93.40 | 76.87 | 83.94 | −0.14 |
+
+`drift` = ‖A(x) − x‖ / ‖x‖. Hai đối chứng loại trừ lỗi cài đặt: loss đi từ 2.56
+xuống 0.0002 nên A khớp hoàn hảo task 0, và `pres` kéo drift xuống 15 lần đúng như
+thiết kế. Cả hai đều chạy, kết quả vẫn không nhúc nhích — biên độ tám cấu hình là
+0.12 điểm, nhỏ hơn σ giữa các seed. Xu hướng duy nhất: **càng đi xa càng tệ**, tối
+ưu nằm ở chính phép đồng nhất.
+
+Lý do có thể phát biểu chặt: `A = I + U Vᵀ` là ánh xạ **khả nghịch**, nên nó không
+xoá thông tin nào, mà ridge lại bất biến với việc đánh số lại unit. Kênh duy nhất
+A tác động được là đổi xem unit nào thắng top-k — đo được là ±0.1 điểm.
+
+Đối chiếu giải thích luôn vì sao FSA ăn còn cái này không: FSA sửa **backbone**
+bằng phi tuyến qua 23M tham số nên **thêm thông tin** vào feature; adapter nằm
+**sau** backbone và tuyến tính khả nghịch nên chỉ **xoay lại thứ đã có**.
+
 ### Quy luật chung
 
 Bốn can thiệp thua nặng nhất đều **tăng độ biểu đạt** hoặc **chia nhỏ dữ liệu**.
 CIFAR-100 có 500 ảnh mỗi lớp; chia 8 vùng thì mỗi chuyên gia còn khoảng 62 ảnh
 mỗi lớp trong khi vẫn phải phân biệt đủ 100 lớp. Bài toán bị chặn bởi **dữ
 liệu**, không bởi độ biểu đạt.
+
+Sau kết quả `flycl_lp`, quy luật siết được thêm một nấc và giờ khớp cả mười phép đo:
+
+```
+AN                                     nguyen nhan
+FSA            +3.77    doi feature bang phi tuyen        → THEM thong tin
+concat s3+s4   +1.52    lay them mot tang backbone        → THEM thong tin
+gap doi E      +1.05    nhieu unit hon                    → THEM suc chua
+ensemble m=5   +0.82    nhieu ban rut ngau nhien doc lap  → THEM suc chua
+
+KHONG AN
+tang CP        +0.18    tuyen tinh sau top-k              → sup thanh logit·K
+hoc phep chieu −0.07    tuyen tinh KHA NGHICH truoc chieu → chi xoay thu da co
+deep 2 tang    −1.49    chieu ngau nhien chong len nhau   → mat thong tin
+top-k theo khoi  ≤ 0    sap xep lai cuoc canh tranh       → khong doi thong tin
+MoE            −2.11    chia du lieu cho chuyen gia       → moi chuyen gia thay IT hon
+stage 2        −0.58    them tang nhung QUA XA            → them nhieu
+```
+
+**Thêm thông tin hoặc thêm sức chứa thì ăn. Sắp xếp lại thứ đã có thì không.**
 
 Điều này giải thích vì sao concat ăn được còn các cách khác thì không: nó
 **không** chia dữ liệu, chỉ đưa thêm một nguồn thông tin đã có sẵn trên đường
@@ -367,6 +431,49 @@ dữ liệu giữ riêng, chưa làm.
 **Việc thực dụng phải làm:** `flycl_concat.py` giữ nguyên GCV per-task của Fly-CL, và trên
 feature đã FSA thì **bắt buộc truyền `--ridge_lower 5`** — ở sàn 3 nó rơi vào cực tiểu giả
 ở task 3 và Cholesky sập. Ghi trong docstring của file.
+
+### λ đã ở đỉnh — không còn gì để giành
+
+`select_ridge_parameter` được gọi với `H` của **task hiện tại** (n = 5.000) nhưng
+λ ấy đem giải với `G` đã cộng dồn (n = 5.000·t). Nghiệm `W` cho trước λ thì đúng
+bằng nghiệm joint, nhưng λ lại không được chọn như nghiệm joint — một chỗ hở trong
+chính phát biểu của phương pháp. Và nó biểu hiện ra: GCV chọn `λ = 10⁴` ở **cả
+mười task** trong khi trị riêng của `G` lớn lên mười lần.
+
+Chữa được mà vẫn exemplar-free, bằng cách chiếu cả hai số hạng của GCV về `(G, Q)`:
+
+```
+Z = (G + λI)⁻¹ Q
+‖(I−A)Y‖²_F = n − 2·tr(Qᵀ Z) + tr(Zᵀ G Z)        chinh xac, gan nhu mien phi
+tr A(λ)     = E − λ · tr((G + λI)⁻¹)             Hutchinson, 64 vector Rademacher
+```
+
+`‖Y‖²_F = n` vì Y one-hot nên không cần đến Y. Kết quả: **hiệu ứng đúng như chẩn
+đoán, nhưng làm tệ đi.**
+
+| | λ theo task | λ tích luỹ |
+|---|---|---|
+| λ chọn ra | 1e4 ở cả 10 task | 1e4 → **1e5** từ task 1 |
+| Ā | **84.08** | 83.48 |
+
+Nhờ đã tăng tốc (mục 9) nên quét được λ cố định — thứ `logs/lam_oracle.txt` bắt đầu
+đo rồi bỏ dở:
+
+| λ | 1e2 | 1e3 | **1e4** | 1e5 | 1e6 | 1e7 |
+|---|---:|---:|---:|---:|---:|---:|
+| Ā | 81.51 | 82.97 | **84.08** | 83.43 | 80.64 | 75.82 |
+
+**Đỉnh nằm đúng ở 1e4, tức đúng chỗ GCV-theo-task đang chọn.** Nội suy parabol cho
+λ\* ≈ 1.35e4, ăn thêm 0.015 điểm — bằng không.
+
+Vì sao: GCV tối thiểu hoá **sai số bình phương**, còn thứ đo là **độ chính xác của
+argmax**. Dưới-siết làm nghiệm bám dữ liệu hơn nên sai số bình phương tệ đi, nhưng
+thứ tự các logit vẫn đúng, mà argmax chỉ cần thứ tự. Cái "lệch" đang có lợi.
+
+Đường cong quanh đỉnh dốc — mỗi bước 10 lần mất 0.65 đến 1.11 điểm — nên λ quan
+trọng thật, chỉ là nó đã ở đúng chỗ. **Mục này đóng.**
+
+---
 
 ---
 
@@ -591,6 +698,32 @@ code gốc của họ cho +0.23 (1 seed). Cùng một chỗ.
 5000 chiều + GELU + tầng CP + 3 head + RP thứ hai + ELM + pseudo-replay — chạy trong 25
 giây và về đúng chỗ một phép ridge duy nhất của Fly-CL đã đứng.
 
+### Bảng 2×2: bản cài lại so với code gốc, có FSA và không
+
+Gộp mọi phép đo lại theo hai trục — ai cài, và feature nào. Một seed (1993), cùng
+class order. Cơ chế của việc đổi dấu sau FSA nằm ở mục 8, không nhắc lại ở đây.
+
+| Cấu hình | A_T | Ā | Δ Ā |
+|---|---:|---:|---:|
+| **ResNet-50 trần** | | | |
+| Fly-CL (mốc) | 76.99 | 84.08 | — |
+| Fly-CL adapt CP layer | 77.13 | 84.26 | +0.18 |
+| Fly-CL adapt full (3 head) | 76.96 | 84.58 | +0.50 |
+| AnaCP (code gốc) | 76.88 | 84.31 | +0.23 |
+| **ResNet-50 + FSA** | | | |
+| Fly-CL (mốc) | 80.94 | 87.85 | — |
+| Fly-CL adapt CP layer | 78.94 | 86.79 | **−1.06** |
+| Fly-CL adapt full (3 head) | 80.57 | 87.99 | +0.14 |
+| AnaCP (code gốc) | 80.84 | 87.80 | −0.05 |
+
+Ba tên đầu dùng chung backbone Fly-CL nên so trực tiếp được với nhau; dòng cuối đổi
+cả backbone (dense 5000 + GELU + 3 head của họ) nên chỉ dùng để kiểm tra bản cài lại
+không sai.
+
+**Số head là biến quan trọng, đừng đọc "adapt full" như một dòng duy nhất.** Bảng ở
+mục 8 dùng 1 head và cho 83.98 / 87.41; bảng này dùng 3 head và cho 84.58 / 87.99.
+Chênh 0.6 điểm ở cả hai tập feature, nhất quán.
+
 ### Khoảng cách nằm ở backbone, không ở phương pháp
 
 Ghép ba điểm đo lại:
@@ -682,10 +815,12 @@ của AnaCP.
 | Cấu hình | A_T | Ā | Forgetting | Δ Ā |
 |---|---:|---:|---:|---:|
 | Fly-CL + FSA | 80.93 | **87.85** | 7.74 | — |
+| + CP 2 tầng (H=3) | 80.57 | **87.99** | 8.60 | **+0.14** |
 | + CP 2 tầng (H=1) | 79.51 | 87.41 | 8.91 | **−0.44** |
 | + CP 1 tầng | 78.94 | 86.79 | 8.98 | **−1.06** |
 
-**Trên feature FSA, mọi biến thể AnaCP đều thua Fly-CL trần.**
+Chỉ cấu hình **đầy đủ nhất** mới vượt được mốc, và vượt 0.14 — kém concat gần mười
+lần. Bỏ tầng thứ hai đi thì mất 1.06.
 
 ### CP đảo dấu sau FSA — và đúng theo quy luật đã lập
 
@@ -729,8 +864,11 @@ sạch — thứ tự hai bản **lật ngược** so với feature gốc:
 
 Khi `K ≈ I` thì tầng CP vốn đã vô hại, nên tầng hai chỉ thêm sai số của xấp xỉ Gauss.
 Khi `K` xấu thì tầng hai có phi tuyến nên gỡ lại được 0.62 trong 1.06 đã mất — nhưng
-không gỡ hết. **Trên feature FSA, mọi biến thể AnaCP đều thua Fly-CL trần**, tốt nhất
-là −0.44.
+không gỡ hết. Với **1 head** thì mọi biến thể AnaCP đều thua Fly-CL trần, tốt nhất là
+−0.44. Nâng lên **3 head** thì bản hai tầng đạt 87.99, tức **+0.14** so với mốc 87.85 —
+vừa đủ vượt, và vẫn kém concat gần mười lần. Nên phát biểu đúng là: trên feature FSA,
+tầng CP một mình gây hại 1.06 điểm, và toàn bộ phần còn lại của bộ máy AnaCP chỉ vừa
+đủ để gỡ lại chỗ nó vừa làm hỏng.
 
 ### Ý nghĩa
 
@@ -785,7 +923,167 @@ discriminability ↔ transferability. Chưa đo.
 - **Chưa ablate vị trí adapter.** Gắn sau mọi Bottleneck; chưa thử chỉ `layer4`, chỉ
   BN, hay LoRA.
 
-## 9. Giới hạn
+## 9. Tăng tốc 10.8 lần, số liệu không đổi một chữ số
+
+Bổ thời gian một task trên GPU, dữ liệu thật, `E` = 10.000:
+
+```
+buoc                        giay      %      GFLOP   TFLOP/s
+ma hoa train  topk(W Xᵀ)   0.042    0.4%     204.8     4.93
+G += H Hᵀ                  0.137    1.4%    1000.0     7.30
+Q += H Y                   0.002    0.0%      10.0     5.61
+GCV  svd(Hᵀ)               9.208   97.4%     500.0     0.05   ←
+cholesky(G+λI)             0.049    0.5%     333.3     6.79
+cholesky_solve             0.010    0.1%      20.0     1.99
+```
+
+**97.4% thời gian dùng để chọn một số vô hướng từ lưới 11 giá trị.** Toàn bộ thuật
+toán thật — mã hoá, Gram, Cholesky — hết 0.24 giây. Cột cuối chỉ thẳng nguyên nhân:
+SVD chạy 0.05 TFLOP/s trong khi matmul chạy 7.3 trên cùng GPU, và nó làm ít phép
+tính hơn Gram mà lâu hơn 67 lần.
+
+### Nút thắt 1 — SVD dựng một ma trận rồi vứt
+
+```python
+U, S, _ = torch.linalg.svd(X, full_matrices=False)     # X co [5000, 10000]
+```
+
+`_` là ma trận vector kỳ dị phải, cỡ 5000×10000 — 200 MB tính ra rồi vứt ở ngay dấu
+gạch dưới. Cờ `full_matrices=False` không cứu được: nó chỉ chọn 5000 hay 10000 vector,
+không có lựa chọn "không vector nào", và PyTorch không có API trả `U, S` mà bỏ `V`.
+
+Mà GCV chỉ cần `S²` và `w_j = ‖u_jᵀY‖²`, cả hai lấy được từ ma trận Gram **nhỏ hơn
+trong hai chiều**:
+
+```
+n ≤ E:   eigh(X Xᵀ)   [n, n]     tri rieng = S²,  vector rieng = U
+n > E:   eigh(Xᵀ X)   [E, E]     u_jᵀY = v_jᵀ(XᵀY)/s_j,   XᵀY chi la [E, C]
+
+‖Y − Ŷ‖²  =  Σ_j (1 − d_j)²·w_j  +  (‖Y‖² − Σ_j w_j)
+                                     └─ bang 0 khi n ≤ E ─┘
+```
+
+Số hạng cuối là phần của `Y` nằm ngoài span(U); bản gốc không cần vì `n ≤ E` luôn
+đúng ở đây, nhưng viết vào thì hàm dùng được cho cả `E` nhỏ.
+
+Điểm mấu chốt về chi phí: cạnh của `X Xᵀ` là **số mẫu một task**, không phải `E`. Nên
+concat (`E` = 20.000) vẫn chéo hoá ma trận 5000×5000 y hệt — **chọn λ trở thành độc
+lập với `E`**, trong khi SVD trước đây tỉ lệ với `E`.
+
+### Nút thắt 2 — ma trận đơn vị, chỉ lộ ra ở cấu hình lớn
+
+```python
+torch.linalg.cholesky(G[e] + ridge * self.eye)
+```
+
+Bắt **ba** ma trận `Eb × Eb` cùng tồn tại: `eye` thường trú, bản tạm của phép cộng,
+và đầu ra Cholesky. Ở concat + ensemble 5 thì `Eb` = 20.000 nên mỗi cái là 1.6 GB,
+trên nền `G` đã chiếm 8 GB của card 16 GB — thời gian đi vào cấp phát chứ không vào
+tính toán. Riêng `eye` là 1.6 GB để chứa hai vạn số 1 và bốn trăm triệu số 0.
+
+Cộng thẳng vào đường chéo của bản sao thì chỉ còn hai, và bỏ hẳn được `eye`. Không
+dùng cách sửa `G` tại chỗ rồi trừ lại: cộng rồi trừ `1e4` trên nền `G_ii` cỡ `1e7`
+không khử nhau chính xác trong fp32, sai số sẽ tích luỹ qua mười task.
+
+### Kết quả
+
+| Cấu hình | ban đầu | sau `eigh` | sau bỏ `eye` | nhanh hơn |
+|---|---:|---:|---:|---:|
+| Fly-CL | 97s | 9s | 9s | **10.8×** |
+| concat | 105s | 14s | 14s | **7.5×** |
+| concat + ensemble 5 | 490s | 372s | **102s** | **4.8×** |
+
+Hai nút thắt đổi vai theo kích thước: `E` nhỏ thì nghẽn ở **phép tính** (SVD), `E`
+lớn thì nghẽn ở **bộ nhớ** (ba ma trận 1.6 GB). Phải sửa cả hai mới nhanh ở mọi cỡ.
+
+Bốn phép kiểm, không lệch một chữ số:
+
+```
+flycl            76.99 / 84.08 / 8.54
+concat           79.01 / 85.60 / 7.57
+concat + ens 5   79.77 / 86.41 / 7.71
+anacp_cp post    77.13 / 84.26          agree van 100.0%
+anacp_full none  77.13 / 84.26          trung anacp_cp post (phep tu kiem cua repo)
+```
+
+### Đây không phải contribution
+
+Thuật toán **không đổi một dòng nào** — cùng tiêu chí, cùng lưới, cùng kết quả. Nên
+chỉ được viết "bản cài đặt của chúng tôi nhanh hơn", không được viết "phương pháp của
+chúng tôi nhanh hơn". Cả hai đường đều là `O(n²E)`; lợi 16 lần là **hằng số**, đến từ
+chỗ không dựng `V` và chỗ thuật toán đối xứng rẻ hơn SVD trên mỗi phép tính.
+
+Chỗ nó được phép xuất hiện: bảng thời gian trong phần thực nghiệm (nhánh analytic CL
+bán mình bằng tốc độ, nên wall-clock là số liệu hợp lệ), lý do cho quy mô ablation, và
+một Remark ngắn trong Implementation details.
+
+Hệ quả thực tế thì đáng kể: ba seed của cấu hình đắt nhất từ 25 phút xuống 5 phút, nên
+những phép quét trước đây phải cân nhắc thì giờ chạy thẳng.
+
+---
+
+## 10. Công trình liên quan phải đọc trước khi viết
+
+Tìm được trong tuần, hai bài chạm trực tiếp vào hai ý chính của mình.
+
+### LayUP — "Read Between the Layers" (arXiv 2312.08888)
+
+Nối `k` tầng cuối của ViT rồi đưa thẳng vào ridge với ma trận Gram. Báo cáo +1.2% đến
++5.7% ở CIL. Đây là **prior art cho ý "dùng nhiều hơn tầng cuối"**, nên concat không
+còn được trình bày như một ý tưởng mới.
+
+```
+LayUP     noi FEATURE roi ridge           KHONG co phep chieu ngau nhien
+          ViT-B/16, k = 6 tang cuoi       cac tang cung chieu, ke nhau
+          k = 6 va k = 12 lech 0.4%       → cang nhieu tang cang tot
+
+cua ta    moi tang co PHEP CHIEU RIENG    tuong tac xay ra trong top-k
+          ResNet-50, stage 3 + stage 4    khac chieu, phai chuan hoa thang
+          stage 2 hai o ca 3 phep do      → chi tang LIEN KE moi an
+```
+
+Hai kết luận **ngược nhau** về việc thêm tầng xa. Giả thuyết: các block kề nhau của
+ViT rất giống nhau, còn ResNet đổi cả độ phân giải lẫn ngữ nghĩa qua mỗi stage. Nếu
+đúng thì phát hiện của mình là **tính chất của kiến trúc phân cấp**, không phải của
+phương pháp — phát biểu sắc hơn, nhưng **bắt buộc phải đo concat trên ViT** mới nói
+được. Việc này chuyển từ "nên có" sang **ưu tiên 1**.
+
+Cần đọc kỹ bản đầy đủ, không đọc tóm tắt, trước khi viết related work.
+
+### SCL-MGSM — "Guided Random Projection" (arXiv 2603.19145, 03/2026)
+
+Chọn lọc cơ sở ngẫu nhiên ở task 0 theo tiêu chí căn với đích rồi đóng băng. Đây đúng
+là ô "học phép chiếu một lần rồi đóng băng" mà `flycl_lp` vừa thử. Họ báo cáo ăn, mình
+đo ra âm, và **không mâu thuẫn** — hai cơ chế khác nhau đúng theo quy luật ở mục 5:
+
+```
+ho    CHON co so nao duoc giu     doi do phu cua khong gian ma  → them suc chua
+ta    hoc mot anh xa tuyen tinh   KHA NGHICH, khong doi gi ca   → tai tham so hoa
+```
+
+Kết quả âm của mình vẫn đứng, nhưng giờ nó là đối chứng cho bài của họ chứ không còn
+là ô trống. Họ cũng so với AnaCP, tức nhánh này đang chuyển động nhanh.
+
+### Về tốc độ: cửa đóng
+
+`ACIL`, `DS-AL`, `G-ACIL` đã có câu chuyện tốc độ của nhánh này — duy trì ma trận
+tương quan nghịch đảo và cập nhật đệ quy bằng Woodbury thay vì phân rã lại. Nhưng RLS
+**chỉ chạy được khi λ cố định**, mà Fly-CL tính lại λ mỗi task.
+
+Hutchinson thì đúng nghĩa đen là sách giáo khoa: ước lượng vết bằng vector ±1 được đề
+ra năm 1989 **chính là để tính vết cho GCV**.
+
+Và chỗ đóng cửa hẳn: **cả nhánh này né vấn đề bằng cách cố định λ**. SCL-MGSM quét
+lưới một lần trên task 0 rồi khoá `λ = 0.01`; AnaCP khoá `λ = 1e2`. Chỉ Fly-CL trả giá
+GCV mỗi task. Nên "chọn siêu tham số tốn hơn cả mô hình" là đặc thù của một bản cài
+đặt, không phải vấn đề của lĩnh vực.
+
+Hệ quả thực tế: vì mục 6 đã chứng minh `λ = 1e4` là đỉnh ở mọi task, **cố định λ và bỏ
+GCV hoàn toàn** là hợp lệ, cho kết quả trùng khít, và đưa 9 giây xuống khoảng 4.
+
+---
+
+## 11. Giới hạn
 
 **Bản tái lập thấp hơn số công bố 0.42** (84.19 ± 0.42 so với 84.61 ± 0.16, 3 seed).
 Khoảng lệch này phụ thuộc số seed và chưa giải thích được: 0.53 với 1 seed (84.08),
@@ -812,7 +1110,7 @@ Bảng chọn tầng và bảng ensemble mới một seed.
 
 ---
 
-## 10. Đang chạy và còn mở
+## 12. Đang chạy và còn mở
 
 | | Trạng thái |
 |---|---|
@@ -822,7 +1120,7 @@ Bảng chọn tầng và bảng ensemble mới một seed.
 | Quét siêu tham số adapter (rank, lr, epoch, vị trí) | chưa — hiện lấy nguyên cấu hình DINOv2 của AnaCP |
 | concat + ensemble, 3 seed × {2, 5} nhánh | đang chạy |
 | Quét `expand_dim` trên ViT + CIFAR-100 | chưa — để tách hiện tượng thuộc dataset hay backbone |
-| Concat trên ViT-B/16 | chưa — cần định nghĩa "tầng liền kề" cho transformer |
+| **Concat trên ViT-B/16** | **ưu tiên 1** — LayUP (mục 10) kết luận ngược về tầng xa, phải đo mới phân định được |
 | Augmentation ở mức feature | chưa — ý duy nhất còn lại đi cùng chiều với chẩn đoán "thiếu dữ liệu" |
 
 Ý cuối đáng làm nhất trong ba ý còn lại: `Q` và `G` là **tổng theo mẫu**, nên
@@ -834,7 +1132,7 @@ ToTensor → Normalize`, một lượt duy nhất.
 
 ---
 
-## 11. Tái lập
+## 13. Tái lập
 
 ```bash
 cd sparse-cl
