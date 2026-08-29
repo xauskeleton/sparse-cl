@@ -1,0 +1,15 @@
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[pertask] resnet50 | 10 khoi x 1000 chieu | moi khoi mot G rieng | k=0.1 | seed=1993
+
+| Che do | A_T | A_bar | Forgetting |
+|---|---:|---:|---:|
+| moi khoi tu task 1 (doi chung) | 66.80 | 77.06 | 12.01 |   (8s)
+| khoi t sinh o task t | 40.20 | 54.63 | 55.97 |   (4s)
+
+A_t theo tung giai doan:
+  moi khoi tu task 1 (doi chung)    92.1  88.1  82.8  80.5  76.8  74.0  72.4  69.6  67.5  66.8
+  khoi t sinh o task t              87.4  73.2  62.1  56.1  50.4  47.8  45.5  42.0  41.7  40.2
+
+So mau moi khoi da thay:
+  moi khoi tu task 1 (doi chung)   50k 50k 50k 50k 50k 50k 50k 50k 50k 50k
+  khoi t sinh o task t             50k 45k 40k 35k 30k 25k 20k 15k 10k 5k

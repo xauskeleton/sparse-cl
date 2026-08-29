@@ -1,0 +1,9 @@
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[deep] resnet50.tv2_in1k | expand=10000 | k=0.3 | seed=1993
+
+| Bien the | Bo nho G | A_T | A_bar | Forgetting | Δ Ā |
+|---|---:|---:|---:|---:|---:|
+| base | 0.4 GB | 76.99 | 84.08 | 8.54 | +0.00 |   (95s)
+| max2 | 0.4 GB | 75.75 | 83.08 | 8.96 | -1.00 |   (95s)
+| max5 | 0.4 GB | 75.32 | 82.92 | 9.47 | -1.16 |   (98s)
+| deep2 | 0.4 GB | 75.15 | 82.60 | 9.06 | -1.49 |   (97s)

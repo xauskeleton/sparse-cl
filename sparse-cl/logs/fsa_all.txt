@@ -1,0 +1,26 @@
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | FSA
+A_T        : 80.94
+A_bar      : 87.86
+Forgetting : 7.74
+Tong       : 9s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | FSA
+A_T        : 91.58
+A_bar      : 95.26
+Forgetting : 3.69
+Tong       : 9s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | FSA
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 89.51
+A_bar      : 93.54
+Forgetting : 3.79
+Tong       : 1s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | FSA
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 93.4
+A_bar      : 95.19
+Forgetting : 2.72
+Tong       : 1s

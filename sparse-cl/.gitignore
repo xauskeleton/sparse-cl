@@ -1,7 +1,7 @@
 # Feature cache, ket qua chay, log - sinh lai duoc
 cache/
 runs/
-logs/
+# logs/ ĐƯỢC track - số liệu thô của mọi bảng trong docs/, ~700 KB
 *.pt
 *.pth
 *.npy

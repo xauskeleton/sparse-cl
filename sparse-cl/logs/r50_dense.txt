@@ -1,0 +1,10 @@
+##### dense expand_dim=14142
+[flycl] resnet50 | d=2048 | expand=14142 | degree=300 | k=0.1 | seed=1993
+A_T        : 73.70
+A_bar      : 81.61
+Forgetting : 8.76
+##### dense expand_dim=20000
+[flycl] resnet50 | d=2048 | expand=20000 | degree=300 | k=0.1 | seed=1993
+A_T        : 74.23
+A_bar      : 82.06
+Forgetting : 8.92

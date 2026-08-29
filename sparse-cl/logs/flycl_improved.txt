@@ -1,0 +1,4 @@
+=== ViT-B/16 ===
+[data] dung cache: ./cache\CIFAR-100_vit_base_patch16_224_vit.pt
+[flycl+] vit_base_patch16_224 | d=768 | expand=10000 | degree=300 | k=0.1 | seed=1993 | ridge 1e4..1e12
+  gcv=task  topk=pos | A_T 88.23 | A_bar 92.68 | F 4.80 | 195s | lambda 100000->100000->100000->1e+06

@@ -1,0 +1,21 @@
+### 1 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.13 | 85.12 | 8.10 |   (+0.00, 97s)
+### 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.47 | 85.50 | 7.89 |   (+0.00, 196s)
+### 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.87 | 85.93 | 7.96 |   (+0.00, 489s)

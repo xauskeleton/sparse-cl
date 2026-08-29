@@ -1,0 +1,12 @@
+=== CUB | resnet50.tv2_in1k+ms | khong FSA
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 63.52
+A_bar      : 71.22
+Forgetting : 10.06
+Tong       : 1s
+=== CUB | vit_base_patch16_224+ms | khong FSA
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 88.09
+A_bar      : 91.3
+Forgetting : 3.89
+Tong       : 1s

@@ -1,0 +1,42 @@
+### concat + ensemble, seed 1993, 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.27 | 85.99 | 7.77 |   (+0.00, 211s)
+### concat + ensemble, seed 1993, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.77 | 86.46 | 7.77 |   (+0.00, 914s)
+### concat + ensemble, seed 2023, 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.55 | 86.53 | 6.78 |   (+0.00, 212s)
+### concat + ensemble, seed 2023, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.87 | 86.91 | 6.98 |   (+0.00, 1023s)
+### concat + ensemble, seed 2025, 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.21 | 85.77 | 7.04 |   (+0.00, 214s)
+### concat + ensemble, seed 2025, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.35 | 86.11 | 7.27 |   (+0.00, 984s)

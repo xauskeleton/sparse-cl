@@ -1,0 +1,24 @@
+### resnet50.tv2_in1k+ms  lambda_mode=task
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.99 | 84.08 | 8.54 |   (+0.00, 99s)
+| 300 | 1 | 79.01 | 85.60 | 7.57 |   (+1.52, 106s)
+### resnet50.tv2_in1k+ms  lambda_mode=accum
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 75.88 | 83.48 | 9.03 |   (+0.00, 9s)
+| 300 | 1 | 74.38 | 84.12 | 11.68 |   (+0.64, 37s)
+### resnet50.tv2_in1k+fsa1993+ms  lambda_mode=accum
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 80.14 | 87.49 | 8.02 |   (+0.00, 9s)
+| 300 | 1 | 78.36 | 87.07 | 9.94 |   (-0.41, 33s)

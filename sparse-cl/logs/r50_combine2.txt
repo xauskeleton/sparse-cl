@@ -1,0 +1,21 @@
+### concat
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 75.32 | 82.78 | 8.28 |   (+0.00, 102s)
+### s4prod
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 75.34 | 83.32 | 8.97 |   (+0.00, 103s)
+### all
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 75.84 | 83.58 | 8.99 |   (+0.00, 189s)

@@ -1,0 +1,8 @@
+### tv2 k=0.3 E=20000, luoi ridge 1e3..1e12
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.86 | 82.81 | 7.38 |   (+0.00, 106s)
+| 300 | 1 | 78.93 | 82.29 | 4.88 |   (-0.52, 106s)

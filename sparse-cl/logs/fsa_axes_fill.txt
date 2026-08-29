@@ -1,0 +1,104 @@
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 63.87
+A_bar      : 71.42
+Forgetting : 9.68
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 65.94
+A_bar      : 73.23
+Forgetting : 10.04
+Tong       : 10s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.22
+A_bar      : 91.33
+Forgetting : 3.76
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.65
+A_bar      : 91.54
+Forgetting : 3.53
+Tong       : 10s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 64.0
+A_bar      : 71.55
+Forgetting : 9.49
+Tong       : 6s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 66.26
+A_bar      : 73.4
+Forgetting : 9.73
+Tong       : 43s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.29
+A_bar      : 91.39
+Forgetting : 3.72
+Tong       : 6s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.81
+A_bar      : 91.62
+Forgetting : 3.47
+Tong       : 45s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.71
+A_bar      : 93.35
+Forgetting : 4.36
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.12
+A_bar      : 94.57
+Forgetting : 3.37
+Tong       : 5s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.06
+A_bar      : 94.99
+Forgetting : 3.0
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.5
+A_bar      : 96.06
+Forgetting : 2.45
+Tong       : 5s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.84
+A_bar      : 93.4
+Forgetting : 4.36
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.08
+A_bar      : 94.57
+Forgetting : 3.45
+Tong       : 23s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.04
+A_bar      : 95.02
+Forgetting : 3.06
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.5
+A_bar      : 96.0
+Forgetting : 2.45
+Tong       : 19s

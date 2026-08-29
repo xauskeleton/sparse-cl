@@ -1,0 +1,50 @@
+
+=== VTAB | resnet50.tv2_in1k+ms | PACE
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 90.59
+A_bar      : 93.92
+Forgetting : 3.13
+Tong       : 1s
+
+=== VTAB | vit_base_patch16_224+ms | PACE
+[pace] CKA moi khoi: 1.000 1.000 0.999 0.988 0.981 0.967 0.965 0.962 0.881 0.882 0.872 0.748
+[pace] rho=0.94 -> L_tune = khoi 8/12
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 93.3
+A_bar      : 95.06
+Forgetting : 2.55
+Tong       : 1s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | PACE
+[pace] CKA moi khoi: 1.000 0.999 1.000 1.000 0.998 0.998 0.997 0.996 0.990 0.985 0.963 0.966 0.951 0.860 0.780 0.492
+[pace] rho=0.94 -> L_tune = khoi 13/16
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 61.94
+A_bar      : 70.54
+Forgetting : 10.84
+Tong       : 1s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | PACE
+[pace] CKA moi khoi: 1.000 0.999 0.995 0.988 0.978 0.970 0.953 0.936 0.925 0.845 0.761 0.681
+[pace] rho=0.94 -> L_tune = khoi 7/12
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 87.6
+A_bar      : 90.77
+Forgetting : 3.97
+Tong       : 1s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | PACE
+[pace] CKA moi khoi: 1.000 0.999 0.999 0.998 0.989 0.986 0.987 0.984 0.978 0.974 0.959 0.946 0.898 0.627 0.662 0.409
+[pace] rho=0.94 -> L_tune = khoi 12/16
+A_T        : 76.7
+A_bar      : 84.16
+Forgetting : 8.41
+Tong       : 8s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | PACE
+[pace] CKA moi khoi: 1.000 1.000 0.999 0.995 0.974 0.975 0.950 0.931 0.893 0.794 0.753 0.576
+[pace] rho=0.94 -> L_tune = khoi 7/12
+A_T        : 89.85
+A_bar      : 94.0
+Forgetting : 4.2
+Tong       : 8s

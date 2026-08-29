@@ -1,0 +1,22 @@
+=== b_stage=2,3
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.52
+A_bar      : 93.57
+Forgetting : 4.54
+Tong       : 14s
+=== deg_s3=112 w_s3=1 ===
+A_T        : 89.42
+A_bar      : 93.58
+Forgetting : 4.42
+Tong       : 14s
+=== b_stage=1,2,3
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.42
+A_bar      : 93.59
+Forgetting : 4.53
+Tong       : 14s
+=== deg_s3=112 w_s3=1 ===
+A_T        : 89.48
+A_bar      : 93.58
+Forgetting : 4.4
+Tong       : 14s

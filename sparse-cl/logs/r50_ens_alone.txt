@@ -1,0 +1,35 @@
+### ensemble rieng le, seed 1993, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.54 | 84.75 | 8.41 |   (+0.00, 484s)
+### ensemble rieng le, seed 2023, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.38 | 85.54 | 7.96 |   (+0.00, 498s)
+### ensemble rieng le, seed 2025, 5 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.54 | 84.74 | 7.91 |   (+0.00, 1077s)
+### ensemble rieng le, seed 2023, 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.19 | 85.28 | 7.96 |   (+0.00, 422s)
+### ensemble rieng le, seed 2025, 2 nhanh
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.45 | 84.65 | 7.73 |   (+0.00, 423s)

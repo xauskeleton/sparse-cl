@@ -17,8 +17,9 @@ cache/
 */cache/
 runs/
 */runs/
-logs/
-*/logs/
+
+# logs/ ĐƯỢC track - đó là số liệu thô của mọi bảng trong docs/,
+# tổng ~700 KB. Không có nó thì báo cáo không kiểm chứng lại được.
 *.pt
 *.pth
 *.npy

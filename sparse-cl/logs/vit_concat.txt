@@ -1,0 +1,48 @@
+
+=== ViT+ms | b_stage=3 | grid=0:1
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.98
+A_bar      : 93.12
+Forgetting : 4.59
+Tong       : 8s
+
+=== ViT+ms | b_stage=3 | grid=112:1,112:0.5,300:1
+=== deg_s3=112 w_s3=1 ===
+A_T        : 89.29
+A_bar      : 93.48
+Forgetting : 4.52
+Tong       : 14s
+=== deg_s3=112 w_s3=0.5 ===
+A_T        : 89.25
+A_bar      : 93.44
+Forgetting : 4.43
+Tong       : 14s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.46
+A_bar      : 93.58
+Forgetting : 4.47
+Tong       : 14s
+
+=== ViT+ms | b_stage=2 | grid=112:1,300:1
+=== deg_s3=112 w_s3=1 ===
+A_T        : 89.23
+A_bar      : 93.44
+Forgetting : 4.66
+Tong       : 14s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.33
+A_bar      : 93.4
+Forgetting : 4.37
+Tong       : 13s
+
+=== ViT+ms | b_stage=1 | grid=112:1,300:1
+=== deg_s3=112 w_s3=1 ===
+A_T        : 88.94
+A_bar      : 93.29
+Forgetting : 4.8
+Tong       : 14s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.02
+A_bar      : 93.24
+Forgetting : 4.71
+Tong       : 13s

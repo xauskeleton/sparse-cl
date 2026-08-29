@@ -1,0 +1,10 @@
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[flycl-ms] RMS norm moi stage: s1=19.2, s2=48.0, s3=43.5, s4=6.3
+[flycl-ms] expand=10000 | degree=300 | k=0.1 | seed=1993 | stage_norm=True | ridge 1e3..1e12
+
+| Stage | d | A_T | A_bar | Forgetting | lambda |
+|---|---:|---:|---:|---:|---:|
+| s4 | 2048 | 72.87 | 81.03 | 9.07 | 10000 |   (+0.00, 95s)
+| s3+s4 | 3072 | 72.22 | 81.15 | 10.38 | 10000 |   (+0.13, 95s)
+| s2+s3+s4 | 3584 | 72.07 | 80.82 | 10.28 | 10000 |   (-0.21, 96s)
+| s1+s2+s3+s4 | 3840 | 72.00 | 80.67 | 9.89 | 10000 |   (-0.36, 95s)

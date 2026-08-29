@@ -1,0 +1,15 @@
+=== grid=0:1 m=2
+A_T        : 89.19
+A_bar      : 93.31
+Forgetting : 4.58
+Tong       : 17s
+=== grid=0:1 m=5
+A_T        : 89.32
+A_bar      : 93.45
+Forgetting : 4.62
+Tong       : 42s
+=== grid=300:1 m=5
+A_T        : 89.82
+A_bar      : 93.85
+Forgetting : 4.39
+Tong       : 94s

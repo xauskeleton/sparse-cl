@@ -1,0 +1,24 @@
+
+=== Fly-CL goc  (SVD) | E=10000 m=1 gcv=svd | unit=10000 | G=381MB
+A_T        : 76.99
+A_bar      : 84.08
+Forgetting : 8.54
+Tong       : 96s
+
+=== Fly-CL cua ta (eigh) | E=10000 m=1 gcv=eigh | unit=10000 | G=381MB
+A_T        : 76.99
+A_bar      : 84.08
+Forgetting : 8.54
+Tong       : 8s
+
+=== ens2 goc  (SVD) | E=5000 m=2 gcv=svd | unit=10000 | G=190MB
+A_T        : 75.49
+A_bar      : 83.41
+Forgetting : 9.6
+Tong       : 190s
+
+=== ens2 cua ta (eigh) | E=5000 m=2 gcv=eigh | unit=10000 | G=190MB
+A_T        : 75.49
+A_bar      : 83.41
+Forgetting : 9.6
+Tong       : 12s

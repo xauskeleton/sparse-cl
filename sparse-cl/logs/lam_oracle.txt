@@ -1,0 +1,5 @@
+########## resnet50.tv2_in1k ##########
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[oracle] resnet50.tv2_in1k | d=2048 | E=10000 | k=0.3 | seed=1993
+  task 0 xong (20s)
+  task 1 xong (40s)

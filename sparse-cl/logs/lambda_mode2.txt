@@ -1,0 +1,33 @@
+### resnet50.tv2_in1k+ms  lambda_mode=accum
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 75.88 | 83.48 | 9.03 |   (+0.00, 10s)
+| 300 | 1 | 77.82 | 85.19 | 8.78 |   (+1.71, 40s)
+### resnet50.tv2_in1k+fsa1993+ms  lambda_mode=accum
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 80.14 | 87.49 | 8.02 |   (+0.00, 9s)
+| 300 | 1 | 81.41 | 88.20 | 7.81 |   (+0.71, 36s)
+### resnet50.tv2_in1k+fsa1993+ms  lambda_mode=task
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 80.93 | 87.85 | 7.74 |   (+0.00, 97s)
+Traceback (most recent call last):
+  File "D:\xauduabo\Code+NCKH\CL\sparse-cl\flycl_stagemix.py", line 402, in <module>
+    main()
+  File "D:\xauduabo\Code+NCKH\CL\sparse-cl\flycl_stagemix.py", line 392, in main
+    r = run(a, X3tr, X4tr, X3te, X4te, data, x, y, dev)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\xauduabo\Code+NCKH\CL\sparse-cl\flycl_stagemix.py", line 305, in run
+    Wo = torch.cholesky_solve(Q, torch.linalg.cholesky(G + ridge * eye))
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._C._LinAlgError: linalg.cholesky: The factorization could not be completed because the input is not positive-definite (the leading minor of order 18459 is not positive-definite).

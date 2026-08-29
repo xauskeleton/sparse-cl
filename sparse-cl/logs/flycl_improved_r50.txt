@@ -1,0 +1,13 @@
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[flycl+] resnet50 | d=2048 | expand=10000 | degree=300 | k=0.1 | seed=1993 | ridge 1e4..1e12
+  gcv=task  topk=pos | A_T 72.87 | A_bar 81.03 | F 9.07 | 190s | lambda 10000->10000->10000->10000
+  gcv=accum topk=pos | A_T 72.86 | A_bar 81.03 | F 9.06 | 186s | lambda 10000->10000->10000->10000
+  gcv=task  topk=abs | A_T 72.49 | A_bar 80.74 | F 9.34 | 193s | lambda 10000->10000->10000->10000
+  gcv=accum topk=abs | A_T 70.63 | A_bar 79.76 | F 10.36 | 218s | lambda 10000->100000->100000->100000
+
+| GCV | top-k | A_T | A_bar | Forgetting | d A_bar |
+|---|---|---:|---:|---:|---:|
+| task (Fly-CL) | pos | 72.87 | 81.03 | 9.07 | +0.00 |
+| accum | pos | 72.86 | 81.03 | 9.06 | +0.00 |
+| task | abs | 72.49 | 80.74 | 9.34 | -0.29 |
+| accum | abs | 70.63 | 79.76 | 10.36 | -1.27 |

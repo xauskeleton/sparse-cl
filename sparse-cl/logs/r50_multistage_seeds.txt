@@ -1,0 +1,22 @@
+##### seed 2023
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[flycl-ms] RMS norm moi stage: s1=19.2, s2=48.0, s3=43.5, s4=6.3
+[flycl-ms] expand=10000 | degree=300 | k=0.1 | seed=2023 | stage_norm=True | ridge 1e3..1e12
+
+| Stage | d | A_T | A_bar | Forgetting | lambda |
+|---|---:|---:|---:|---:|---:|
+| s4 | 2048 | 72.25 | 81.82 | 9.23 | 10000 |   (+0.00, 94s)
+| s3+s4 | 3072 | 72.96 | 82.18 | 9.20 | 10000 |   (+0.35, 94s)
+| s2+s3+s4 | 3584 | 72.68 | 82.14 | 9.14 | 10000 |   (+0.31, 94s)
+| s1+s2+s3+s4 | 3840 | 71.67 | 81.28 | 9.64 | 10000 |   (-0.55, 94s)
+##### seed 2025
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[flycl-ms] RMS norm moi stage: s1=19.2, s2=48.0, s3=43.5, s4=6.3
+[flycl-ms] expand=10000 | degree=300 | k=0.1 | seed=2025 | stage_norm=True | ridge 1e3..1e12
+
+| Stage | d | A_T | A_bar | Forgetting | lambda |
+|---|---:|---:|---:|---:|---:|
+| s4 | 2048 | 72.47 | 80.33 | 9.22 | 10000 |   (+0.00, 95s)
+| s3+s4 | 3072 | 72.61 | 80.72 | 9.66 | 10000 |   (+0.39, 94s)
+| s2+s3+s4 | 3584 | 71.81 | 80.55 | 10.04 | 10000 |   (+0.22, 94s)
+| s1+s2+s3+s4 | 3840 | 71.54 | 80.41 | 10.10 | 10000 |   (+0.08, 95s)

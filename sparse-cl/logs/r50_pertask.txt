@@ -1,0 +1,11 @@
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[pertask] resnet50 | expand=10000 | 10 khoi x 1000 chieu | k=0.1 | seed=1993
+
+| Che do | A_T | A_bar | Forgetting |
+|---|---:|---:|---:|
+| tat ca tu dau | 72.87 | 81.03 | 9.07 |   (95s)
+| moi task mot khoi | 24.29 | 43.67 | 75.99 |   (63s)
+
+A_t theo tung giai doan:
+  tat ca tu dau         92.6  90.8  85.9  84.0  80.5  78.5  77.2  74.6  73.4  72.9
+  moi task mot khoi     87.4  67.9  53.4  47.2  38.7  34.3  30.0  27.8  25.8  24.3

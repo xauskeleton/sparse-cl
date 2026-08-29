@@ -1,0 +1,32 @@
+### tv2, coding_level 0.05
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.05 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 72.97 | 81.12 | 9.96 |   (+0.00, 95s)
+| 300 | 1 | 74.36 | 82.15 | 9.68 |   (+1.03, 95s)
+### tv2, coding_level 0.1
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 74.74 | 82.43 | 9.36 |   (+0.00, 95s)
+| 300 | 1 | 76.14 | 83.57 | 9.23 |   (+1.14, 95s)
+### tv2, coding_level 0.2
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.2 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.36 | 83.49 | 8.54 |   (+0.00, 96s)
+| 300 | 1 | 77.42 | 84.65 | 8.53 |   (+1.16, 96s)
+### tv2, coding_level 0.3
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.99 | 84.08 | 8.54 |   (+0.00, 97s)
+| 300 | 1 | 78.13 | 85.12 | 8.10 |   (+1.04, 97s)

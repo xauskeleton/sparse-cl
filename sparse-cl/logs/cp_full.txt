@@ -1,0 +1,55 @@
+﻿
+===== --heads 1 --nl2 topk =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[full] resnet50.tv2_in1k | d=2048 | E=10000 E2=10000 | H=1 | R=100 | nl1=topk nl2=topk | alpha=1.0 | seed=1993
+  task 0: A_t=92.90 | mean|cos|=0.1292 | 10s
+  task 1: A_t=91.35 | mean|cos|=0.0809 | 21s
+  task 2: A_t=87.83 | mean|cos|=0.0634 | 33s
+  task 3: A_t=86.38 | mean|cos|=0.0511 | 48s
+  task 4: A_t=84.30 | mean|cos|=0.0455 | 68s
+  task 5: A_t=82.78 | mean|cos|=0.0431 | 94s
+  task 6: A_t=81.20 | mean|cos|=0.0400 | 131s
+  task 7: A_t=79.13 | mean|cos|=0.0384 | 179s
+  task 8: A_t=77.32 | mean|cos|=0.0356 | 249s
+  task 9: A_t=76.61 | mean|cos|=0.0339 | 340s
+
+A_T        : 76.61
+A_bar      : 83.98
+Forgetting : 8.88
+Tong       : 340s
+===== --heads 1 --nl2 gelu =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[full] resnet50.tv2_in1k | d=2048 | E=10000 E2=10000 | H=1 | R=100 | nl1=topk nl2=gelu | alpha=1.0 | seed=1993
+  task 0: A_t=92.80 | mean|cos|=0.1292 | 10s
+  task 1: A_t=91.40 | mean|cos|=0.0809 | 21s
+  task 2: A_t=87.80 | mean|cos|=0.0634 | 33s
+  task 3: A_t=86.28 | mean|cos|=0.0511 | 48s
+  task 4: A_t=84.12 | mean|cos|=0.0455 | 68s
+  task 5: A_t=82.53 | mean|cos|=0.0431 | 95s
+  task 6: A_t=81.17 | mean|cos|=0.0400 | 135s
+  task 7: A_t=78.81 | mean|cos|=0.0384 | 183s
+  task 8: A_t=77.14 | mean|cos|=0.0356 | 253s
+  task 9: A_t=76.39 | mean|cos|=0.0339 | 359s
+
+A_T        : 76.39
+A_bar      : 83.84
+Forgetting : 8.97
+Tong       : 359s
+===== --heads 3 --nl2 topk =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[full] resnet50.tv2_in1k | d=2048 | E=10000 E2=10000 | H=3 | R=100 | nl1=topk nl2=topk | alpha=1.0 | seed=1993
+  task 0: A_t=93.00 | mean|cos|=0.1292 | 29s
+  task 1: A_t=91.80 | mean|cos|=0.0809 | 59s
+  task 2: A_t=88.83 | mean|cos|=0.0634 | 91s
+  task 3: A_t=87.48 | mean|cos|=0.0511 | 125s
+  task 4: A_t=85.20 | mean|cos|=0.0455 | 164s
+  task 5: A_t=83.10 | mean|cos|=0.0431 | 210s
+  task 6: A_t=81.94 | mean|cos|=0.0400 | 268s
+  task 7: A_t=79.60 | mean|cos|=0.0384 | 335s
+  task 8: A_t=77.93 | mean|cos|=0.0356 | 423s
+  task 9: A_t=76.96 | mean|cos|=0.0339 | 533s
+
+A_T        : 76.96
+A_bar      : 84.58
+Forgetting : 8.98
+Tong       : 533s

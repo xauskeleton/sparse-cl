@@ -1,0 +1,62 @@
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | grid=0:1,300:1 | fsa=none
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.56
+A_bar      : 93.27
+Forgetting : 4.39
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.1
+A_bar      : 94.53
+Forgetting : 3.43
+Tong       : 2s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | grid=0:1,112:1,300:1 | fsa=none
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 92.91
+A_bar      : 94.91
+Forgetting : 3.29
+Tong       : 1s
+=== deg_s3=112 w_s3=1 ===
+A_T        : 93.62
+A_bar      : 95.46
+Forgetting : 2.96
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.47
+A_bar      : 95.95
+Forgetting : 2.41
+Tong       : 2s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | grid=0:1,300:1 | fsa=aper
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.51
+A_bar      : 93.54
+Forgetting : 3.79
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.89
+A_bar      : 94.79
+Forgetting : 2.79
+Tong       : 2s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | grid=0:1,112:1,300:1 | fsa=aper
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.4
+A_bar      : 95.19
+Forgetting : 2.72
+Tong       : 1s
+=== deg_s3=112 w_s3=1 ===
+A_T        : 93.97
+A_bar      : 95.65
+Forgetting : 2.6
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.63
+A_bar      : 96.08
+Forgetting : 2.17
+Tong       : 2s

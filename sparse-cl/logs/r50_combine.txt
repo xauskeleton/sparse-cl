@@ -1,0 +1,42 @@
+### 1. s4 rieng, deg 300 (moc)
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 72.87 | 81.03 | 9.07 |   (+0.00, 94s)
+### 2. s4 rieng, deg 600 (doi chung so ket noi)
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=600 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 72.54 | 81.04 | 9.68 |   (+0.00, 95s)
+### 3. tron cong, 300+300
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 72.75 | 81.55 | 10.00 |   (+0.00, 95s)
+### 4. tron NHAN, 300+300
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 74.07 | 82.29 | 9.30 |   (+0.00, 95s)
+### 5. tach unit 5000/5000, top-k toan cuc
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| unit s4 | unit s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 5000 | 5000 | 72.45 | 81.22 | 9.96 |   (+0.00, 94s)
+### 6. tach unit 5000/5000, top-k theo nhom
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| unit s4 | unit s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 5000 | 5000 | 73.08 | 81.61 | 9.32 |   (+0.00, 94s)

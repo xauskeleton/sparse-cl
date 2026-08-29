@@ -1,0 +1,32 @@
+### seed 2023
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.71 | 84.66 | 7.86 |   (+0.00, 97s)
+| 300 | 1 | 78.08 | 85.86 | 7.69 |   (+1.20, 97s)
+### seed 2025
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.58 | 83.84 | 7.98 |   (+0.00, 96s)
+| 300 | 1 | 77.99 | 85.15 | 7.83 |   (+1.31, 96s)
+### seed 42
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=42 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.81 | 84.07 | 7.19 |   (+0.00, 96s)
+| 300 | 1 | 77.95 | 84.91 | 7.23 |   (+0.84, 96s)
+### seed 7
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=7 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 76.60 | 82.38 | 7.52 |   (+0.00, 142s)
+| 300 | 1 | 77.92 | 83.46 | 7.44 |   (+1.08, 239s)

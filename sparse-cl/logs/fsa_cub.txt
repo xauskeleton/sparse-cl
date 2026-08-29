@@ -1,0 +1,14 @@
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | FSA
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 66.12
+A_bar      : 74.2
+Forgetting : 9.75
+Tong       : 2s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | FSA
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 88.17
+A_bar      : 91.31
+Forgetting : 4.0
+Tong       : 1s

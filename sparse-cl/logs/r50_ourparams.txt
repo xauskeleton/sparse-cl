@@ -1,0 +1,198 @@
+### A: ce_scope all (k=0.1)
+[model] autocast backbone: bfloat16 (SM 12.x)
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[data] CIFAR-100: 50000 train / 10000 test, 10 task x 10 lop, x=(2048,) torch.float32, val_ratio=0.1
+[model] CIFAR-100_resnet50_d10000_k0.1_proj-fixed_task0_linear_lr0.001_ce-all_bb-frozen_s1993
+
+=== task 0  lop [0, 10)  4500 train / 500 val ===
+  early stop @ epoch 51 (val 90.80 @ 31)
+  [proj] da dong bang phep chieu sau task 0
+  A_t=92.30 | loss_clf=0.1469 penalty=0.0 pen_over_clf=0.0 val_acc=90.8 best_epoch=31 epochs_run=51 train_time=3.2 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 1  lop [10, 20)  4500 train / 500 val ===
+  early stop @ epoch 52 (val 95.80 @ 32)
+  A_t=54.00 | loss_clf=0.1055 penalty=0.0 pen_over_clf=0.0 val_acc=95.8 best_epoch=32 epochs_run=52 train_time=2.0 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 2  lop [20, 30)  4500 train / 500 val ===
+  early stop @ epoch 37 (val 92.60 @ 17)
+  A_t=37.30 | loss_clf=0.1849 penalty=0.0 pen_over_clf=0.0 val_acc=92.6 best_epoch=17 epochs_run=37 train_time=1.4 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 3  lop [30, 40)  4500 train / 500 val ===
+  early stop @ epoch 30 (val 96.80 @ 10)
+  A_t=27.85 | loss_clf=0.1687 penalty=0.0 pen_over_clf=0.0 val_acc=96.8 best_epoch=10 epochs_run=30 train_time=1.2 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 4  lop [40, 50)  4500 train / 500 val ===
+  early stop @ epoch 40 (val 92.20 @ 20)
+  A_t=18.92 | loss_clf=0.1814 penalty=0.0 pen_over_clf=0.0 val_acc=92.2 best_epoch=20 epochs_run=40 train_time=1.5 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 5  lop [50, 60)  4500 train / 500 val ===
+  early stop @ epoch 71 (val 96.20 @ 51)
+  A_t=16.13 | loss_clf=0.0824 penalty=0.0 pen_over_clf=0.0 val_acc=96.2 best_epoch=51 epochs_run=71 train_time=2.7 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 6  lop [60, 70)  4500 train / 500 val ===
+  early stop @ epoch 38 (val 97.00 @ 18)
+  A_t=16.19 | loss_clf=0.1516 penalty=0.0 pen_over_clf=0.0 val_acc=97.0 best_epoch=18 epochs_run=38 train_time=1.5 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 7  lop [70, 80)  4500 train / 500 val ===
+  early stop @ epoch 45 (val 95.60 @ 25)
+  A_t=12.38 | loss_clf=0.1262 penalty=0.0 pen_over_clf=0.0 val_acc=95.6 best_epoch=25 epochs_run=45 train_time=1.8 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 8  lop [80, 90)  4500 train / 500 val ===
+  early stop @ epoch 49 (val 93.60 @ 29)
+  A_t=10.96 | loss_clf=0.1494 penalty=0.0 pen_over_clf=0.0 val_acc=93.6 best_epoch=29 epochs_run=49 train_time=1.9 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+=== task 9  lop [90, 100)  4500 train / 500 val ===
+  early stop @ epoch 48 (val 96.00 @ 28)
+  A_t=10.53 | loss_clf=0.1216 penalty=0.0 pen_over_clf=0.0 val_acc=96.0 best_epoch=28 epochs_run=48 train_time=1.9 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0626
+
+============================================================
+Accuracy matrix (hang = task, cot = sau khi hoc xong task j)
+   92.30  13.10   0.00   0.00   0.00   0.00   0.00   0.00   0.00   0.00
+       .  94.90  19.00   0.00   0.00   0.00   0.00   0.00   0.00   0.00
+       .      .  92.90  17.90   0.00   0.00   0.00   0.00   0.00   0.00
+       .      .      .  93.50   1.90   0.00   0.00   0.00   0.00   0.00
+       .      .      .      .  92.70   2.70   0.00   0.00   0.00   0.00
+       .      .      .      .      .  94.10  18.90   0.00   0.00   0.00
+       .      .      .      .      .      .  94.40   4.60   0.00   0.00
+       .      .      .      .      .      .      .  94.40   4.70   0.00
+       .      .      .      .      .      .      .      .  93.90  11.00
+       .      .      .      .      .      .      .      .      .  94.30
+
+A_t         : [92.3, 54.0, 37.3, 27.85, 18.92, 16.13, 16.19, 12.38, 10.96, 10.53]
+A_T         : 10.53   (accuracy sau task cuoi)
+A_bar       : 29.65   (accumulated - so voi Fly-CL 92.99)
+Forgetting  : 92.46
+BWT         : -92.46
+Tong thoi gian: 19.6s
+Da luu: ./runs\CIFAR-100_resnet50_d10000_k0.1_proj-fixed_task0_linear_lr0.001_ce-all_bb-frozen_s1993.json
+
+### B: ce_scope all + coding_level 0.3
+[model] autocast backbone: bfloat16 (SM 12.x)
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[data] CIFAR-100: 50000 train / 10000 test, 10 task x 10 lop, x=(2048,) torch.float32, val_ratio=0.1
+[model] CIFAR-100_resnet50_d10000_k0.3_proj-fixed_task0_linear_lr0.001_ce-all_bb-frozen_s1993
+
+=== task 0  lop [0, 10)  4500 train / 500 val ===
+  early stop @ epoch 47 (val 92.40 @ 27)
+  [proj] da dong bang phep chieu sau task 0
+  A_t=93.00 | loss_clf=0.138 penalty=0.0 pen_over_clf=0.0 val_acc=92.4 best_epoch=27 epochs_run=47 train_time=3.1 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 1  lop [10, 20)  4500 train / 500 val ===
+  early stop @ epoch 44 (val 96.20 @ 24)
+  A_t=51.80 | loss_clf=0.1005 penalty=0.0 pen_over_clf=0.0 val_acc=96.2 best_epoch=24 epochs_run=44 train_time=1.8 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 2  lop [20, 30)  4500 train / 500 val ===
+  early stop @ epoch 46 (val 93.60 @ 26)
+  A_t=35.57 | loss_clf=0.1343 penalty=0.0 pen_over_clf=0.0 val_acc=93.6 best_epoch=26 epochs_run=46 train_time=1.9 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 3  lop [30, 40)  4500 train / 500 val ===
+  early stop @ epoch 26 (val 96.60 @ 6)
+  A_t=28.57 | loss_clf=0.1596 penalty=0.0 pen_over_clf=0.0 val_acc=96.6 best_epoch=6 epochs_run=26 train_time=1.1 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 4  lop [40, 50)  4500 train / 500 val ===
+  early stop @ epoch 45 (val 93.40 @ 25)
+  A_t=18.88 | loss_clf=0.1492 penalty=0.0 pen_over_clf=0.0 val_acc=93.4 best_epoch=25 epochs_run=45 train_time=1.8 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 5  lop [50, 60)  4500 train / 500 val ===
+  early stop @ epoch 36 (val 95.80 @ 16)
+  A_t=16.83 | loss_clf=0.1332 penalty=0.0 pen_over_clf=0.0 val_acc=95.8 best_epoch=16 epochs_run=36 train_time=1.4 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 6  lop [60, 70)  4500 train / 500 val ===
+  early stop @ epoch 58 (val 98.00 @ 38)
+  A_t=14.77 | loss_clf=0.0948 penalty=0.0 pen_over_clf=0.0 val_acc=98.0 best_epoch=38 epochs_run=58 train_time=2.5 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 7  lop [70, 80)  4500 train / 500 val ===
+  early stop @ epoch 39 (val 95.80 @ 19)
+  A_t=13.29 | loss_clf=0.1286 penalty=0.0 pen_over_clf=0.0 val_acc=95.8 best_epoch=19 epochs_run=39 train_time=1.7 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 8  lop [80, 90)  4500 train / 500 val ===
+  early stop @ epoch 47 (val 95.00 @ 27)
+  A_t=10.97 | loss_clf=0.1453 penalty=0.0 pen_over_clf=0.0 val_acc=95.0 best_epoch=27 epochs_run=47 train_time=2.0 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 9  lop [90, 100)  4500 train / 500 val ===
+  early stop @ epoch 46 (val 95.80 @ 26)
+  A_t=10.65 | loss_clf=0.1136 penalty=0.0 pen_over_clf=0.0 val_acc=95.8 best_epoch=26 epochs_run=46 train_time=1.9 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+============================================================
+Accuracy matrix (hang = task, cot = sau khi hoc xong task j)
+   93.00   8.90   0.00   0.00   0.00   0.00   0.00   0.00   0.00   0.00
+       .  94.70  13.40   0.00   0.00   0.00   0.00   0.00   0.00   0.00
+       .      .  93.30  21.20   0.00   0.00   0.00   0.00   0.00   0.00
+       .      .      .  93.10   1.10   0.00   0.00   0.00   0.00   0.00
+       .      .      .      .  93.30   6.40   0.00   0.00   0.00   0.00
+       .      .      .      .      .  94.60   8.40   0.00   0.00   0.00
+       .      .      .      .      .      .  95.00  11.60   0.00   0.00
+       .      .      .      .      .      .      .  94.70   4.40   0.00
+       .      .      .      .      .      .      .      .  94.30  12.00
+       .      .      .      .      .      .      .      .      .  94.50
+
+A_t         : [93.0, 51.8, 35.57, 28.57, 18.88, 16.83, 14.77, 13.29, 10.97, 10.65]
+A_T         : 10.65   (accuracy sau task cuoi)
+A_bar       : 29.43   (accumulated - so voi Fly-CL 92.99)
+Forgetting  : 92.67
+BWT         : -92.67
+Tong thoi gian: 19.5s
+Da luu: ./runs\CIFAR-100_resnet50_d10000_k0.3_proj-fixed_task0_linear_lr0.001_ce-all_bb-frozen_s1993.json
+
+### C: ce_scope new + coding_level 0.3
+[model] autocast backbone: bfloat16 (SM 12.x)
+[data] dung cache: ./cache\CIFAR-100_resnet50_resnet.pt
+[data] CIFAR-100: 50000 train / 10000 test, 10 task x 10 lop, x=(2048,) torch.float32, val_ratio=0.1
+[model] CIFAR-100_resnet50_d10000_k0.3_proj-fixed_task0_linear_lr0.001_bb-frozen_s1993
+
+=== task 0  lop [0, 10)  4500 train / 500 val ===
+  early stop @ epoch 47 (val 92.40 @ 27)
+  [proj] da dong bang phep chieu sau task 0
+  A_t=93.00 | loss_clf=0.138 penalty=0.0 pen_over_clf=0.0 val_acc=92.4 best_epoch=27 epochs_run=47 train_time=3.1 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 1  lop [10, 20)  4500 train / 500 val ===
+  early stop @ epoch 79 (val 88.80 @ 59)
+  A_t=88.05 | loss_clf=0.0566 penalty=0.0 pen_over_clf=0.0 val_acc=88.8 best_epoch=59 epochs_run=79 train_time=3.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 2  lop [20, 30)  4500 train / 500 val ===
+  early stop @ epoch 100 (val 82.20 @ 80)
+  A_t=82.50 | loss_clf=0.0657 penalty=0.0 pen_over_clf=0.0 val_acc=82.2 best_epoch=80 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 3  lop [30, 40)  4500 train / 500 val ===
+  early stop @ epoch 100 (val 85.00 @ 80)
+  A_t=79.38 | loss_clf=0.0419 penalty=0.0 pen_over_clf=0.0 val_acc=85.0 best_epoch=80 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 4  lop [40, 50)  4500 train / 500 val ===
+  early stop @ epoch 99 (val 78.80 @ 79)
+  A_t=75.02 | loss_clf=0.067 penalty=0.0 pen_over_clf=0.0 val_acc=78.8 best_epoch=79 epochs_run=99 train_time=4.1 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 5  lop [50, 60)  4500 train / 500 val ===
+  A_t=71.83 | loss_clf=0.0436 penalty=0.0 pen_over_clf=0.0 val_acc=70.6 best_epoch=94 epochs_run=100 train_time=4.1 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 6  lop [60, 70)  4500 train / 500 val ===
+  A_t=70.07 | loss_clf=0.0466 penalty=0.0 pen_over_clf=0.0 val_acc=77.0 best_epoch=88 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 7  lop [70, 80)  4500 train / 500 val ===
+  A_t=66.76 | loss_clf=0.044 penalty=0.0 pen_over_clf=0.0 val_acc=71.8 best_epoch=89 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 8  lop [80, 90)  4500 train / 500 val ===
+  A_t=65.43 | loss_clf=0.0633 penalty=0.0 pen_over_clf=0.0 val_acc=63.4 best_epoch=85 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+=== task 9  lop [90, 100)  4500 train / 500 val ===
+  A_t=64.20 | loss_clf=0.0471 penalty=0.0 pen_over_clf=0.0 val_acc=70.6 best_epoch=88 epochs_run=100 train_time=4.3 proj_drift=0.0 dead_frac=0.0 usage_cv=0.0386
+
+============================================================
+Accuracy matrix (hang = task, cot = sau khi hoc xong task j)
+   93.00  88.00  81.80  76.20  69.90  67.80  64.20  59.60  58.90  58.30
+       .  88.10  84.70  81.50  76.60  71.70  70.30  66.00  65.10  63.50
+       .      .  81.00  77.40  72.90  70.90  68.00  62.50  61.30  59.30
+       .      .      .  82.40  78.80  76.20  75.00  70.30  70.00  68.80
+       .      .      .      .  76.90  73.80  70.70  69.00  67.40  64.00
+       .      .      .      .      .  70.60  68.10  65.70  64.80  63.60
+       .      .      .      .      .      .  74.20  70.30  69.20  67.80
+       .      .      .      .      .      .      .  70.70  68.60  65.60
+       .      .      .      .      .      .      .      .  63.60  63.00
+       .      .      .      .      .      .      .      .      .  68.10
+
+A_t         : [93.0, 88.05, 82.5, 79.38, 75.02, 71.83, 70.07, 66.76, 65.43, 64.2]
+A_T         : 64.2   (accuracy sau task cuoi)
+A_bar       : 75.62   (accumulated - so voi Fly-CL 92.99)
+Forgetting  : 14.07
+BWT         : -14.07
+Tong thoi gian: 41.0s
+Da luu: ./runs\CIFAR-100_resnet50_d10000_k0.3_proj-fixed_task0_linear_lr0.001_bb-frozen_s1993.json

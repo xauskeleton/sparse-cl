@@ -1,0 +1,25 @@
+===== flycl_cp.py --model_name resnet50.tv2_in1k+fsa1993 --pos none --expand_dim 10000 =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993_resnet.pt
+[cp] resnet50.tv2_in1k+fsa1993 | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=none spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 80.94 | 87.85 | 7.73 | nan | nan% | 97s |
+===== flycl_cp.py --model_name resnet50.tv2_in1k+fsa1993 --pos post --expand_dim 10000 --alpha_grid 0,1 =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993_resnet.pt
+[cp] resnet50.tv2_in1k+fsa1993 | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=post spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 78.14 | 86.46 | 9.51 | 0.5258 | 100.0% | 97s |
+| 1 | 78.94 | 86.79 | 8.98 | 0.4839 | 100.0% | 97s |
+===== stagemix prod =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 80.93 | 87.85 | 7.74 |   (+0.00, 1206s)
+| 300 | 1 | 81.75 | 88.29 | 7.22 |   (+0.44, 97s)

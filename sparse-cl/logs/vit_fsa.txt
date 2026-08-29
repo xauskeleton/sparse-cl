@@ -1,0 +1,48 @@
+
+=== moc + concat block 9
+=== deg_s3=0 w_s3=1 ===
+    raise RuntimeError('Unknown model (%s)' % model_name)
+RuntimeError: Unknown model (vit_base_patch16_224+fsa1993)
+A_T        : 91.58
+A_bar      : 95.26
+Forgetting : 3.69
+Tong       : 8s
+=== deg_s3=112 w_s3=1 ===
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['C:\\Users\\Admin\\anaconda3\\envs\\FlyCL\\python.exe', '-u', 'D:\\xauduabo\\Code+NCKH\\CL\\sparse-cl\\fsa.py', '--model_name', 'vit_base_patch16_224+fsa1993', '--seed', '1993', '--epochs', '10', '--rank', '8', '--data_augmentation', 'vit']' returned non-zero exit status 1.
+
+=== ensemble m=2
+=== deg_s3=0 w_s3=1 ===
+A_T        : 91.92
+A_bar      : 95.48
+Forgetting : 3.61
+Tong       : 16s
+
+=== ensemble m=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 92.12
+A_bar      : 95.65
+Forgetting : 3.54
+Tong       : 40s
+
+=== concat + ensemble 5
+=== deg_s3=300 w_s3=1 ===
+A_T        : 92.2
+A_bar      : 95.7
+Forgetting : 3.64
+Tong       : 85s
+=== deg_s3=0 w_s3=1 ===
+A_T        : 91.58
+A_bar      : 95.26
+Forgetting : 3.69
+Tong       : 8s
+=== deg_s3=112 w_s3=1 ===
+A_T        : 91.89
+A_bar      : 95.49
+Forgetting : 3.57
+Tong       : 14s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.84
+A_bar      : 95.4
+Forgetting : 3.51
+Tong       : 14s

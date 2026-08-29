@@ -1,0 +1,143 @@
+﻿
+===== spread=repo, quet alpha =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=post spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 0 | 77.22 | 84.26 | 8.48 | 0.0376 | 100.0% | 98s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 0.25 | 77.19 | 84.25 | 8.49 | 0.0366 | 100.0% | 99s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 0.5 | 77.16 | 84.26 | 8.53 | 0.0357 | 100.0% | 98s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 1 | 77.13 | 84.26 | 8.54 | 0.0339 | 100.0% | 102s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 2 | 77.16 | 84.23 | 8.53 | 0.0311 | 100.0% | 97s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 5 | 77.06 | 84.21 | 8.57 | 0.0255 | 100.0% | 100s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 10 | 76.91 | 84.07 | 8.61 | 0.0216 | 100.0% | 102s |
+===== spread=none (chi positive alignment) =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=post spread=none dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 1 | 70.03 | 79.80 | 11.94 | 0.5797 | 100.0% | 101s |
+===== spread=paper (Lemma 4.1) =====
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=post spread=paper dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 0.5 | 77.16 | 84.26 | 8.53 | 0.0357 | 100.0% | 103s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 1 | 77.13 | 84.26 | 8.54 | 0.0339 | 100.0% | 103s |
+    !! lambda cham SAN luoi (10000) o task0 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task1 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task2 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task3 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task4 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task5 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task6 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task7 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task8 - ha --ridge_lower
+    !! lambda cham SAN luoi (10000) o task9 - ha --ridge_lower
+| 2 | 77.16 | 84.23 | 8.53 | 0.0311 | 100.0% | 100s |

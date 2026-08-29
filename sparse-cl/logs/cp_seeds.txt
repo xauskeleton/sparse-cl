@@ -1,0 +1,70 @@
+﻿
+===== seed 1993 : none =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=none spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 76.99 | 84.08 | 8.54 | nan | nan% | 97s |
+
+
+===== seed 1993 : post alpha 0,1 =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=1993
+[cp] pos=post spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 77.22 | 84.26 | 8.48 | 0.0376 | 100.0% | 98s |
+| 1 | 77.13 | 84.26 | 8.54 | 0.0339 | 100.0% | 98s |
+
+
+===== seed 2023 : none =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=2023
+[cp] pos=none spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 76.71 | 84.66 | 7.86 | nan | nan% | 97s |
+
+
+===== seed 2023 : post alpha 0,1 =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=2023
+[cp] pos=post spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 76.89 | 84.86 | 7.88 | 0.0376 | 100.0% | 98s |
+| 1 | 76.97 | 84.85 | 7.70 | 0.0340 | 100.0% | 98s |
+
+
+===== seed 2025 : none =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=2025
+[cp] pos=none spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 76.57 | 83.84 | 7.99 | nan | nan% | 97s |
+
+
+===== seed 2025 : post alpha 0,1 =====
+
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[cp] resnet50.tv2_in1k | d=2048 | E=10000 | deg=300 | k=0.3 | seed=2025
+[cp] pos=post spread=repo dewhiten=inv shrink=1e-06 ridge=10^4..10^10
+
+| alpha | A_T | A_bar | Forget | mean\|cos\| | post==postk | t |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 76.84 | 83.92 | 7.59 | 0.0376 | 100.0% | 98s |
+| 1 | 76.80 | 83.93 | 7.61 | 0.0340 | 100.0% | 98s |
+
+

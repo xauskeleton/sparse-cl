@@ -1,0 +1,18 @@
+### concat --grid 0:1,300:1
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 80.93 | 87.85 | 7.74 |   (+0.00, 95s)
+| 300 | 1 | 81.76 | 88.20 | 7.43 |   (+0.35, 103s)
+### concat --mode ens --branches 2 --grid 300:1
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 82.62 | 88.90 | 6.99 |   (+0.00, 373s)
+### concat --mode ens --branches 5 --grid 300:1
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+fsa1993+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 1.78

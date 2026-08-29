@@ -1,0 +1,37 @@
+--- Fly-CL goc (khong concat) ---
+=== E=10000  m=1  grid=0:1  unit=10000  G=381MB
+A_T        : 76.99
+A_bar      : 84.08
+Forgetting : 8.54
+Tong       : 17s
+=== E=5000  m=2  grid=0:1  unit=10000  G=190MB
+A_T        : 75.49
+A_bar      : 83.41
+Forgetting : 9.6
+Tong       : 24s
+=== E=2000  m=5  grid=0:1  unit=10000  G=76MB
+A_T        : 73.56
+A_bar      : 82.03
+Forgetting : 10.22
+Tong       : 10s
+=== E=5000  m=1  grid=0:1  unit=5000  G=95MB
+A_T        : 75.03
+A_bar      : 82.8
+Forgetting : 9.64
+Tong       : 6s
+=== E=10000  m=2  grid=0:1  unit=20000  G=762MB
+A_T        : 77.36
+A_bar      : 84.57
+Forgetting : 8.76
+Tong       : 17s
+--- concat stage 3 + stage 4 ---
+=== E=10000  m=1  grid=300:1  unit=10000  G=381MB
+A_T        : 79.01
+A_bar      : 85.6
+Forgetting : 7.57
+Tong       : 14s
+=== E=5000  m=2  grid=300:1  unit=10000  G=190MB
+A_T        : 78.13
+A_bar      : 85.34
+Forgetting : 8.51
+Tong       : 16s

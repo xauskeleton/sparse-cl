@@ -1,0 +1,21 @@
+### prod seed 2023
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=2023 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 74.08 | 82.97 | 8.56 |   (+0.00, 96s)
+### prod seed 2025
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=2025 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 73.76 | 81.74 | 8.86 |   (+0.00, 96s)
+### prod E=20000 seed 1993
+[data] dung cache: ./cache\CIFAR-100_resnet50+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.1 | seed=1993 | RMS s3=43.5 s4=6.3 -> he so 0.15
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 76.06 | 83.61 | 8.44 |   (+0.00, 104s)

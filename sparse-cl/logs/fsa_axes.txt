@@ -1,0 +1,470 @@
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=1
+=== deg_s3=0 w_s3=1 ===
+A_T        : 80.94
+A_bar      : 87.86
+Forgetting : 7.74
+Tong       : 9s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 81.77
+A_bar      : 88.2
+Forgetting : 7.43
+Tong       : 14s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=1
+=== deg_s3=0 w_s3=1 ===
+A_T        : 91.58
+A_bar      : 95.26
+Forgetting : 3.69
+Tong       : 8s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.84
+A_bar      : 95.4
+Forgetting : 3.51
+Tong       : 14s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=2
+=== deg_s3=0 w_s3=1 ===
+A_T        : 81.44
+A_bar      : 88.27
+Forgetting : 7.56
+Tong       : 17s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 82.61
+A_bar      : 88.9
+Forgetting : 7.0
+Tong       : 28s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=2
+=== deg_s3=0 w_s3=1 ===
+A_T        : 91.92
+A_bar      : 95.48
+Forgetting : 3.61
+Tong       : 16s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 92.06
+A_bar      : 95.63
+Forgetting : 3.58
+Tong       : 27s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 81.55
+A_bar      : 88.4
+Forgetting : 7.64
+Tong       : 42s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 82.72
+A_bar      : 89.05
+Forgetting : 7.12
+Tong       : 670s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 92.12
+A_bar      : 95.65
+Forgetting : 3.54
+Tong       : 42s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 92.2
+A_bar      : 95.7
+Forgetting : 3.64
+Tong       : 528s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=1
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 66.12
+A_bar      : 74.2
+Forgetting : 9.75
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 66.89
+A_bar      : 74.83
+Forgetting : 9.74
+Tong       : 5s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=1
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.17
+A_bar      : 91.31
+Forgetting : 4.0
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.26
+A_bar      : 91.29
+Forgetting : 3.91
+Tong       : 5s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 67.15
+A_bar      : 74.91
+Forgetting : 9.77
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 68.2
+A_bar      : 75.55
+Forgetting : 9.24
+Tong       : 10s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.56
+A_bar      : 91.48
+Forgetting : 3.71
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.54
+A_bar      : 91.4
+Forgetting : 3.64
+Tong       : 9s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 67.51
+A_bar      : 75.35
+Forgetting : 9.74
+Tong       : 6s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 68.96
+A_bar      : 75.88
+Forgetting : 8.46
+Tong       : 74s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.74
+A_bar      : 91.59
+Forgetting : 3.64
+Tong       : 6s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.9
+A_bar      : 91.57
+Forgetting : 3.6
+Tong       : 56s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=1
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.51
+A_bar      : 93.54
+Forgetting : 3.79
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.89
+A_bar      : 94.79
+Forgetting : 2.79
+Tong       : 2s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=1
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.4
+A_bar      : 95.19
+Forgetting : 2.72
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.63
+A_bar      : 96.08
+Forgetting : 2.17
+Tong       : 2s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.62
+A_bar      : 93.69
+Forgetting : 3.91
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.9
+A_bar      : 94.77
+Forgetting : 2.73
+Tong       : 5s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.37
+A_bar      : 95.3
+Forgetting : 2.89
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.8
+A_bar      : 96.17
+Forgetting : 2.16
+Tong       : 5s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.71
+A_bar      : 93.79
+Forgetting : 3.82
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.85
+A_bar      : 94.78
+Forgetting : 2.86
+Tong       : 23s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.47
+A_bar      : 95.39
+Forgetting : 2.89
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.82
+A_bar      : 96.19
+Forgetting : 2.22
+Tong       : 19s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=1
+=== deg_s3=0 w_s3=1 ===
+A_T        : 75.88
+A_bar      : 83.43
+Forgetting : 8.98
+Tong       : 9s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 77.82
+A_bar      : 85.14
+Forgetting : 8.72
+Tong       : 14s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=1
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.98
+A_bar      : 93.12
+Forgetting : 4.59
+Tong       : 8s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.46
+A_bar      : 93.58
+Forgetting : 4.47
+Tong       : 14s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=2
+=== deg_s3=0 w_s3=1 ===
+A_T        : 76.18
+A_bar      : 83.53
+Forgetting : 8.92
+Tong       : 17s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 77.87
+A_bar      : 85.21
+Forgetting : 8.7
+Tong       : 29s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=2
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.19
+A_bar      : 93.31
+Forgetting : 4.58
+Tong       : 17s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.77
+A_bar      : 93.7
+Forgetting : 4.27
+Tong       : 28s
+
+=== CIFAR-100 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 76.12
+A_bar      : 83.54
+Forgetting : 8.81
+Tong       : 42s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 78.22
+A_bar      : 85.34
+Forgetting : 8.32
+Tong       : 741s
+
+=== CIFAR-100 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 89.32
+A_bar      : 93.45
+Forgetting : 4.62
+Tong       : 41s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 89.82
+A_bar      : 93.85
+Forgetting : 4.39
+Tong       : 663s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=1
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 63.52
+A_bar      : 71.22
+Forgetting : 10.06
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 65.97
+A_bar      : 73.11
+Forgetting : 9.89
+Tong       : 5s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=1
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.09
+A_bar      : 91.3
+Forgetting : 3.89
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.72
+A_bar      : 91.51
+Forgetting : 3.41
+Tong       : 5s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 63.87
+A_bar      : 71.42
+Forgetting : 9.68
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 65.94
+A_bar      : 73.23
+Forgetting : 10.04
+Tong       : 9s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=2
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.22
+A_bar      : 91.33
+Forgetting : 3.76
+Tong       : 2s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 88.65
+A_bar      : 91.54
+Forgetting : 3.53
+Tong       : 9s
+
+=== CUB-200-2011 | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 64.0
+A_bar      : 71.55
+Forgetting : 9.49
+Tong       : 6s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 66.26
+A_bar      : 73.4
+Forgetting : 9.73
+Tong       : 67s
+
+=== CUB-200-2011 | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.29
+A_bar      : 91.39
+Forgetting : 3.72
+Tong       : 5s
+=== deg_s3=300 w_s3=1 ===
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=1
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.56
+A_bar      : 93.27
+Forgetting : 4.39
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.1
+A_bar      : 94.53
+Forgetting : 3.43
+Tong       : 2s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=1
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 92.91
+A_bar      : 94.91
+Forgetting : 3.29
+Tong       : 1s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.47
+A_bar      : 95.95
+Forgetting : 2.41
+Tong       : 2s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 88.71
+A_bar      : 93.35
+Forgetting : 4.36
+Tong       : 3s
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.12
+A_bar      : 94.57
+Forgetting : 3.37
+Tong       : 15s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=2
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.06
+A_bar      : 94.99
+Forgetting : 3.0
+Tong       : 5s
+=== deg_s3=300 w_s3=1 ===
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=0 w_s3=1 ===
+A_T        : 93.04
+A_bar      : 95.02
+Forgetting : 3.06
+Tong       : 4s
+=== deg_s3=300 w_s3=1 ===
+scripts/fsa_axes.sh: line 64: syntax error near unexpected token `do'
+scripts/fsa_axes.sh: line 64: `S in $DATASETS; do'
+===
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=aper | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.85
+A_bar      : 94.78
+Forgetting : 2.86
+Tong       : 13s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=aper | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.82
+A_bar      : 96.19
+Forgetting : 2.22
+Tong       : 11s
+
+=== VTAB | resnet50.tv2_in1k+ms | deg_s4=300 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=300 w_s3=1 ===
+A_T        : 91.08
+A_bar      : 94.57
+Forgetting : 3.45
+Tong       : 12s
+
+=== VTAB | vit_base_patch16_224+ms | deg_s4=112 | tm=none | m=5
+[run] VTAB: num_classes=50 num_tasks=5
+=== deg_s3=300 w_s3=1 ===
+A_T        : 94.5
+A_bar      : 96.0
+Forgetting : 2.45
+Tong       : 12s

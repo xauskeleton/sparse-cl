@@ -1,0 +1,37 @@
+### 1a. tang 3, cong (10.000 unit)
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 76.82 | 84.35 | 8.92 |   (+0.00, 97s)
+### 1b. tang 3, ghep (20.000 unit)
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 79.01 | 85.60 | 7.57 |   (+0.00, 105s)
+### 3. ensemble 2 nhanh, KHONG co tang 3
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 0 | 1 | 77.36 | 84.57 | 8.76 |   (+0.00, 193s)
+### 4. n ma tran cho n task
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[pertask] resnet50.tv2_in1k | 10 khoi x 1000 chieu | moi khoi mot G rieng | k=0.3 | seed=1993
+
+| Che do | A_T | A_bar | Forgetting |
+|---|---:|---:|---:|
+| moi khoi tu task 1 (doi chung) | 71.53 | 80.61 | 11.41 |   (9s)
+| khoi t sinh o task t | 46.61 | 60.37 | 51.29 |   (5s)
+
+A_t theo tung giai doan:
+  moi khoi tu task 1 (doi chung)    91.9  90.0  85.9  83.6  80.5  78.6  77.1  74.6  72.5  71.5
+  khoi t sinh o task t              91.4  79.7  67.3  62.0  55.3  53.7  51.2  48.5  48.0  46.6
+
+So mau moi khoi da thay:
+  moi khoi tu task 1 (doi chung)   50k 50k 50k 50k 50k 50k 50k 50k 50k 50k
+  khoi t sinh o task t             50k 45k 40k 35k 30k 25k 20k 15k 10k 5k

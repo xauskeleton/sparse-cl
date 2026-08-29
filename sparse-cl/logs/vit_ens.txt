@@ -1,0 +1,48 @@
+
+=== ViT-B/16 | deg_s4=300 m=1 | unit=10000
+A_T        : 88.97
+A_bar      : 93.01
+Forgetting : 4.4
+Tong       : 8s
+
+=== ViT-B/16 | deg_s4=300 m=2 | unit=20000
+A_T        : 89.21
+A_bar      : 93.28
+Forgetting : 4.37
+Tong       : 16s
+
+=== ViT-B/16 | deg_s4=300 m=5 | unit=50000
+A_T        : 89.21
+A_bar      : 93.46
+Forgetting : 4.64
+Tong       : 40s
+
+=== ViT-B/16 | deg_s4=112 m=1 | unit=10000
+A_T        : 88.98
+A_bar      : 93.03
+Forgetting : 4.39
+Tong       : 8s
+
+=== ViT-B/16 | deg_s4=112 m=2 | unit=20000
+A_T        : 89.19
+A_bar      : 93.3
+Forgetting : 4.54
+Tong       : 16s
+
+=== ViT-B/16 | deg_s4=112 m=5 | unit=50000
+A_T        : 89.32
+A_bar      : 93.51
+Forgetting : 4.62
+Tong       : 41s
+
+=== ViT-B/16 | deg_s4=112 m=10 | unit=100000
+A_T        : 89.46
+A_bar      : 93.59
+Forgetting : 4.57
+Tong       : 82s
+
+=== ViT-B/16 | deg_s4=112 m=20 | unit=200000
+A_T        : 89.46
+A_bar      : 93.66
+Forgetting : 4.61
+Tong       : 168s

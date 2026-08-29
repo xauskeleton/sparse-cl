@@ -1,0 +1,15 @@
+########## tv2_in1k, coding_level 0.1 ##########
+[model] backbone resnet50.tv2_in1k | tag=tv2_in1k
+[data] da luu cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[flycl] resnet50.tv2_in1k | d=2048 | expand=10000 | degree=300 | k=0.1 | seed=1993
+  task 9: ridge=100000 | A_t=74.74
+A_T        : 74.74
+A_bar      : 82.43
+Forgetting : 9.36
+########## tv2_in1k, coding_level 0.3 ##########
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k_resnet.pt
+[flycl] resnet50.tv2_in1k | d=2048 | expand=10000 | degree=300 | k=0.3 | seed=1993
+  task 9: ridge=10000 | A_t=76.99
+A_T        : 76.99
+A_bar      : 84.08
+Forgetting : 8.54

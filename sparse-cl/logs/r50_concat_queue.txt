@@ -1,0 +1,35 @@
+### concat, top-k toan cuc (kiem tra tai lap 85.60)
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| unit s4 | unit s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 10000 | 10000 | 78.90 | 85.59 | 7.96 |   (+0.00, 106s)
+### concat, top-k chia deu 3000+3000
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 3 | he so 0.62
+
+| unit s4 | unit s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 10000 | 10000 | 78.74 | 85.54 | 8.09 |   (+0.00, 105s)
+### concat, seed 2023
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2023 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.76 | 85.83 | 6.70 |   (+0.00, 105s)
+### concat, seed 2025
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=2025 | b=stage 3 | he so 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.72 | 85.26 | 6.92 |   (+0.00, 105s)
+### concat voi b = s2+s3
+[data] dung cache: ./cache\CIFAR-100_resnet50.tv2_in1k+ms_resnet.pt
+[stagemix] deg_s4=300 | k=0.3 | seed=1993 | b=stage 2,3 | he so 0.49 0.62
+
+| deg s3 | w s3 | A_T | A_bar | Forgetting |
+|---:|---:|---:|---:|---:|
+| 300 | 1 | 78.43 | 85.15 | 7.97 |   (+0.00, 104s)

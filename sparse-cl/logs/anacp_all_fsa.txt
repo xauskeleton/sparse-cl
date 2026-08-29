@@ -1,0 +1,150 @@
+
+=== CIFAR-100 | resnet50.tv2_in1k | Fly-CL (pos=none)
+A_T        : 80.94
+A_bar      : 87.86
+Forgetting : 7.74
+mean_abs_cos: nan
+Tong       : 9s
+
+=== CIFAR-100 | resnet50.tv2_in1k | AnaCP CP (pos=post)
+A_T        : 78.94
+A_bar      : 86.79
+Forgetting : 8.98
+mean_abs_cos: 0.4839
+Tong       : 10s
+
+=== CIFAR-100 | resnet50.tv2_in1k | AnaCP full (3 head)
+A_T        : 80.57
+A_bar      : 87.99
+Forgetting : 8.6
+mean_abs_cos: 0.4839
+Tong       : 43s
+
+=== CIFAR-100 | vit_base_patch16_224 | Fly-CL (pos=none)
+A_T        : 91.58
+A_bar      : 95.26
+Forgetting : 3.69
+mean_abs_cos: nan
+Tong       : 8s
+
+=== CIFAR-100 | vit_base_patch16_224 | AnaCP CP (pos=post)
+A_T        : 89.54
+A_bar      : 94.02
+Forgetting : 4.84
+mean_abs_cos: 0.9295
+Tong       : 9s
+
+=== CIFAR-100 | vit_base_patch16_224 | AnaCP full (3 head)
+A_T        : 90.08
+A_bar      : 94.51
+Forgetting : 4.57
+mean_abs_cos: 0.9295
+Tong       : 40s
+
+=== CUB-200-2011 | resnet50.tv2_in1k | Fly-CL (pos=none)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 63.44
+A_bar      : 72.33
+Forgetting : 10.62
+mean_abs_cos: nan
+Tong       : 1s
+
+=== CUB-200-2011 | resnet50.tv2_in1k | AnaCP CP (pos=post)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 64.79
+A_bar      : 73.31
+Forgetting : 10.08
+mean_abs_cos: 0.0528
+Tong       : 3s
+
+=== CUB-200-2011 | resnet50.tv2_in1k | AnaCP full (3 head)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 69.35
+A_bar      : 76.45
+Forgetting : 8.74
+mean_abs_cos: 0.0528
+Tong       : 39s
+
+=== CUB-200-2011 | vit_base_patch16_224 | Fly-CL (pos=none)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 88.17
+A_bar      : 91.31
+Forgetting : 4.0
+mean_abs_cos: nan
+Tong       : 1s
+
+=== CUB-200-2011 | vit_base_patch16_224 | AnaCP CP (pos=post)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 87.17
+A_bar      : 90.82
+Forgetting : 4.37
+mean_abs_cos: 0.6885
+Tong       : 2s
+
+=== CUB-200-2011 | vit_base_patch16_224 | AnaCP full (3 head)
+[run] CUB-200-2011: num_classes=200 num_tasks=10
+A_T        : 85.57
+A_bar      : 90.29
+Forgetting : 5.92
+mean_abs_cos: 0.6885
+Tong       : 46s
+
+=== VTAB | resnet50.tv2_in1k | Fly-CL (pos=none)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 90.22
+A_bar      : 93.91
+Forgetting : 3.55
+mean_abs_cos: nan
+Tong       : 1s
+
+=== VTAB | resnet50.tv2_in1k | AnaCP CP (pos=post)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 90.53
+A_bar      : 94.06
+Forgetting : 3.63
+mean_abs_cos: 0.169
+Tong       : 3s
+
+=== VTAB | resnet50.tv2_in1k | AnaCP full (3 head)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 90.75
+A_bar      : 94.3
+Forgetting : 3.2
+mean_abs_cos: 0.169
+Tong       : 12s
+
+=== VTAB | vit_base_patch16_224 | Fly-CL (pos=none)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 93.4
+A_bar      : 95.19
+Forgetting : 2.72
+mean_abs_cos: nan
+Tong       : 2s
+
+=== VTAB | vit_base_patch16_224 | AnaCP CP (pos=post)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 93.39
+A_bar      : 94.76
+Forgetting : 2.58
+mean_abs_cos: 0.205
+Tong       : 3s
+
+=== VTAB | vit_base_patch16_224 | AnaCP full (3 head)
+[run] VTAB: num_classes=50 num_tasks=5
+A_T        : 92.74
+A_bar      : 94.71
+Forgetting : 3.32
+mean_abs_cos: 0.205
+Tong       : 10s
+scripts/anacp_all.sh: line 54: --: command not found
+
+=== Fly-CL (pos=none) | VTAB | none
+run.py: error: argument --dataset: invalid choice: 'Fly-CL' (choose from CIFAR-100, CUB-200-2011, VTAB)
+
+=== AnaCP CP (pos=post) | VTAB | post
+run.py: error: argument --dataset: invalid choice: 'AnaCP' (choose from CIFAR-100, CUB-200-2011, VTAB)
+
+=== AnaCP full (3 head) | VTAB | full
+run.py: error: argument --dataset: invalid choice: 'AnaCP' (choose from CIFAR-100, CUB-200-2011, VTAB)
+scripts/anacp_all.sh: line 61: syntax error near unexpected token `done'
+scripts/anacp_all.sh: line 61: `    done'
